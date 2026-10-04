@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Text, View } from 'react-native';
+import { Text } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Body, Button, Card, Empty, ErrorState, H1, H2, Loading, Screen, Small, StaleNote } from '../../src/ui/kit';
 import { useApp } from '../../src/providers/AppProvider';

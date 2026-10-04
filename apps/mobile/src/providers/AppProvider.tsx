@@ -98,7 +98,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       } catch (e) { errors.captureError(e, { area: 'purchases-config' }); }
     })();
     return () => { cancelled = true; };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session?.userId]);
 
   // Ads are initialised only for FREE users (and only after the entitlement is known).

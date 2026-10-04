@@ -37,7 +37,6 @@ export function useResource<T>(key: string, fetcher: () => Promise<T>, deps: unk
       await load(false);
     })();
     return () => { cancelled = true; alive.current = false; };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key, ...deps]);
 
   return { data, loading, refreshing, error, fromCache, updatedAt, refresh: () => load(true) };

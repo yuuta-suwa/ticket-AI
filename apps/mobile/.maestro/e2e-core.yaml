@@ -1,0 +1,41 @@
+# Mobile E2E (Maestro). Run against a DEMO/preview build: maestro test .maestro/e2e-core.yaml
+# Build with the "screenshots" EAS profile (EXPO_PUBLIC_DEMO_MODE=true) so the flow needs no backend. Demo code: 000000.
+appId: ai.dealhunter.app
+---
+- launchApp: { clearState: true }
+- assertVisible: "DEAL HUNTER AI"
+- tapOn: "Email address"
+- inputText: "tester@example.com"
+- tapOn: "Email me a sign-in code"
+- tapOn: "6-digit code"
+- inputText: "000000"
+- tapOn: "Verify and continue"
+- assertVisible: "Find your next deal"
+# Search
+- tapOn: "SEARCH"
+- tapOn: "Search"
+- assertVisible: ".* results"
+# Open a deal
+- tapOn: { index: 1, text: ".*→.*" }
+- assertVisible: "Why .*"
+# Add watch
+- scrollUntilVisible: { element: "Add to watchlist" }
+- tapOn: "Add to watchlist"
+- assertVisible: "Added to your watchlist."
+# Revalidate
+- tapOn: "Check latest price"
+- assertVisible: "Continue to the seller"
+- back
+# Paywall + restore
+- tapOn: "ACCOUNT"
+- tapOn: "Upgrade to Premium"
+- assertVisible: "Restore purchases"
+- tapOn: "Restore purchases"
+- tapOn: "Not now"
+# Delete account
+- tapOn: "ACCOUNT"
+- scrollUntilVisible: { element: "Delete account" }
+- tapOn: "Delete account"
+- tapOn: "Continue"
+- tapOn: "Permanently delete my account"
+- assertVisible: "DEAL HUNTER AI"

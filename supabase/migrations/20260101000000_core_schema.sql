@@ -282,3 +282,8 @@ grant execute on function public.delete_user_data(uuid) to service_role;
 create or replace view private.v_cost_daily as
   select date_trunc('day', created_at) as day, provider, sum(estimated_cost) as cost, sum(request_count) as requests, sum(coalesce(tokens,0)) as tokens
   from private.cost_events group by 1, 2;
+
+-- Defence in depth: the anonymous role has no business reading any app table. (RLS already yields zero rows; this makes it an error.)
+revoke all on all tables in schema public from anon;
+revoke all on all sequences in schema public from anon;
+alter default privileges in schema public revoke all on tables from anon;

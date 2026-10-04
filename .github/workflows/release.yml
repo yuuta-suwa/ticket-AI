@@ -1,0 +1,32 @@
+name: Release (production build)
+# Tag vX.Y.Z on main → validate → HUMAN APPROVAL (GitHub Environment "production-build") → EAS production builds.
+# Nothing is published to the stores automatically; submission is a separate manual workflow (submit.yml).
+on:
+  push:
+    tags: ['v*.*.*']
+permissions: { contents: read }
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint && pnpm typecheck && pnpm test && pnpm build:edge-shared && pnpm build:web
+  build:
+    needs: validate
+    runs-on: ubuntu-latest
+    environment: production-build   # configure required reviewers = approval gate
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm }
+      - uses: expo/expo-github-action@v8
+        with: { eas-version: latest, token: "${{ secrets.EXPO_TOKEN }}" }
+      - run: pnpm install --frozen-lockfile
+      - name: EAS production builds (iOS .ipa + Android .aab)
+        working-directory: apps/mobile
+        run: eas build --platform all --profile production --non-interactive --no-wait

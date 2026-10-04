@@ -40,7 +40,6 @@ export default function DealDetail() {
       } catch { if (!off) setLoadErr(true); }
     })();
     return () => { off = true; };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   if (loadErr) return <Screen><ErrorState message="This deal could not be loaded. It may have expired." onRetry={() => router.back()} /></Screen>;

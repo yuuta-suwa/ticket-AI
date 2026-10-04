@@ -34,6 +34,8 @@ module.exports = ({ config }) => ({
       'android.permission.READ_EXTERNAL_STORAGE', 'android.permission.WRITE_EXTERNAL_STORAGE', 'com.google.android.gms.permission.AD_ID',
     ],
   },
+  // Web export is used ONLY to render demo-data store-screenshot candidates; the shipped product is the native app.
+  web: { bundler: 'metro', output: 'single', favicon: './assets/icon.png' },
   plugins: [
     'expo-router',
     'expo-secure-store',

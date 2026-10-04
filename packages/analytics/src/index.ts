@@ -42,7 +42,6 @@ export class SanitizingAnalytics implements AnalyticsProvider {
 export interface ErrorTracker { captureError(error: unknown, context?: Record<string, string | number | boolean>): void }
 export class ConsoleErrorTracker implements ErrorTracker {
   captureError(error: unknown, context?: Record<string, string | number | boolean>): void {
-    // eslint-disable-next-line no-console
     console.error('[error]', error instanceof Error ? error.message : String(error), context ? sanitizeProps(context) : '');
   }
 }

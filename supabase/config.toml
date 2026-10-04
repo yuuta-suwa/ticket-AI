@@ -3,8 +3,8 @@ project_id = "deal-hunter-ai"
 
 [api]
 enabled = true
-# `private` is intentionally NOT exposed through PostgREST.
-schemas = ["public", "graphql_public"]
+# `private` is exposed ONLY so the service role (Edge Functions / admin server) can reach it; anon/authenticated have zero grants and no schema USAGE (proved by tests/src/rls.test.ts).
+schemas = ["public", "private", "graphql_public"]
 extra_search_path = ["public", "extensions"]
 
 [auth]

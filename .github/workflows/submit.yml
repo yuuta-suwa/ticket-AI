@@ -1,0 +1,23 @@
+name: Submit to stores (manual, approval-gated)
+on:
+  workflow_dispatch:
+    inputs:
+      platform: { description: 'ios | android | all', required: true, default: all }
+      build_id: { description: 'EAS build id (blank = latest production build)', required: false }
+permissions: { contents: read }
+jobs:
+  submit:
+    runs-on: ubuntu-latest
+    environment: store-submission   # required reviewers = Human Approval Gate before TestFlight / Play upload
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm }
+      - uses: expo/expo-github-action@v8
+        with: { eas-version: latest, token: "${{ secrets.EXPO_TOKEN }}" }
+      - run: pnpm install --frozen-lockfile
+      - working-directory: apps/mobile
+        run: |
+          if [ -n "${{ inputs.build_id }}" ]; then eas submit --platform "${{ inputs.platform }}" --profile production --id "${{ inputs.build_id }}" --non-interactive
+          else eas submit --platform "${{ inputs.platform }}" --profile production --latest --non-interactive; fi
