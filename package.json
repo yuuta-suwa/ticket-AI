@@ -1,0 +1,24 @@
+{
+  "name": "deal-hunter-ai",
+  "private": true,
+  "version": "1.0.0",
+  "packageManager": "pnpm@10.28.0",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "lint": "eslint .",
+    "typecheck": "pnpm -r --workspace-concurrency=1 typecheck",
+    "test": "pnpm -r test",
+    "build:web": "pnpm --filter @dealhunter/web build",
+    "build:edge-shared": "node scripts/build-edge-shared.mjs",
+    "release:check": "node scripts/release-check.mjs",
+    "store:screenshots": "pnpm --filter @dealhunter/mobile screenshots"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.0",
+    "esbuild": "^0.25.0",
+    "eslint": "^9.39.0",
+    "typescript": "~5.9.2",
+    "typescript-eslint": "^8.46.0",
+    "vitest": "^3.2.4"
+  }
+}

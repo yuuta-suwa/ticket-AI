@@ -1,0 +1,9 @@
+{
+  "name": "@dealhunter/core",
+  "version": "1.0.0",
+  "private": true,
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "dependencies": { "@dealhunter/types": "workspace:*", "@dealhunter/config": "workspace:*" },
+  "scripts": { "typecheck": "tsc -p tsconfig.json", "test": "vitest run" }
+}
