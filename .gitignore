@@ -21,3 +21,5 @@ supabase/functions/_shared/core.mjs
 apps/mobile/ios/
 apps/mobile/android/
 *.tsbuildinfo
+.release-export/
+dist-demo/
