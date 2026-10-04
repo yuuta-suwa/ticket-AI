@@ -1,0 +1,10 @@
+- Name: DEAL HUNTER AI (≤30)
+- Subtitle: Buy now or wait? AI flight deals (≤30)
+- Promotional text (≤170): See when flight prices are far from normal and get a clear BUY / WAIT / WATCH call — with the reasons.
+- Keywords (≤100): flight deals,cheap flights,price alert,airfare tracker,price history,fare watch,travel deals
+- Category: Travel (secondary: Utilities)
+- Age rating: 4+ (no objectionable content) — confirm in questionnaire
+- Support URL / Marketing URL / Privacy Policy URL: `https://<site>/support`, `https://<site>`, `https://<site>/privacy` (fill)
+- Subscription group: "DEAL HUNTER Premium"; display names + descriptions per product; Terms (EULA) link = `/terms`
+- Review notes: docs/store-review/APPLE_REVIEW_NOTES.md
+- App Privacy: docs/compliance/APPLE_PRIVACY_DISCLOSURE.md

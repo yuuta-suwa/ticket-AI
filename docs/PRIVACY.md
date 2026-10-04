@@ -1,0 +1,2 @@
+# Privacy (engineering view)
+The published policy is `apps/web/src/app/privacy/page.tsx` → `/privacy` (placeholders for operator name/address/email/date/retention are highlighted and **must be filled before submission**). Store-console answers are in `docs/compliance/`. Rules: collect only email + user-initiated activity; analytics payloads are PII-sanitised (`packages/analytics`); permissions requested only on opt-in (notifications from the Alerts tab); ads non-personalised; account deletion = real deletion (`delete_user_data` + auth user removal).

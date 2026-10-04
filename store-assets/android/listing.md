@@ -1,0 +1,7 @@
+- Title: DEAL HUNTER AI (≤30)
+- Short description (≤80): Spot extreme flight deals and know whether to buy now or wait.
+- Full description: ../common/description.md
+- Category: Travel & Local; Tags: Travel, Deals
+- Graphics: app icon 512 (downscale common/app-icon-1024.png), feature graphic 1024×500 (this folder), phone screenshots (../screenshots)
+- Privacy policy / Account deletion URLs: `https://<site>/privacy`, `https://<site>/account-deletion`
+- Data safety: docs/compliance/GOOGLE_DATA_SAFETY.md; App access notes: docs/store-review/GOOGLE_PLAY_NOTES.md

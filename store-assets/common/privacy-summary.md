@@ -1,0 +1,1 @@
+We collect your email and the activity you create (searches, watchlist). No location, contacts, camera, microphone or photos. No cross-app tracking; ads (FREE) are non-personalised. Delete your account any time in the app or on the web. Full policy: /privacy.
