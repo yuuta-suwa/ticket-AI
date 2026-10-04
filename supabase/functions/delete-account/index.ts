@@ -1,0 +1,18 @@
+import { handler, json, limit, requireUser, HttpError } from '../_shared/http.ts';
+// @ts-ignore generated
+import { RATE_LIMITS } from '../_shared/core.mjs';
+
+/** Permanent deletion (not suspension). Subscriptions are billed by Apple/Google and must be cancelled in the store — we say so. */
+Deno.serve(handler(async (req, sb) => {
+  const user = await requireUser(req, sb);
+  await limit(sb, 'auth', user.id, RATE_LIMITS.auth);
+  const body = await req.json().catch(() => ({}));
+  if (body?.confirm !== true) throw new HttpError(400, 'Confirmation required');
+  const { data: ent } = await sb.from('user_entitlements').select('premium_active').eq('user_id', user.id).maybeSingle();
+  const { error: e1 } = await sb.rpc('delete_user_data', { uid: user.id });
+  if (e1) throw new HttpError(500, 'Deletion failed');
+  const { error: e2 } = await sb.auth.admin.deleteUser(user.id);
+  if (e2) throw new HttpError(500, 'Deletion failed');
+  await sb.schema('private').from('audit_logs').insert({ actor: null, action: 'account_deleted', meta: {} });
+  return json(req, { deleted: true, hadActiveSubscription: !!ent?.premium_active, notice: 'Deleting your account does not cancel an App Store / Google Play subscription. Cancel it in your store account settings.' });
+}));

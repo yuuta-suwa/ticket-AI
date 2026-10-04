@@ -4,7 +4,7 @@
  * domain or contact exists yet. Replace here (or via env at build time) — nowhere else.
  */
 const env = (k: string): string | undefined =>
-  typeof process !== 'undefined' ? process?.env[k] || undefined : undefined;
+  (globalThis as { process?: { env?: Record<string, string | undefined> } }).process?.env?.[k] || undefined;
 
 export const APP_IDENTITY = {
   name: 'DEAL HUNTER AI',

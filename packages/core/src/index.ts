@@ -14,3 +14,4 @@ export * from './providers/types';
 export * from './providers/mock';
 export * from './purchases/types';
 export * from './purchases/fake';
+export * from './feed';

@@ -1,0 +1,28 @@
+# Supabase local development config (supabase start). Production settings live in the Supabase dashboard.
+project_id = "deal-hunter-ai"
+
+[api]
+enabled = true
+# `private` is intentionally NOT exposed through PostgREST.
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+
+[auth]
+enabled = true
+site_url = "dealhunter://auth/callback"
+additional_redirect_urls = ["dealhunter://auth/callback"]
+enable_signup = true
+[auth.email]
+enable_signup = true
+enable_confirmations = true
+otp_length = 6
+otp_expiry = 3600
+
+[functions.revenuecat-webhook]
+verify_jwt = false
+[functions.monitor-prices]
+verify_jwt = false
+[functions.send-notifications]
+verify_jwt = false
+[functions.evaluate-outcomes]
+verify_jwt = false

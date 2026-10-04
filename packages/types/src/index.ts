@@ -157,3 +157,12 @@ export interface Entitlements {
 export type MonitoringPriority = 'P0' | 'P1' | 'P2' | 'P3' | 'P4';
 export type OutcomeLabel = 'GOOD_DECISION' | 'BAD_DECISION' | 'NEUTRAL';
 export const OUTCOME_HORIZONS_HOURS = [1, 6, 24, 72, 168] as const;
+
+export interface HomeFeed {
+  extremeDeals: Deal[];
+  buyNow: Deal[];
+  priceDrops: Deal[];
+  recommendedRoutes: { origin: string; destination: string; fromPrice: number; currency: string }[];
+  latest: Deal[];
+  generatedAt: string;
+}

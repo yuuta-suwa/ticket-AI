@@ -1,0 +1,17 @@
+import { handler, json, limit, requireUser } from '../_shared/http.ts';
+import { getProvider, loadHistory } from '../_shared/domain.ts';
+// @ts-ignore generated
+import { buildHomeFeed, CACHE_CONFIG, RATE_LIMITS } from '../_shared/core.mjs';
+
+// Per-instance cache: the feed is identical for every user, so build it once per few minutes.
+let cached: { at: number; body: unknown } | null = null;
+Deno.serve(handler(async (req, sb) => {
+  const user = await requireUser(req, sb);
+  await limit(sb, 'search', user.id, RATE_LIMITS.search);
+  if (cached && Date.now() - cached.at < 5 * 60_000) return json(req, cached.body);
+  const provider = getProvider();
+  const body = await buildHomeFeed(provider, (id: string) => loadHistory(sb, provider, id), new Date());
+  cached = { at: Date.now(), body };
+  void CACHE_CONFIG;
+  return json(req, body);
+}));

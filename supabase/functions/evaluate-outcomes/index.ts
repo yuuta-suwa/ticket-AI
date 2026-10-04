@@ -1,0 +1,27 @@
+// deno-lint-ignore-file no-explicit-any
+import { handler, json, requireCronSecret } from '../_shared/http.ts';
+// @ts-ignore generated
+import { evaluateOutcome, OUTCOME_HORIZONS_HOURS } from '../_shared/core.mjs';
+
+/** Labels past recommendations at 1h/6h/24h/72h/7d: the future ML training set. */
+Deno.serve(handler(async (req, sb) => {
+  requireCronSecret(req);
+  const now = Date.now();
+  let written = 0;
+  for (const h of OUTCOME_HORIZONS_HOURS) {
+    const cutoff = new Date(now - h * 3_600_000).toISOString();
+    const { data: recs } = await sb.schema('private').from('recommendations').select('id, flight_identity, price, decision, created_at').lte('created_at', cutoff).gte('created_at', new Date(now - (h + 48) * 3_600_000).toISOString()).limit(500);
+    for (const r of recs ?? []) {
+      const { data: done } = await sb.schema('private').from('model_outcomes').select('id').eq('recommendation_id', r.id).eq('horizon_hours', h).maybeSingle();
+      if (done) continue;
+      const target = new Date(new Date(r.created_at).getTime() + h * 3_600_000);
+      const { data: snap } = await sb.schema('private').from('price_snapshots').select('price, availability_state').eq('flight_identity', r.flight_identity).gte('captured_at', target.toISOString()).order('captured_at', { ascending: true }).limit(1).maybeSingle();
+      if (!snap) continue; // no observation yet; try again next run
+      const later = snap.availability_state === 'UNAVAILABLE' ? null : Number(snap.price);
+      const label = evaluateOutcome({ price: Number(r.price), decision: r.decision }, later);
+      await sb.schema('private').from('model_outcomes').insert({ recommendation_id: r.id, horizon_hours: h, later_price: later, label });
+      written++;
+    }
+  }
+  return json(req, { written });
+}));

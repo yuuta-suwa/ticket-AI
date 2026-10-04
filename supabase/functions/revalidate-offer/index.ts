@@ -1,0 +1,18 @@
+import { handler, json, limit, requireUser, HttpError } from '../_shared/http.ts';
+import { cost, getProvider, loadHistory, providerLog, recordOffer } from '../_shared/domain.ts';
+// @ts-ignore generated
+import { RATE_LIMITS, revalidateOffer } from '../_shared/core.mjs';
+
+Deno.serve(handler(async (req, sb) => {
+  const user = await requireUser(req, sb);
+  await limit(sb, 'revalidate', user.id, RATE_LIMITS.revalidate);
+  const { offer } = await req.json().catch(() => ({}));
+  if (!offer?.providerOfferId || !offer?.flightIdentity) throw new HttpError(400, 'Invalid offer');
+  const provider = getProvider();
+  const t0 = Date.now();
+  const res = await revalidateOffer(provider, offer, async (f: any) => ({ history: await loadHistory(sb, provider, f.flightIdentity) }));
+  await providerLog(sb, provider.name, 'revalidate', res.status !== 'ERROR', Date.now() - t0, res.status === 'ERROR' ? res.message : undefined);
+  if (res.deal) await recordOffer(sb, res.deal);
+  await cost(sb, { provider: provider.name, operation: 'revalidate', user_id: user.id, deal_id: offer.id });
+  return json(req, res);
+}));

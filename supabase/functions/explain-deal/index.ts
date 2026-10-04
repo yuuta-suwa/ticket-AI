@@ -1,0 +1,39 @@
+// deno-lint-ignore-file no-explicit-any
+import { handler, json, limit, requireUser, HttpError } from '../_shared/http.ts';
+import { cost } from '../_shared/domain.ts';
+// @ts-ignore generated
+import { RATE_LIMITS } from '../_shared/core.mjs';
+
+/** LLMs explain; they never predict. Cached per deal+decision so 10,000 viewers = 1 LLM call. Only a compact structured summary is sent (never raw price history). */
+Deno.serve(handler(async (req, sb) => {
+  const user = await requireUser(req, sb);
+  await limit(sb, 'ai', user.id, RATE_LIMITS.aiExplanation);
+  const { offerId, analysis } = await req.json().catch(() => ({}));
+  if (typeof offerId !== 'string' || !analysis?.decision) throw new HttpError(400, 'Invalid request');
+  const d = analysis.decision, a = analysis.anomaly;
+  const key = `${offerId}|${d.decision}|${d.reasons.join(',')}|${Math.round(a.score / 5) * 5}`.slice(0, 300);
+  const hit = await sb.schema('private').from('ai_explanations').select('text, created_at').eq('offer_key', key).maybeSingle();
+  if (hit.data) return json(req, { text: hit.data.text, cached: true, generatedAt: hit.data.created_at });
+
+  const fallback = `${d.decision}: ${d.reasons.map((r: string) => r.toLowerCase().replace(/_/g, ' ')).join('; ') || 'no strong signals'}. Confidence ${Math.round(d.confidence * 100)}%. This is decision support, not a guarantee — confirm the price with the seller.`;
+  let text = fallback, tokens = 0;
+  const apiKey = Deno.env.get('OPENAI_API_KEY');
+  if (apiKey) {
+    try {
+      const r = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
+        body: JSON.stringify({
+          model: Deno.env.get('OPENAI_MODEL') ?? 'gpt-4o-mini', max_tokens: 160, temperature: 0.2,
+          messages: [
+            { role: 'system', content: 'Explain a flight price recommendation in 2 plain sentences. Use ONLY the facts given. Never guarantee outcomes or say "error fare". Do not invent numbers.' },
+            { role: 'user', content: JSON.stringify({ decision: d.decision, reasons: d.reasons, confidence: d.confidence, dealLevel: a.level, discountPct: a.discountPct, upProbability: analysis.forecast?.upProbability, downProbability: analysis.forecast?.downProbability }) },
+          ],
+        }),
+      });
+      if (r.ok) { const j = await r.json(); text = j.choices?.[0]?.message?.content?.trim() || fallback; tokens = j.usage?.total_tokens ?? 0; }
+    } catch { /* fall back to template */ }
+  }
+  await sb.schema('private').from('ai_explanations').upsert({ offer_key: key, text, model: apiKey ? 'openai' : 'template', tokens });
+  await cost(sb, { provider: 'openai', operation: 'explain', tokens, user_id: user.id, deal_id: offerId, estimated_cost: tokens * 0.0000006 });
+  return json(req, { text, cached: false, generatedAt: new Date().toISOString() });
+}));

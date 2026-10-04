@@ -1,0 +1,65 @@
+// deno-lint-ignore-file no-explicit-any
+import { handler, json, requireCronSecret } from '../_shared/http.ts';
+import { cost, getProvider, loadHistory, planFor, providerLog, recordOffer } from '../_shared/domain.ts';
+// @ts-ignore generated
+import { classifyDeal, dealFor, DEFAULT_NOTIFICATION_PREFS, entitlementsForPlan, isDue, monitoringPriority, shouldNotify } from '../_shared/core.mjs';
+
+/** Adaptive monitoring: only identities that are watched (P0–P3) are polled, at priority-dependent intervals. */
+Deno.serve(handler(async (req, sb) => {
+  requireCronSecret(req);
+  const { priority = 'P1' } = await req.json().catch(() => ({}));
+  const provider = getProvider();
+  const now = new Date();
+
+  // 1) derive priorities from watchlists
+  const { data: watches } = await sb.from('watchlists').select('user_id, flight_identity, target_price, last_price, id').not('flight_identity', 'is', null).limit(2000);
+  const byIdentity = new Map<string, any[]>();
+  for (const w of watches ?? []) { const a = byIdentity.get(w.flight_identity) ?? []; a.push(w); byIdentity.set(w.flight_identity, a); }
+  const planCache = new Map<string, string>();
+  for (const [identity, ws] of byIdentity) {
+    let best = 'P4';
+    for (const w of ws) {
+      if (!planCache.has(w.user_id)) planCache.set(w.user_id, await planFor(sb, w.user_id));
+      const p = monitoringPriority({ plan: planCache.get(w.user_id), watched: true, highDemandRoute: ws.length >= 5, extremeCandidate: false, daysSinceActive: 0 });
+      if (p < best) best = p;
+    }
+    await sb.schema('private').from('analysis_jobs').upsert({ flight_identity: identity, priority: best }, { onConflict: 'flight_identity', ignoreDuplicates: false });
+  }
+
+  // 2) poll due jobs of the requested priority
+  const { data: jobs } = await sb.schema('private').from('analysis_jobs').select('*').eq('priority', priority).limit(100);
+  let polled = 0, queued = 0;
+  for (const job of jobs ?? []) {
+    if (!isDue(job.priority, job.last_run_at ? new Date(job.last_run_at) : null, now)) continue;
+    const t0 = Date.now();
+    try {
+      const offer = await provider.revalidateOffer(job.flight_identity);
+      await providerLog(sb, provider.name, 'monitor', true, Date.now() - t0);
+      await cost(sb, { provider: provider.name, operation: 'monitor' });
+      await sb.schema('private').from('analysis_jobs').update({ last_run_at: now.toISOString(), status: offer ? 'OK' : 'GONE' }).eq('id', job.id);
+      if (!offer) continue;
+      const deal = await dealFor(offer, (id: string) => loadHistory(sb, provider, id), now);
+      await recordOffer(sb, deal);
+      polled++;
+      for (const w of byIdentity.get(job.flight_identity) ?? []) {
+        const { data: prefRow } = await sb.from('notification_preferences').select('*').eq('user_id', w.user_id).maybeSingle();
+        const prefs = prefRow ? { enabledTypes: prefRow.enabled_types, routes: prefRow.routes, minScore: prefRow.min_score, priceThreshold: prefRow.price_threshold, quietHours: prefRow.quiet_start_hour === null ? null : { startHour: prefRow.quiet_start_hour, endHour: prefRow.quiet_end_hour, utcOffsetMinutes: prefRow.utc_offset_minutes } } : DEFAULT_NOTIFICATION_PREFS;
+        const ent = entitlementsForPlan(planCache.get(w.user_id) ?? 'FREE');
+        const types = classifyDeal(deal, w.last_price ? { price: Number(w.last_price) } : null, w.target_price ? Number(w.target_price) : null);
+        const { data: sentRows } = await sb.from('notification_history').select('dedupe_key').eq('user_id', w.user_id).gte('created_at', new Date(now.getTime() - 7 * 86_400_000).toISOString());
+        const sent = new Set((sentRows ?? []).map((r: any) => r.dedupe_key));
+        for (const type of types) {
+          if (type === 'EXTREME_DEAL' && !ent.extremeDeals) continue; // premium feature
+          const d = shouldNotify(prefs, deal, type, now, sent, { instantAllowed: ent.instantAlerts });
+          if (!d.send) continue;
+          const title = type === 'EXTREME_DEAL' ? `EXTREME DEAL: ${offer.origin} → ${offer.destination}` : type === 'BUY_SIGNAL' ? `BUY signal: ${offer.origin} → ${offer.destination}` : type === 'TARGET_PRICE' ? `Target price reached: ${offer.origin} → ${offer.destination}` : `Price update: ${offer.origin} → ${offer.destination}`;
+          const body = `Now ${offer.price.currency} ${Math.round(offer.price.amount)}. Tap to verify the latest price before booking.`;
+          const { error } = await sb.schema('private').from('notification_jobs').insert({ user_id: w.user_id, type, dedupe_key: d.key, payload: { title, body, offerId: offer.id } });
+          if (!error) { queued++; sent.add(d.key); await sb.from('notification_history').insert({ user_id: w.user_id, type, title, body, deal_id: offer.id, dedupe_key: d.key }); }
+        }
+        await sb.from('watchlists').update({ last_price: offer.price.amount, last_decision: deal.analysis.decision.decision }).eq('id', w.id);
+      }
+    } catch (e) { await providerLog(sb, provider.name, 'monitor', false, Date.now() - t0, String(e)); }
+  }
+  return json(req, { polled, queued });
+}));
