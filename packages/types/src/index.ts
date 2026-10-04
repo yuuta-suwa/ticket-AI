@@ -96,6 +96,8 @@ export interface ForecastResult {
   forecastHigh: number;
   confidence: number;        // 0-1
   modelVersion: string;
+  /** true when advanced fields were withheld server-side because the plan does not include Advanced Forecast */
+  redacted?: boolean;
 }
 
 export interface DecisionResult {

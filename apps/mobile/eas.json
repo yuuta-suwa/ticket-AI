@@ -1,0 +1,38 @@
+{
+  "cli": { "version": ">= 16.0.0", "appVersionSource": "remote" },
+  "build": {
+    "base": { "node": "22.12.0", "pnpm": "10.28.0", "env": { "EXPO_PUBLIC_APP_ENV": "production" } },
+    "development": {
+      "extends": "base",
+      "developmentClient": true,
+      "distribution": "internal",
+      "env": { "EXPO_PUBLIC_APP_ENV": "development" },
+      "ios": { "simulator": true },
+      "android": { "buildType": "apk" }
+    },
+    "preview": {
+      "extends": "base",
+      "distribution": "internal",
+      "channel": "preview",
+      "env": { "EXPO_PUBLIC_APP_ENV": "preview" },
+      "android": { "buildType": "apk" }
+    },
+    "screenshots": {
+      "extends": "preview",
+      "env": { "EXPO_PUBLIC_APP_ENV": "preview", "EXPO_PUBLIC_DEMO_MODE": "true" }
+    },
+    "production": {
+      "extends": "base",
+      "channel": "production",
+      "autoIncrement": true,
+      "ios": { "image": "latest", "resourceClass": "m-medium" },
+      "android": { "buildType": "app-bundle" }
+    }
+  },
+  "submit": {
+    "production": {
+      "ios": { "ascAppId": "REPLACE_WITH_APP_STORE_CONNECT_APP_ID" },
+      "android": { "serviceAccountKeyPath": "./google-service-account.json", "track": "internal", "releaseStatus": "draft" }
+    }
+  }
+}

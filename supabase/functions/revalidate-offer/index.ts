@@ -1,5 +1,5 @@
 import { handler, json, limit, requireUser, HttpError } from '../_shared/http.ts';
-import { cost, getProvider, loadHistory, providerLog, recordOffer } from '../_shared/domain.ts';
+import { cost, getProvider, loadHistory, providerLog, recordOffer, redactFor } from '../_shared/domain.ts';
 // @ts-ignore generated
 import { RATE_LIMITS, revalidateOffer } from '../_shared/core.mjs';
 
@@ -14,5 +14,5 @@ Deno.serve(handler(async (req, sb) => {
   await providerLog(sb, provider.name, 'revalidate', res.status !== 'ERROR', Date.now() - t0, res.status === 'ERROR' ? res.message : undefined);
   if (res.deal) await recordOffer(sb, res.deal);
   await cost(sb, { provider: provider.name, operation: 'revalidate', user_id: user.id, deal_id: offer.id });
-  return json(req, res);
+  return json(req, res.deal ? { ...res, deal: await redactFor(sb, user.id, res.deal) } : res);
 }));

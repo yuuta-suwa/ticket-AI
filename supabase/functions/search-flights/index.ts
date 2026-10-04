@@ -1,6 +1,6 @@
 // deno-lint-ignore-file no-explicit-any
 import { handler, json, limit, requireUser, HttpError } from '../_shared/http.ts';
-import { cost, getProvider, loadHistory, providerLog, recordOffer } from '../_shared/domain.ts';
+import { cost, getProvider, loadHistory, providerLog, recordOffer, redactFor } from '../_shared/domain.ts';
 // @ts-ignore generated
 import { dealFor, RATE_LIMITS } from '../_shared/core.mjs';
 
@@ -20,5 +20,5 @@ Deno.serve(handler(async (req, sb) => {
   await Promise.all(deals.slice(0, 20).map((d: any) => recordOffer(sb, d)));
   await cost(sb, { provider: provider.name, operation: 'search', user_id: user.id });
   await sb.from('search_history').insert({ user_id: user.id, params: p });
-  return json(req, deals);
+  return json(req, await Promise.all(deals.map((d: any) => redactFor(sb, user.id, d))));
 }));

@@ -1,0 +1,5 @@
+.env*
+google-service-account*.json
+*.p8
+*.p12
+node_modules

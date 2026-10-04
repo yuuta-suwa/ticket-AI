@@ -1,5 +1,5 @@
 import type { Deal, DealAnalysis, Entitlements, FlightOffer, HomeFeed, FlightSearchParams, NotificationPreferences, PricePoint, RevalidationResult } from '@dealhunter/types';
-import { buildHomeFeed, canAddToWatchlist, DEFAULT_NOTIFICATION_PREFS, dealFor, entitlementsForPlan, MockFlightProvider, revalidateOffer } from '@dealhunter/core';
+import { buildHomeFeed, canAddToWatchlist, redactDeal, DEFAULT_NOTIFICATION_PREFS, dealFor, entitlementsForPlan, MockFlightProvider, revalidateOffer } from '@dealhunter/core';
 import { ApiError, type AiExplanation, type DealHunterApi, type NotificationItem, type WatchItem } from './api';
 
 
@@ -15,22 +15,29 @@ export class DemoApi implements DealHunterApi {
   private devices = new Set<string>();
   private deleted = false;
   private readonly provider: MockFlightProvider;
+  private plan: Entitlements['plan'];
   constructor(private readonly opts: { plan?: Entitlements['plan']; clock?: () => Date } = {}) {
     this.provider = new MockFlightProvider(opts.clock);
+    this.plan = opts.plan ?? 'FREE';
   }
+  /** Demo/test only: simulates the server-side entitlement change that the webhook performs in production. */
+  setPlan(plan: Entitlements['plan']) { this.plan = plan; }
   private now() { return this.opts.clock?.() ?? new Date(); }
 
-  private toDeal(o: FlightOffer): Promise<Deal> {
+  private async toDeal(o: FlightOffer): Promise<Deal> {
     const now = this.now();
-    return dealFor(o, (id) => this.provider.getHistory(id, now), now);
+    return redactDeal(await dealFor(o, (id) => this.provider.getHistory(id, now), now), entitlementsForPlan(this.plan));
   }
   async searchFlights(p: FlightSearchParams): Promise<Deal[]> {
     const offers = await this.provider.searchFlights(p);
     return Promise.all(offers.map((o) => this.toDeal(o)));
   }
-  getHomeFeed(): Promise<HomeFeed> {
+  async getHomeFeed(): Promise<HomeFeed> {
     const now = this.now();
-    return buildHomeFeed(this.provider, (id) => this.provider.getHistory(id, now), now);
+    const e = entitlementsForPlan(this.plan);
+    const f = await buildHomeFeed(this.provider, (id) => this.provider.getHistory(id, now), now);
+    const r = (ds: Deal[]) => ds.map((d) => redactDeal(d, e));
+    return { ...f, extremeDeals: r(f.extremeDeals), buyNow: r(f.buyNow), priceDrops: r(f.priceDrops), latest: r(f.latest) };
   }
   async getDeal(offerId: string): Promise<Deal | null> {
     const o = await this.provider.getOffer(offerId.replace(/^mock:/, ''));
@@ -39,7 +46,9 @@ export class DemoApi implements DealHunterApi {
   getPriceHistory(identity: string): Promise<PricePoint[]> { return this.provider.getHistory(identity, this.now()); }
   revalidateOffer(offer: FlightOffer): Promise<RevalidationResult> {
     const now = this.now();
-    return revalidateOffer(this.provider, offer, async (f) => ({ history: await this.provider.getHistory(f.flightIdentity, now), now }), now);
+    const e = entitlementsForPlan(this.plan);
+    return revalidateOffer(this.provider, offer, async (f) => ({ history: await this.provider.getHistory(f.flightIdentity, now), now }), now)
+      .then((r) => (r.deal ? { ...r, deal: redactDeal(r.deal, e) } : r));
   }
   async explainDeal(_id: string, a: DealAnalysis): Promise<AiExplanation> {
     return { cached: true, generatedAt: this.now().toISOString(), text: `Demo explanation: ${a.decision.decision} with ${Math.round(a.decision.confidence * 100)}% confidence. This is decision support, not a guarantee.` };
@@ -59,7 +68,7 @@ export class DemoApi implements DealHunterApi {
   async listNotifications(): Promise<NotificationItem[]> {
     return [{ id: 'n1', type: 'EXTREME_DEAL', title: 'EXTREME DEAL: NRT → HNL', body: 'Price is far below its usual range. Verify the latest price before booking.', dealId: null, createdAt: this.now().toISOString(), readAt: null }];
   }
-  async getEntitlements(): Promise<Entitlements> { return entitlementsForPlan(this.opts.plan ?? 'FREE'); }
+  async getEntitlements(): Promise<Entitlements> { return entitlementsForPlan(this.plan); }
   async deleteAccount() { this.deleted = true; this.watch = []; this.devices.clear(); }
   get isDeleted() { return this.deleted; }
 }

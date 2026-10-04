@@ -140,3 +140,15 @@ describe('outcomes, monitoring, rate limit', () => {
     expect((await rl.hit('k', 3, 60, 61_000)).allowed).toBe(true);
   });
 });
+
+import { redactAnalysis } from '../src';
+describe('server-side premium redaction', () => {
+  it('withholds advanced forecast for FREE but keeps the decision', async () => {
+    const now = new Date('2026-06-01T00:00:00Z'); const p = new MockFlightProvider(() => now);
+    const [o] = await p.searchFlights({ origin: 'NRT', destination: 'HNL', departureDate: '2026-08-15', tripType: 'ONE_WAY', passengers: 1, cabin: 'ECONOMY', currency: 'USD', flexibleDates: false });
+    const a = analyzeOffer(o!, { history: await p.getHistory(o!.flightIdentity, now), now });
+    const free = redactAnalysis(a, entitlementsForPlan('FREE'));
+    expect(free.forecast).toMatchObject({ redacted: true, upProbability: 0, forecastMedian: 0 }); expect(free.decision.decision).toBe(a.decision.decision);
+    expect(redactAnalysis(a, entitlementsForPlan('PREMIUM'))).toBe(a);
+  });
+});
