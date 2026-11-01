@@ -1,0 +1,51 @@
+{
+  "packageVersion": "3.1",
+  "createdAt": "2026-11-01T11:26:25.723186+09:00",
+  "sourceCommit": "03a801ccd82d8aca8378554dfc61ec5104596032",
+  "siteProjectId": "appgprj_6ae578d3c9cc8191877fbb3310b23010",
+  "sourceFiles": 141,
+  "containsRuntimeCredentials": false,
+  "containsUserDatabase": false,
+  "containsNodeModules": false,
+  "newDesignImplemented": false,
+  "productionChanged": false,
+  "verificationThisRun": {
+    "domainTests": 14,
+    "sqlitePersistenceTests": 3,
+    "typecheck": "passed",
+    "externalLiveAPIs": "not tested",
+    "macClaudeCode": "not tested"
+  },
+  "designs": [
+    {
+      "direction": "PRIVATE ADVISORY",
+      "file": "reference/design/private-advisory.png",
+      "width": 1672,
+      "height": 941,
+      "purpose": "generated-ui-concept-not-live-software",
+      "sha256": "161144bfd2e202edfea3b7a0b6aea89d41d8beffbb24fc17810aa51f7bf609fb"
+    },
+    {
+      "direction": "STRATEGY ATELIER",
+      "file": "reference/design/strategy-atelier.png",
+      "width": 1672,
+      "height": 941,
+      "purpose": "generated-ui-concept-not-live-software",
+      "sha256": "9aa8b3b201a1a082385531e86e915b8dd8e8e75a228d93729311f743e32174f4"
+    },
+    {
+      "direction": "ADVISORY CONVERSATION",
+      "file": "reference/design/advisory-conversation.png",
+      "width": 1672,
+      "height": 941,
+      "purpose": "generated-ui-concept-not-live-software",
+      "sha256": "65eceec11fa8dc2652d86567846aa83db54fabef74d733a88f08fe715791f17d"
+    }
+  ],
+  "selectedDesign": {
+    "direction": "STRATEGY ATELIER",
+    "displayedOption": 2,
+    "file": "reference/design/strategy-atelier.png",
+    "selectedOn": "2026-11-01"
+  }
+}

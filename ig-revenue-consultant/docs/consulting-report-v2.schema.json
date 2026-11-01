@@ -1,0 +1,527 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.invalid/ig-revenue-consultant/report-v2.schema.json",
+  "title": "ProposedConsultingReportV2",
+  "description": "Proposal only; not accepted by current v1 API until implemented. JSON shape is not proof of factual truth.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "const": 2
+    },
+    "mode": {
+      "enum": [
+        "rules",
+        "model",
+        "import"
+      ]
+    },
+    "snapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "workspaceRevision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "period": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "start": {
+              "type": "string",
+              "format": "date"
+            },
+            "end": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          "required": [
+            "start",
+            "end"
+          ]
+        },
+        "dataSignature": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "workspaceRevision",
+        "period",
+        "dataSignature",
+        "createdAt"
+      ]
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 6000
+    },
+    "understoodContext": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "goal": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 6000
+        },
+        "constraints": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 6000
+          },
+          "maxItems": 12
+        },
+        "unknowns": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 6000
+          },
+          "maxItems": 12
+        }
+      },
+      "required": [
+        "goal",
+        "constraints",
+        "unknowns"
+      ]
+    },
+    "diagnosis": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "bottleneck": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 6000
+        },
+        "knowledgeState": {
+          "enum": [
+            "insufficient",
+            "tentative",
+            "supported"
+          ]
+        },
+        "limitations": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 6000
+          },
+          "maxItems": 12
+        }
+      },
+      "required": [
+        "bottleneck",
+        "knowledgeState",
+        "limitations"
+      ]
+    },
+    "evidenceRefs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "refId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 300
+          },
+          "kind": {
+            "enum": [
+              "ledger",
+              "metric",
+              "evidence",
+              "source",
+              "experiment",
+              "web"
+            ]
+          },
+          "recordId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 300
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 300
+          },
+          "verification": {
+            "enum": [
+              "verified",
+              "self_reported",
+              "unverified"
+            ]
+          }
+        },
+        "required": [
+          "refId",
+          "kind",
+          "recordId",
+          "label",
+          "verification"
+        ]
+      },
+      "maxItems": 40
+    },
+    "facts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "claim": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 6000
+          },
+          "evidenceRefs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "maxItems": 30,
+            "uniqueItems": true,
+            "minItems": 1
+          }
+        },
+        "required": [
+          "claim",
+          "evidenceRefs"
+        ]
+      },
+      "maxItems": 20
+    },
+    "hypotheses": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "statement": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 6000
+          },
+          "basisRefs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "maxItems": 30,
+            "uniqueItems": true
+          },
+          "alternativeExplanation": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 6000
+          }
+        },
+        "required": [
+          "statement",
+          "basisRefs",
+          "alternativeExplanation"
+        ]
+      },
+      "maxItems": 5
+    },
+    "strategyOptions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 300
+          },
+          "kind": {
+            "enum": [
+              "gifts",
+              "badges",
+              "sponsor",
+              "lead",
+              "affiliate",
+              "creative",
+              "license",
+              "website_ads",
+              "platform",
+              "subscription",
+              "research",
+              "product"
+            ]
+          },
+          "payer": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 6000
+          },
+          "value": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 6000
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 6000
+          },
+          "prerequisites": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 6000
+            },
+            "minItems": 1,
+            "maxItems": 12
+          },
+          "risks": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 6000
+            },
+            "minItems": 1,
+            "maxItems": 8
+          },
+          "decision": {
+            "enum": [
+              "candidate",
+              "hold",
+              "reject"
+            ]
+          },
+          "evidenceRefs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "maxItems": 30,
+            "uniqueItems": true
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "payer",
+          "value",
+          "reason",
+          "prerequisites",
+          "risks",
+          "decision",
+          "evidenceRefs"
+        ]
+      },
+      "maxItems": 4
+    },
+    "actions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 300
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 300
+          },
+          "kind": {
+            "enum": [
+              "research",
+              "observe",
+              "content_draft",
+              "revenue_test",
+              "cost_review"
+            ]
+          },
+          "sourceId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 300
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "hypothesis": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 6000
+          },
+          "change": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 6000
+          },
+          "mainMetric": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 6000
+          },
+          "judgementRule": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 6000
+          },
+          "deadline": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "costLimitJPY": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 100000000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "timeLimitMinutes": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "stopCondition": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 6000
+          },
+          "whyThisFirst": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 6000
+          },
+          "evidenceRefs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "maxItems": 30,
+            "uniqueItems": true
+          },
+          "requiresHumanApproval": {
+            "const": true
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "kind",
+          "sourceId",
+          "hypothesis",
+          "change",
+          "mainMetric",
+          "judgementRule",
+          "deadline",
+          "costLimitJPY",
+          "timeLimitMinutes",
+          "stopCondition",
+          "whyThisFirst",
+          "evidenceRefs",
+          "requiresHumanApproval"
+        ]
+      },
+      "maxItems": 3
+    },
+    "recommendedActionId": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "nextDecision": {
+      "enum": [
+        "prepare",
+        "continue",
+        "change",
+        "stop",
+        "observe"
+      ]
+    },
+    "cautions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 6000
+      },
+      "maxItems": 12
+    },
+    "executionPerformed": {
+      "const": false
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "mode",
+    "snapshot",
+    "summary",
+    "understoodContext",
+    "diagnosis",
+    "evidenceRefs",
+    "facts",
+    "hypotheses",
+    "strategyOptions",
+    "actions",
+    "recommendedActionId",
+    "nextDecision",
+    "cautions",
+    "executionPerformed"
+  ]
+}

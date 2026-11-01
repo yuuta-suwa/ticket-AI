@@ -1,0 +1,94 @@
+{
+  "status": "proposal-not-connected-to-app",
+  "defaultDirection": "strategy-atelier",
+  "palettes": {
+    "private-advisory": {
+      "background": "#F6F3EC",
+      "surface": "#FFFEFA",
+      "ink": "#182523",
+      "muted": "#5C6862",
+      "border": "#DDDCD2",
+      "accent": "#285A48",
+      "accentText": "#FFFFFF",
+      "gold": "#B49C72",
+      "danger": "#A43D39"
+    },
+    "strategy-atelier": {
+      "background": "#10161C",
+      "surface": "#1A2530",
+      "ink": "#F3F5F6",
+      "muted": "#AAB8C3",
+      "border": "#394B59",
+      "accent": "#98D8E3",
+      "accentText": "#10222B",
+      "copper": "#D8AA80",
+      "danger": "#FFB4A8"
+    },
+    "advisory-conversation": {
+      "background": "#FAFAF8",
+      "surface": "#FFFFFF",
+      "ink": "#262533",
+      "muted": "#676477",
+      "border": "#E0DEE5",
+      "accent": "#574360",
+      "accentText": "#FFFFFF",
+      "coral": "#D78370",
+      "danger": "#A4383D"
+    }
+  },
+  "typography": {
+    "bodyPx": 16,
+    "mobileBodyMinPx": 14,
+    "captionMinPx": 12,
+    "headlinePx": [
+      28,
+      36,
+      44
+    ],
+    "lineHeight": 1.8,
+    "maxFamilies": 2,
+    "bodyMaxCharactersPerLine": 65
+  },
+  "spacingPx": [
+    4,
+    8,
+    12,
+    16,
+    20,
+    24,
+    32,
+    40,
+    48,
+    64,
+    80
+  ],
+  "radiusPx": {
+    "control": 8,
+    "surface": 12,
+    "dialog": 16
+  },
+  "motionMs": {
+    "hover": 140,
+    "transition": 220,
+    "disclosure": 180
+  },
+  "layout": {
+    "desktopReference": [
+      1920,
+      1080
+    ],
+    "mobileReference": [
+      390,
+      844
+    ],
+    "testWidths": [
+      360,
+      390,
+      768,
+      1440
+    ],
+    "maxPrimaryActionsPerScreen": 1,
+    "minTouchTargetPx": 44
+  },
+  "selectionStatus": "user-selected"
+}

@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 2,
+  "mode": "rules",
+  "snapshot": {
+    "workspaceRevision": 0,
+    "period": {
+      "start": "2026-11-01",
+      "end": "2026-11-30"
+    },
+    "dataSignature": "0000000000000000000000000000000000000000000000000000000000000000",
+    "createdAt": "2026-11-01T00:00:00+09:00"
+  },
+  "summary": "例示用です。目標・強み・利用条件が未設定のため、最初の収益仮説の準備を優先します。",
+  "understoodContext": {
+    "goal": "未設定",
+    "constraints": [],
+    "unknowns": [
+      "対象者と提供できる価値が未設定",
+      "契約・報酬の成立条件が未確認"
+    ]
+  },
+  "diagnosis": {
+    "bottleneck": "需要の対象と支払者を選ぶ情報が不足しています。",
+    "knowledgeState": "insufficient",
+    "limitations": [
+      "このサンプルは実際の収益やアカウントを分析した結果ではありません。"
+    ]
+  },
+  "evidenceRefs": [],
+  "facts": [],
+  "hypotheses": [
+    {
+      "statement": "既存の経験を特定の対象者の課題へ絞ると、収益化の候補を検証しやすくなる可能性があります。",
+      "basisRefs": [],
+      "alternativeExplanation": "本人の経験と需要が一致しない可能性があります。"
+    }
+  ],
+  "strategyOptions": [],
+  "actions": [
+    {
+      "id": "sample-research",
+      "title": "強みと対象者の仮説をひとつ記録する",
+      "kind": "research",
+      "sourceId": null,
+      "hypothesis": "特定の課題と自分の経験の接点があれば、支払者の候補を調べられる。",
+      "change": "実績をひとつ、対象者の課題と組み合わせて記録する。",
+      "mainMetric": "出典や本人の確認がある課題の観察",
+      "judgementRule": "確認できる観察がなければ、収益の成立とは判定しない。",
+      "deadline": null,
+      "costLimitJPY": null,
+      "timeLimitMinutes": null,
+      "stopCondition": "必要な権利・時間・利用条件が成立しない場合は保留する。",
+      "whyThisFirst": "広告や大量投稿より先に、誰へ何の価値を渡すかを明確にする必要がある。",
+      "evidenceRefs": [],
+      "requiresHumanApproval": true
+    }
+  ],
+  "recommendedActionId": "sample-research",
+  "nextDecision": "prepare",
+  "cautions": [
+    "完全な架空の例示。金額や回数の予測はしていません。",
+    "期限と上限は本人が設定するまで実行へ移さない。"
+  ],
+  "executionPerformed": false
+}
