@@ -1,12 +1,18 @@
 "use client";
-import {useEffect,useRef} from "react";
+import {useEffect,useRef,useId,isValidElement,cloneElement} from "react";
 import type { ReactNode,ButtonHTMLAttributes,InputHTMLAttributes,SelectHTMLAttributes,TextareaHTMLAttributes } from "react";
 import { X, ArrowUpRight } from "lucide-react";
-export function Button({children,variant="primary",className="",...props}:ButtonHTMLAttributes<HTMLButtonElement>&{variant?:"primary"|"secondary"|"ghost"|"danger"}){return <button className={`btn ${variant} ${className}`} {...props}>{children}</button>;}
+export function Button({children,variant="primary",className="",type="button",...props}:ButtonHTMLAttributes<HTMLButtonElement>&{variant?:"primary"|"secondary"|"ghost"|"danger"}){return <button type={type} className={`btn ${variant} ${className}`} {...props}>{children}</button>;}
+/** 状態の表示。色だけに頼らず、必ず文字で状態を示す。 */
+export function Status({children,tone="muted"}:{children:ReactNode;tone?:"ok"|"ice"|"copper"|"muted"|"danger"}){return <span className={`status tone-${tone}`}>{children}</span>;}
+export function SubNav({items,current,onSelect,label}:{items:{id:string;label:string;count?:number}[];current:string;onSelect:(id:string)=>void;label:string}){return <nav className="subnav" aria-label={label}>{items.map(i=><button key={i.id} className={current===i.id?"active":""} aria-current={current===i.id?"page":undefined} onClick={()=>onSelect(i.id)}>{i.label}{i.count!==undefined&&<span className="subnav-count">{i.count}</span>}</button>)}</nav>;}
 export function Pill({children,tone="gray"}:{children:ReactNode;tone?:string}){return <span className={`pill ${tone}`}>{children}</span>;}
 export function Panel({children,className=""}:{children:ReactNode;className?:string}){return <section className={`panel ${className}`}>{children}</section>;}
 export function Empty({icon, title,children,action}:{icon?:ReactNode;title:string;children?:ReactNode;action?:ReactNode}){return <div className="empty">{icon&&<div className="empty-icon">{icon}</div>}<h3>{title}</h3><p>{children}</p>{action}</div>;}
-export function Field({label,hint,children}:{label:string;hint?:string;children:ReactNode}){return <label className="field"><span>{label}</span>{children}{hint&&<small>{hint}</small>}</label>;}
+/** ラベルと入力をidで関連付ける（読み上げ名が選択肢の文字列を含まないように）。補足はaria-describedbyで結ぶ。 */
+export function Field({label,hint,children}:{label:string;hint?:string;children:ReactNode}){const id=useId();const hintId=hint?id+"-hint":undefined;
+ if(isValidElement<{id?:string;"aria-describedby"?:string}>(children)){const control=cloneElement(children,{id:children.props.id||id,"aria-describedby":hintId});return <div className="field"><label htmlFor={children.props.id||id}>{label}</label>{control}{hint&&<small id={hintId}>{hint}</small>}</div>;}
+ return <label className="field"><span>{label}</span>{children}{hint&&<small>{hint}</small>}</label>;}
 export function Input(props:InputHTMLAttributes<HTMLInputElement>){return <input {...props} />;}
 export function Textarea(props:TextareaHTMLAttributes<HTMLTextAreaElement>){return <textarea rows={4} {...props} />;}
 export function Select(props:SelectHTMLAttributes<HTMLSelectElement>){return <select {...props}/>;}

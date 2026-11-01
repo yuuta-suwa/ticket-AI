@@ -15,6 +15,13 @@
       "when": 1793425106978,
       "tag": "0001_windy_morlun",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1793508495439,
+      "tag": "0002_ai_usage_tokens",
+      "breakpoints": true
     }
   ]
 }

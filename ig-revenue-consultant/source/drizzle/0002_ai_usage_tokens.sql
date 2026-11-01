@@ -1,0 +1,1 @@
+ALTER TABLE `revenue_ai_usage` ADD `tokens` integer DEFAULT 0 NOT NULL;

@@ -1,6 +1,38 @@
-# IG Revenue Consultant — コンサルUI更新
+# IG Revenue Consultant — STRATEGY ATELIER（v3）
 
-深いグリーンとライムを軸としたInstagram収益最大化コンサルの画面へ更新。ホームから「ボトルネック診断」「販売以外の収益戦略」「投稿・導線改善」を選ぶと、具体的な相談内容をAIコンサルルームへ引き継ぎます。生成AIの指示も確定利益・制約の特定・最小の検証施策を重視するものへ変更しました。収益最大化は目標であり、効果の保証や未取得スコアの表示は行いません。既存の保存・接続・投稿承認・AI自動分析を引き続き使用します。
+深いチャコール・アイスブルー・銅色の「STRATEGY ATELIER」デザインで、Instagram収益化の専属コンサル体験へ刷新しました。主要ナビは5つ（戦略ルーム／相談室／収益戦略／投稿と検証／設定）。
+
+- **初回ヒアリング**：目的・強み・相手・実行できる範囲・データ状況の5段階。各段階で保存し、中断しても再開できる。
+- **戦略ルーム**：「今日、変えるのはこのひとつ。」最優先の施策1件、判断の根拠と未確認点、戦略キャンバス（視聴者の課題→価値の届け方→報酬が生まれる条件）、AIの視点。主要CTAは1つ。
+- **相談室**：相談セッションとターンを保存。提案は相談レポートv2（結論→理解した状況→根拠→仮説→施策→反証→次の判断）。採用・保留・選ばないを理由付きで記録し、採用は施策の下書きへ（同じ提案から二重作成しない）。
+- **検証ループ**：施策に事前の予測・観察結果・判断（継続/修正/中止/観察延長）と理由を残す。提案の作成時点のデータ版と現在の記録が違えば「古い提案」と表示し、再診断を促す。
+- **AIの実行モードを区別**：ルール診断（無料・生成AIではない）／外部AIの結果取り込み（参照IDと金額を検証）／Claude API（有料・明示的な有効化、日次回数と月間トークンの上限）。
+
+詳細は `../docs/BUILD_PROGRESS.md`、移植判断は `../docs/PORTABILITY_DECISION.md`。
+
+## ローカルでの起動（このリポジトリで確認済み）
+
+```sh
+cd source
+pnpm install --frozen-lockfile     # Node >=22.13（確認：v22.23.4, pnpm 10.28）
+node scripts/local/migrate-local-d1.mjs   # ローカルD1（.wrangler/state）へマイグレーション適用
+pnpm dev                           # http://127.0.0.1:5173
+```
+
+ローカルでは `http://127.0.0.1:5173/signin-with-chatgpt` を開くとローカル専用の疑似サインイン（`seedy@sites.test`）になります。これは開発サーバーのループバック接続だけで有効で、本番ビルドには含まれません。ローカルの業務データを空にするには `node scripts/local/migrate-local-d1.mjs --reset-data`。
+
+検証：
+
+```sh
+node node_modules/typescript/bin/tsc --noEmit
+node --experimental-strip-types --test tests/domain.test.mjs tests/consult.test.mjs
+python3 tests/persistence_test.py
+pnpm lint && pnpm build
+```
+
+---
+
+以下は元（v1/v2）の説明です。用語・画面名は旧版のものを含みます。
 
 # Instagram Revenue OS
 

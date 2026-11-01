@@ -17,6 +17,7 @@ export const aiUsage = sqliteTable("revenue_ai_usage", {
   ownerId: text("owner_id").notNull(),
   day: text("day").notNull(),
   calls: integer("calls").notNull().default(0),
+  tokens: integer("tokens").notNull().default(0),
 }, (t) => [primaryKey({ columns: [t.ownerId, t.day] })]);
 export const auditLog = sqliteTable("revenue_audit_log", {
   id: text("id").primaryKey(),

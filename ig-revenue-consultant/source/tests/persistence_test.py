@@ -50,5 +50,18 @@ class PersistenceTests(unittest.TestCase):
         self.assertEqual(self.db.execute(sql, ("a:content:hash", "a", "content", "date")).rowcount, 1)
         self.assertEqual(self.db.execute(sql, ("a:content:hash", "a", "content", "date")).rowcount, 0)
 
+    def test_monthly_token_usage_is_summed_per_owner_and_month(self):
+        reserve = statement("INSERT INTO revenue_ai_usage")
+        add = statement("UPDATE revenue_ai_usage SET tokens")
+        used = statement("SELECT COALESCE(SUM(tokens),0)")
+        for owner, day, tokens in [("a", "2026-11-01", 1200), ("a", "2026-11-02", 800), ("a", "2026-10-31", 5000), ("b", "2026-11-01", 9000)]:
+            self.db.execute(reserve, (owner, day, 5))
+            self.assertEqual(self.db.execute(add, (tokens, owner, day)).rowcount, 1)
+        self.assertEqual(self.db.execute(used, ("a", "2026-11-%")).fetchone(), (2000,))
+        self.assertEqual(self.db.execute(used, ("b", "2026-11-%")).fetchone(), (9000,))
+        self.assertEqual(self.db.execute(used, ("c", "2026-11-%")).fetchone(), (0,))
+        # 実行枠を予約していない日には加算されない（呼び出しの記録と対応させる）
+        self.assertEqual(self.db.execute(add, (100, "a", "2026-11-03")).rowcount, 0)
+
 if __name__ == "__main__":
     unittest.main()

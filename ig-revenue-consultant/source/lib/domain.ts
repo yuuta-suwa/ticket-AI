@@ -34,6 +34,11 @@ export function validateRelations(state:State):string[] {
  for(const e of state.ledger.filter(x=>x.kind==="earning")){const adjustments=state.ledger.filter(x=>x.kind==="adjustment"&&x.referenceId===e.id&&confirmed(x)).reduce((a,b)=>a+b.amount,0);if(adjustments>e.amount)errors.push("元報酬を超える減額は登録できません。");}
  for(const s of state.sources)if(s.status==="active"&&s.eligibility!=="verified")errors.push("運用開始には利用資格・契約条件の確認が必要です。");
  if(state.profile.paused&&state.experiments.some(x=>x.status==="running"))errors.push("停止中は実験を開始できません。");
+ const origins=state.experiments.map(x=>x.origin).filter(Boolean);if(new Set(origins).size!==origins.length)errors.push("同じ提案から作成した施策が重複しています。");
+ for(const x of state.experiments)if(x.verdict&&!x.verdictReason.trim())errors.push("施策の判断には理由を記録してください。");
+ const verifiedEvidence=new Set(state.evidence.filter(e=>e.verified).map(e=>e.id));
+ for(const [key,node] of Object.entries({audience:state.canvas.audience,value:state.canvas.value,reward:state.canvas.reward})){if(node.evidenceIds.some(id=>!evidence.has(id)))errors.push("戦略キャンバスの根拠が見つかりません。");if(node.status==="confirmed"&&!node.evidenceIds.some(id=>verifiedEvidence.has(id)))errors.push(`戦略キャンバスの「${{audience:"視聴者の課題",value:"価値の届け方",reward:"報酬が生まれる条件"}[key]}」を確認済みにするには、確認済みの根拠を1件以上紐付けてください。`);}
+ if(new Set(state.sessions.map(x=>x.id)).size!==state.sessions.length)errors.push("相談のIDが重複しています。");
  return [...new Set(errors)];
 }
 export function contentSignature(c:Content){return JSON.stringify({title:c.title,sourceId:c.sourceId,experimentId:c.experimentId,format:c.format,hook:c.hook,caption:c.caption,script:c.script,cta:c.cta,assetUrl:c.assetUrl,evidenceIds:[...c.evidenceIds].sort(),factsChecked:c.factsChecked,rightsChecked:c.rightsChecked,adDisclosure:c.adDisclosure,adRequired:c.adRequired});}

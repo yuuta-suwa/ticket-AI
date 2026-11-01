@@ -1,0 +1,52 @@
+"use client";
+import {useState} from "react";
+import {Check,Download,ArrowRight,Pause,X,AlertTriangle} from "lucide-react";
+import {toast} from "sonner";
+import {useWorkspace} from "./workspace-context";
+import {Button,Status,download,External} from "./ui";
+import {kindInfo,newId,now} from "@/lib/model";
+import type {Report,ReportV2} from "@/lib/model";
+import {money} from "@/lib/domain";
+import {actionKindLabel,knowledgeLabel,nextDecisionLabel,originKey,staleness,decideAction} from "@/lib/consult";
+import {modeLabel} from "./strategy-room";
+
+/** 相談レポートv2の表示：結論→理解した状況→根拠→仮説→施策→反証→次の判断。 */
+export function ReportView({report,primary=false}:{report:Report;primary?:boolean}){
+ const {signature,state,save,busy}=useWorkspace();
+ if(!report.v2)return <LegacyReport report={report}/>;
+ const r=report.v2;const fresh=staleness(report,signature);
+ const refLabel=new Map(r.evidenceRefs.map(x=>[x.refId,x]));
+ const Refs=({ids}:{ids:string[]})=>ids.length?<span className="ref-chips">{ids.map(id=>{const x=refLabel.get(id);return x?<span key={id} className={`ref-chip v-${x.verification}`} title={x.verification==="verified"?"確認済み":x.verification==="self_reported"?"本人の記録":"未確認"}>{x.label}</span>:null;})}</span>:<span className="ref-chips"><span className="ref-chip v-none">根拠の紐付けなし</span></span>;
+ return <article className="report" aria-label="相談レポート">
+  <header className="report-head"><div className="report-tags"><Status tone={report.mode==="model"?"ice":report.mode==="import"?"copper":"muted"}>{modeLabel(report)}</Status><Status tone={r.diagnosis.knowledgeState==="supported"?"ok":r.diagnosis.knowledgeState==="tentative"?"ice":"copper"}>{knowledgeLabel[r.diagnosis.knowledgeState]}</Status>{fresh==="stale"&&<Status tone="danger">この後に記録が更新されています</Status>}</div><small>{new Date(report.createdAt).toLocaleString("ja-JP",{timeZone:"Asia/Tokyo"})} ・ 対象期間 {r.snapshot.period.start}〜{r.snapshot.period.end}</small></header>
+  <section><h3 className="report-label">結論</h3><p className="report-summary">{r.summary}</p><p className="report-bottleneck"><strong>いま優先する詰まり：</strong>{r.diagnosis.bottleneck}</p></section>
+  <section><h3 className="report-label">理解した状況</h3><dl className="context-list"><div><dt>目的</dt><dd>{r.understoodContext.goal}</dd></div>{r.understoodContext.constraints.length>0&&<div><dt>制約</dt><dd><ul>{r.understoodContext.constraints.map(c=><li key={c}>{c}</li>)}</ul></dd></div>}{r.understoodContext.unknowns.length>0&&<div><dt>未確認</dt><dd><ul>{r.understoodContext.unknowns.map(c=><li key={c}>{c}</li>)}</ul></dd></div>}</dl></section>
+  <section><h3 className="report-label">根拠（記録から言えること）</h3>{r.facts.length?<ul className="fact-list">{r.facts.map((f,i)=><li key={i}><p>{f.claim}</p><Refs ids={f.evidenceRefs}/></li>)}</ul>:<p className="muted">記録から言える事実はまだありません。</p>}</section>
+  {r.hypotheses.length>0&&<section><h3 className="report-label">仮説（まだ事実ではありません）</h3><ul className="hypo-list">{r.hypotheses.map((h,i)=><li key={i}><p>{h.statement}</p><p className="alt"><strong>別の説明：</strong>{h.alternativeExplanation}</p><Refs ids={h.basisRefs}/></li>)}</ul></section>}
+  {r.actions.length>0&&<section><h3 className="report-label">施策の提案（最大3件・最優先は1件）</h3><ol className="action-list">{r.actions.map(a=><ActionCard key={a.id} report={report} action={a} recommended={a.id===r.recommendedActionId} primary={primary&&a.id===r.recommendedActionId&&fresh!=="stale"}/>)}</ol></section>}
+  {r.strategyOptions.length>0&&<section><h3 className="report-label">収益の入口の比較</h3><div className="option-grid">{r.strategyOptions.map(o=><div key={o.id} className="option"><div className="option-head"><strong>{kindInfo[o.kind].label}</strong><Status tone={o.decision==="candidate"?"ice":o.decision==="hold"?"muted":"danger"}>{o.decision==="candidate"?"検証候補":o.decision==="hold"?"保留":"採用しない"}</Status></div><dl><dt>支払者</dt><dd>{o.payer}</dd><dt>届ける価値</dt><dd>{o.value}</dd><dt>理由</dt><dd>{o.reason}</dd><dt>成立条件</dt><dd>{o.prerequisites.join(" / ")}</dd><dt>失敗要因</dt><dd>{o.risks.join(" / ")}</dd></dl></div>)}</div></section>}
+  <section className="report-caution"><h3 className="report-label"><AlertTriangle size={16} aria-hidden="true"/>反証・限界</h3><ul>{[...r.diagnosis.limitations,...r.cautions].filter((x,i,a)=>a.indexOf(x)===i).map(c=><li key={c}>{c}</li>)}</ul><p><strong>次の判断：</strong>{nextDecisionLabel[r.nextDecision]}</p></section>
+  {report.sources.length>0&&<section><h3 className="report-label">検索で取得した出典</h3><ul className="plain-list">{report.sources.map(s=><li key={s.url}><External href={s.url}>{s.title}</External></li>)}</ul></section>}
+  <footer className="report-foot"><small>{report.model}{report.tokens>0?` ・ ${report.tokens.toLocaleString()} tokens`:""} ・ 外部への投稿・送信・契約は実行していません</small><div className="report-foot-actions"><button className={report.feedback==="useful"?"selected":""} aria-pressed={report.feedback==="useful"} disabled={busy} onClick={()=>void save(s=>{s.reports.find(x=>x.id===report.id)!.feedback="useful";})}><Check size={15} aria-hidden="true"/>役に立った</button><button className={report.feedback==="revise"?"selected":""} aria-pressed={report.feedback==="revise"} disabled={busy} onClick={()=>void save(s=>{s.reports.find(x=>x.id===report.id)!.feedback="revise";})}>見直したい</button><button aria-label="レポートのJSONを書き出す" onClick={()=>download(`consult-report-${report.id.slice(0,8)}.json`,JSON.stringify(report,null,2))}><Download size={15} aria-hidden="true"/>JSON</button></div></footer>
+  {state.profile.paused&&<p className="small-note">運用停止中のため、施策の採用はできません。</p>}
+ </article>;
+}
+
+function ActionCard({report,action:a,recommended,primary}:{report:Report;action:ReportV2["actions"][number];recommended:boolean;primary:boolean}){
+ const {state,adopt,open,save,busy}=useWorkspace();
+ const decision=state.decisions.find(d=>d.reportId===report.id&&d.actionId===a.id);
+ const exp=state.experiments.find(e=>e.origin===originKey(report.id,a.id));
+ const [reasonFor,setReasonFor]=useState<""|"rejected"|"deferred">("");const [reason,setReason]=useState("");
+ async function decide(){if(!reasonFor)return;const ok=await save(s=>decideAction(s,report.id,a.id,reasonFor,reason,{decisionId:newId(),now:now()}));if(ok){toast.success(reasonFor==="rejected"?"選ばない理由を記録しました。":"保留にしました。");setReasonFor("");setReason("");}}
+ return <li className={`action ${recommended?"recommended":""}`}>
+  <div className="action-head"><span className="action-kind">{actionKindLabel[a.kind]}</span>{recommended&&<Status tone="ice">最優先</Status>}{decision&&<Status tone={decision.choice==="adopted"?"ok":"muted"}>{decision.choice==="adopted"?"採用済み":decision.choice==="deferred"?"保留中":"選ばない"}</Status>}</div>
+  <h4>{a.title}</h4><p className="why">{a.whyThisFirst}</p>
+  <dl className="action-spec"><div><dt>仮説</dt><dd>{a.hypothesis}</dd></div><div><dt>変えること</dt><dd>{a.change}</dd></div><div><dt>主指標</dt><dd>{a.mainMetric}</dd></div><div><dt>判定方法</dt><dd>{a.judgementRule}</dd></div><div><dt>期限・上限</dt><dd>{a.deadline?`${a.deadline}まで`:"期限は未設定"} ・ {a.costLimitJPY===null?"費用上限は未設定":a.costLimitJPY===0?"費用をかけない":`費用 ${money(a.costLimitJPY)}まで`} ・ {a.timeLimitMinutes===null?"時間上限は未設定":`${Math.round(a.timeLimitMinutes/6)/10}時間まで`}</dd></div><div><dt>停止条件</dt><dd>{a.stopCondition}</dd></div></dl>
+  {decision&&decision.choice!=="adopted"&&<p className="decision-reason"><strong>{decision.choice==="deferred"?"保留の理由":"選ばない理由"}：</strong>{decision.reason}</p>}
+  <div className="action-buttons">{exp?<Button variant="secondary" onClick={()=>open({type:"experiment",id:exp.id})}>作成した施策を開く<ArrowRight size={16} aria-hidden="true"/></Button>:<Button variant={primary?"primary":"secondary"} disabled={busy||state.profile.paused} onClick={async()=>{const id=await adopt(report.id,a.id);if(id)open({type:"experiment",id});}}>この施策を下書きにする<ArrowRight size={16} aria-hidden="true"/></Button>}{!exp&&<><button className="text-btn" onClick={()=>setReasonFor("deferred")}><Pause size={15} aria-hidden="true"/>保留</button><button className="text-btn" onClick={()=>setReasonFor("rejected")}><X size={15} aria-hidden="true"/>選ばない</button></>}</div>
+  {reasonFor&&<div className="reason-box"><label className="field"><span>{reasonFor==="rejected"?"選ばない理由":"保留する理由"}（次の提案で考慮します）</span><input value={reason} onChange={e=>setReason(e.target.value)} maxLength={500} autoFocus placeholder={reasonFor==="rejected"?"例：顔出しが必要になるため":"例：契約条件を確認してから判断する"}/></label><div className="inline"><Button variant="secondary" disabled={busy||!reason.trim()} onClick={()=>void decide()}>記録する</Button><button className="text-btn" onClick={()=>{setReasonFor("");setReason("");}}>やめる</button></div></div>}
+ </li>;
+}
+
+/** v1レポート（旧形式）の表示。既存の記録を読めるように維持する。 */
+function LegacyReport({report:r}:{report:Report}){const {open}=useWorkspace();const x=r.result;return <article className="report legacy" aria-label="旧形式の相談レポート"><header className="report-head"><div className="report-tags"><Status tone="muted">{modeLabel(r)}</Status><Status tone="muted">旧形式（v1）のレポート</Status></div><small>{new Date(r.createdAt).toLocaleString("ja-JP",{timeZone:"Asia/Tokyo"})}</small></header><section><h3 className="report-label">結論</h3><p className="report-summary">{x.summary}</p><p className="report-bottleneck"><strong>いま優先する詰まり：</strong>{x.bottleneck}</p></section>{x.facts.length>0&&<section><h3 className="report-label">観察された事実</h3><ul className="fact-list">{x.facts.map((f,i)=><li key={i}><p>{f.claim}</p></li>)}</ul></section>}{x.hypotheses.length>0&&<section><h3 className="report-label">仮説</h3><ul className="hypo-list">{x.hypotheses.map((h,i)=><li key={i}><p>{h}</p></li>)}</ul></section>}<section><h3 className="report-label">次の実験</h3><div className="action"><h4>{x.nextExperiment.title}</h4><p>{x.nextExperiment.change}</p><dl className="action-spec"><div><dt>主指標</dt><dd>{x.nextExperiment.metric}</dd></div><div><dt>停止条件</dt><dd>{x.nextExperiment.stopCondition}</dd></div></dl><Button variant="secondary" onClick={()=>open({type:"experiment",seed:x.nextExperiment})}>実験の下書きにする<ArrowRight size={16} aria-hidden="true"/></Button></div></section>{x.contentProposal&&<section><h3 className="report-label">投稿の提案</h3><div className="action"><h4>{x.contentProposal.title}</h4><p className="preserve">{x.contentProposal.caption}</p><Button variant="secondary" onClick={()=>open({type:"content",seed:x.contentProposal!})}>投稿の下書きにする<ArrowRight size={16} aria-hidden="true"/></Button></div></section>}<section className="report-caution"><h3 className="report-label">未確認点・反証</h3><ul>{x.cautions.map((c,i)=><li key={i}>{c}</li>)}</ul></section></article>;}
