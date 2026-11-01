@@ -1,0 +1,1313 @@
+{
+ "schema_version": 1,
+ "design_revision": "2026-10-26-rebuild",
+ "purpose": "Acceptance contract. Status reflects actual evidence; local passes are not production, external, device or market evidence.",
+ "current_runtime_version": "0.6.0",
+ "criteria": [
+  {
+   "id": "R01",
+   "category": "R",
+   "priority": "P1",
+   "scenario": "YouTube・Instagramの一方が未接続の調査を開始",
+   "expected": "媒体別の能力と未接続を表示し、未取得を0件にしない",
+   "status": "LOCAL_PASS",
+   "evidence": [
+    {
+     "type": "automated_test",
+     "file": "AI_Company_OS/test/research.test.mjs",
+     "tests": [
+      "R01 YouTube and Instagram are in scope and shown per source; unconnected is not zero items"
+     ],
+     "log": "review/p4-2026-11-01/final-tests.txt",
+     "run_at": "2026-11-01",
+     "node": "v24.22.2"
+    },
+    {
+     "type": "real_research_batch",
+     "file": "review/p2-research/result-2026-11-01.json",
+     "note": "Real attempts recorded: YouTube AUTH_REQUIRED, Instagram/TikTok NOT_CONNECTED, Reddit/App Store FAILED (egress blocked), full-text fetch FAILED (network policy)."
+    }
+   ],
+   "verification_scope": "local automated test (node:test, in-memory or temp SQLite, synthetic data, injected clock). Not an external provider test, not production, not a real device, no real customers."
+  },
+  {
+   "id": "R02",
+   "category": "R",
+   "priority": "P1",
+   "scenario": "検索抜粋しか取得できない動画を候補にする",
+   "expected": "全文・動画視聴済みと表示せず、確認範囲を保持する",
+   "status": "LOCAL_PASS",
+   "evidence": [
+    {
+     "type": "automated_test",
+     "file": "AI_Company_OS/test/research.test.mjs",
+     "tests": [
+      "R02 snippet-only video evidence is never shown as watched; segment claims need segments"
+     ],
+     "log": "review/p4-2026-11-01/final-tests.txt",
+     "run_at": "2026-11-01",
+     "node": "v24.22.2"
+    }
+   ],
+   "verification_scope": "local automated test (node:test, in-memory or temp SQLite, synthetic data, injected clock). Not an external provider test, not production, not a real device, no real customers."
+  },
+  {
+   "id": "R03",
+   "category": "R",
+   "priority": "P1",
+   "scenario": "同一発表の転載を三媒体から取得する",
+   "expected": "元情報をまとめ、独立した三つの需要証拠にしない",
+   "status": "LOCAL_PASS",
+   "evidence": [
+    {
+     "type": "automated_test",
+     "file": "AI_Company_OS/test/research.test.mjs",
+     "tests": [
+      "R03 the same announcement reposted on three platforms counts as one origin"
+     ],
+     "log": "review/p4-2026-11-01/final-tests.txt",
+     "run_at": "2026-11-01",
+     "node": "v24.22.2"
+    }
+   ],
+   "verification_scope": "local automated test (node:test, in-memory or temp SQLite, synthetic data, injected clock). Not an external provider test, not production, not a real device, no real customers."
+  },
+  {
+   "id": "R04",
+   "category": "R",
+   "priority": "P1",
+   "scenario": "同じ原本を別日に再取得する",
+   "expected": "時系列の版として保存し、新しい顧客の声へ数え直さない",
+   "status": "LOCAL_PASS",
+   "evidence": [
+    {
+     "type": "automated_test",
+     "file": "AI_Company_OS/test/research.test.mjs",
+     "tests": [
+      "R04 re-fetching the same source on another day is a new version, not a new customer voice"
+     ],
+     "log": "review/p4-2026-11-01/final-tests.txt",
+     "run_at": "2026-11-01",
+     "node": "v24.22.2"
+    }
+   ],
+   "verification_scope": "local automated test (node:test, in-memory or temp SQLite, synthetic data, injected clock). Not an external provider test, not production, not a real device, no real customers."
+  },
+  {
+   "id": "R05",
+   "category": "R",
+   "priority": "P1",
+   "scenario": "429または認証不足で取得が失敗する",
+   "expected": "失敗・制限・原因・範囲を記録し、需要ゼロと判定しない",
+   "status": "LOCAL_PASS",
+   "evidence": [
+    {
+     "type": "automated_test",
+     "file": "AI_Company_OS/test/research.test.mjs",
+     "tests": [
+      "R05 rate limits and missing auth are recorded with cause and range, never as zero demand"
+     ],
+     "log": "review/p4-2026-11-01/final-tests.txt",
+     "run_at": "2026-11-01",
+     "node": "v24.22.2"
+    },
+    {
+     "type": "real_research_batch",
+     "file": "review/p2-research/result-2026-11-01.json",
+     "note": "Real attempts recorded: YouTube AUTH_REQUIRED, Instagram/TikTok NOT_CONNECTED, Reddit/App Store FAILED (egress blocked), full-text fetch FAILED (network policy)."
+    }
+   ],
+   "verification_scope": "local automated test (node:test, in-memory or temp SQLite, synthetic data, injected clock). Not an external provider test, not production, not a real device, no real customers."
+  },
+  {
+   "id": "R06",
+   "category": "R",
+   "priority": "P1",
+   "scenario": "異なる国・言語・観測期間の値を比較する",
+   "expected": "条件を表示し、そのまま同じ母数の増加率へ集計しない",
+   "status": "LOCAL_PASS",
+   "evidence": [
+    {
+     "type": "automated_test",
+     "file": "AI_Company_OS/test/research.test.mjs",
+     "tests": [
+      "R06 values from different countries, languages or periods are not aggregated as one denominator"
+     ],
+     "log": "review/p4-2026-11-01/final-tests.txt",
+     "run_at": "2026-11-01",
+     "node": "v24.22.2"
+    }
+   ],
+   "verification_scope": "local automated test (node:test, in-memory or temp SQLite, synthetic data, injected clock). Not an external provider test, not production, not a real device, no real customers."
+  },
+  {
+   "id": "R07",
+   "category": "R",
+   "priority": "P0",
+   "scenario": "投稿や記事に権限変更・鍵の送信の命令がある",
+   "expected": "資料として扱い、命令を実行しない",
+   "status": "LOCAL_PASS",
+   "evidence": [
+    {
+     "type": "automated_test",
+     "file": "AI_Company_OS/test/research.test.mjs",
+     "tests": [
+      "R07 instructions embedded in posts are flagged as data and change no authority"
+     ],
+     "log": "review/p4-2026-11-01/final-tests.txt",
+     "run_at": "2026-11-01",
+     "node": "v24.22.2"
+    }
+   ],
+   "verification_scope": "local automated test (node:test, in-memory or temp SQLite, synthetic data, injected clock). Not an external provider test, not production, not a real device, no real customers."
+  },
+  {
+   "id": "R08",
+   "category": "R",
+   "priority": "P1",
+   "scenario": "検索や生成が件数・費用上限に達する",
+   "expected": "新しい取得を止め、取得範囲と終了理由を残す",
+   "status": "LOCAL_PASS",
+   "evidence": [
+    {
+     "type": "automated_test",
+     "file": "AI_Company_OS/test/research.test.mjs",
+     "tests": [
+      "R08 reaching item limits stops the run with the reason and refuses further fetches"
+     ],
+     "log": "review/p4-2026-11-01/final-tests.txt",
+     "run_at": "2026-11-01",
+     "node": "v24.22.2"
+    }
+   ],
+   "verification_scope": "local automated test (node:test, in-memory or temp SQLite, synthetic data, injected clock). Not an external provider test, not production, not a real device, no real customers."
+  },
+  {
+   "id": "R09",
+   "category": "R",
+   "priority": "P1",
+   "scenario": "非公開の収益・保存数・視聴維持率が必要になる",
+   "expected": "nullと取得不能理由を保存し、競合の実績を捏造しない",
+   "status": "LOCAL_PASS",
+   "evidence": [
+    {
+     "type": "automated_test",
+     "file": "AI_Company_OS/test/research.test.mjs",
+     "tests": [
+      "R09 private competitor metrics stay null with a reason; invented values are refused"
+     ],
+     "log": "review/p4-2026-11-01/final-tests.txt",
+     "run_at": "2026-11-01",
+     "node": "v24.22.2"
+    }
+   ],
+   "verification_scope": "local automated test (node:test, in-memory or temp SQLite, synthetic data, injected clock). Not an external provider test, not production, not a real device, no real customers."
+  },
+  {
+   "id": "R10",
+   "category": "R",
+   "priority": "P1",
+   "scenario": "原本が削除・価格が更新される",
+   "expected": "過去判断の参照を残し、利用中の知識へ再確認を出す",
+   "status": "LOCAL_PASS",
+   "evidence": [
+    {
+     "type": "automated_test",
+     "file": "AI_Company_OS/test/research.test.mjs",
+     "tests": [
+      "R10 a deleted source keeps past references and raises re-verification for dependent cards and knowledge"
+     ],
+     "log": "review/p4-2026-11-01/final-tests.txt",
+     "run_at": "2026-11-01",
+     "node": "v24.22.2"
+    }
+   ],
+   "verification_scope": "local automated test (node:test, in-memory or temp SQLite, synthetic data, injected clock). Not an external provider test, not production, not a real device, no real customers."
+  },
+  {
+   "id": "D01",
+   "category": "D",
+   "priority": "P1",
+   "scenario": "全候補の根拠が弱い",
+   "expected": "採用なし・追加調査を選べる",
+   "status": "LOCAL_PASS",
+   "evidence": [
+    {
+     "type": "automated_test",
+     "file": "AI_Company_OS/test/research.test.mjs",
+     "tests": [
+      "D01 when all candidates are weak the company records NO_ADOPTION / more research"
+     ],
+     "log": "review/p4-2026-11-01/final-tests.txt",
+     "run_at": "2026-11-01",
+     "node": "v24.22.2"
+    },
+    {
+     "type": "real_research_batch",
+     "file": "review/p2-research/result-2026-11-01.json",
+     "note": "Real snippet-level research: all 3 candidates not eligible; decision MORE_RESEARCH recorded."
+    }
+   ],
+   "verification_scope": "local automated test (node:test, in-memory or temp SQLite, synthetic data, injected clock). Not an external provider test, not production, not a real device, no real customers."
+  },
+  {
+   "id": "D02",
+   "category": "D",
+   "priority": "P0",
+   "scenario": "高得点だが禁止対象や権利不明の候補がある",
+   "expected": "得点で阻害条件を相殺せず、対象の実行を保留する",
+   "status": "LOCAL_PASS",
+   "evidence": [
+    {
+     "type": "automated_test",
+     "file": "AI_Company_OS/test/research.test.mjs",
+     "tests": [
+      "D02 a prohibited-domain or rights-unknown candidate is blocked regardless of high scores"
+     ],
+     "log": "review/p4-2026-11-01/final-tests.txt",
+     "run_at": "2026-11-01",
+     "node": "v24.22.2"
+    }
+   ],
+   "verification_scope": "local automated test (node:test, in-memory or temp SQLite, synthetic data, injected clock). Not an external provider test, not production, not a real device, no real customers."
+  },
+  {
+   "id": "D03",
+   "category": "D",
+   "priority": "P1",
+   "scenario": "主張に反する顧客の声がある",
+   "expected": "反証を判断へ結び、都合の良い根拠だけを残さない",
+   "status": "LOCAL_PASS",
+   "evidence": [
+    {
+     "type": "automated_test",
+     "file": "AI_Company_OS/test/research.test.mjs",
+     "tests": [
+      "D03 contradicting customer voice is linked into the decision record"
+     ],
+     "log": "review/p4-2026-11-01/final-tests.txt",
+     "run_at": "2026-11-01",
+     "node": "v24.22.2"
+    }
+   ],
+   "verification_scope": "local automated test (node:test, in-memory or temp SQLite, synthetic data, injected clock). Not an external provider test, not production, not a real device, no real customers."
+  },
+  {
+   "id": "D04",
+   "category": "D",
+   "priority": "P1",
+   "scenario": "広告収入単価は不明だが制作費を制限できる",
+   "expected": "限定実証の準備と採算・拡大の証拠を区別する",
+   "status": "LOCAL_PASS",
+   "evidence": [
+    {
+     "type": "automated_test",
+     "file": "AI_Company_OS/test/research.test.mjs",
+     "tests": [
+      "D04 unknown ad yield allows a bounded value test but not profitability or growth claims"
+     ],
+     "log": "review/p4-2026-11-01/final-tests.txt",
+     "run_at": "2026-11-01",
+     "node": "v24.22.2"
+    }
+   ],
+   "verification_scope": "local automated test (node:test, in-memory or temp SQLite, synthetic data, injected clock). Not an external provider test, not production, not a real device, no real customers."
+  },
+  {
+   "id": "D05",
+   "category": "D",
+   "priority": "P1",
+   "scenario": "観察終了時に母数や期間が不足する",
+   "expected": "不明または条件付き延長とし、成功へ変更しない",
+   "status": "LOCAL_PASS",
+   "evidence": [
+    {
+     "type": "automated_test",
+     "file": "AI_Company_OS/test/research.test.mjs",
+     "tests": [
+      "D05 too small a sample at the end is INCONCLUSIVE, not success"
+     ],
+     "log": "review/p4-2026-11-01/final-tests.txt",
+     "run_at": "2026-11-01",
+     "node": "v24.22.2"
+    }
+   ],
+   "verification_scope": "local automated test (node:test, in-memory or temp SQLite, synthetic data, injected clock). Not an external provider test, not production, not a real device, no real customers."
+  },
+  {
+   "id": "D06",
+   "category": "D",
+   "priority": "P1",
+   "scenario": "結果を見て目標指標の変更が要求される",
+   "expected": "旧版と変更理由を残し、事前目標を上書きしない",
+   "status": "LOCAL_PASS",
+   "evidence": [
+    {
+     "type": "automated_test",
+     "file": "AI_Company_OS/test/research.test.mjs",
+     "tests": [
+      "D06 changing the target after launch keeps the old revision and evaluation uses the preregistered one"
+     ],
+     "log": "review/p4-2026-11-01/final-tests.txt",
+     "run_at": "2026-11-01",
+     "node": "v24.22.2"
+    }
+   ],
+   "verification_scope": "local automated test (node:test, in-memory or temp SQLite, synthetic data, injected clock). Not an external provider test, not production, not a real device, no real customers."
+  },
+  {
+   "id": "D07",
+   "category": "D",
+   "priority": "P1",
+   "scenario": "本人が商品を選んでいない",
+   "expected": "AI部門が根拠で比較し、本人へ選定を戻して停止しない",
+   "status": "LOCAL_PASS",
+   "evidence": [
+    {
+     "type": "automated_test",
+     "file": "AI_Company_OS/test/research.test.mjs",
+     "tests": [
+      "D07 without any owner product choice, AI departments compare and select with evidence"
+     ],
+     "log": "review/p4-2026-11-01/final-tests.txt",
+     "run_at": "2026-11-01",
+     "node": "v24.22.2"
+    }
+   ],
+   "verification_scope": "local automated test (node:test, in-memory or temp SQLite, synthetic data, injected clock). Not an external provider test, not production, not a real device, no real customers."
+  },
+  {
+   "id": "M01",
+   "category": "M",
+   "priority": "P0",
+   "scenario": "無料視聴者と広告主のある計画を作る",
+   "expected": "使用者・支払者・収入経路を分け、架空の注文を作らない",
+   "status": "LOCAL_PASS",
+   "evidence": [
+    {
+     "type": "automated_test",
+     "file": "AI_Company_OS/test/operations.test.mjs",
+     "tests": [
+      "M01 a free-viewer + advertiser plan separates users and payers and creates no orders; v1 advertising gate unchanged"
+     ],
+     "log": "review/p4-2026-11-01/final-tests.txt",
+     "run_at": "2026-11-01",
+     "node": "v24.22.2"
+    }
+   ],
+   "verification_scope": "local automated test (node:test, in-memory or temp SQLite, synthetic data, injected clock). Not an external provider test, not production, not a real device, no real customers."
+  },
+  {
+   "id": "M02",
+   "category": "M",
+   "priority": "P0",
+   "scenario": "テスト環境の支払イベントを受信する",
+   "expected": "本番売上・顧客実績へ含めない",
+   "status": "LOCAL_PASS",
+   "evidence": [
+    {
+     "type": "automated_test",
+     "file": "AI_Company_OS/test/operations.test.mjs",
+     "tests": [
+      "M02 test-mode payment events never count as live revenue"
+     ],
+     "log": "review/p4-2026-11-01/final-tests.txt",
+     "run_at": "2026-11-01",
+     "node": "v24.22.2"
+    }
+   ],
+   "verification_scope": "local automated test (node:test, in-memory or temp SQLite, synthetic data, injected clock). Not an external provider test, not production, not a real device, no real customers."
+  },
+  {
+   "id": "M03",
+   "category": "M",
+   "priority": "P0",
+   "scenario": "同じ支払通知を再送する",
+   "expected": "取引・利用権・収入を二重反映しない",
+   "status": "LOCAL_PASS",
+   "evidence": [
+    {
+     "type": "automated_test",
+     "file": "AI_Company_OS/test/operations.test.mjs",
+     "tests": [
+      "M03 redelivered payment notifications are applied once"
+     ],
+     "log": "review/p4-2026-11-01/final-tests.txt",
+     "run_at": "2026-11-01",
+     "node": "v24.22.2"
+    }
+   ],
+   "verification_scope": "local automated test (node:test, in-memory or temp SQLite, synthetic data, injected clock). Not an external provider test, not production, not a real device, no real customers."
+  },
+  {
+   "id": "M04",
+   "category": "M",
+   "priority": "P0",
+   "scenario": "返金や請求のイベントが順不同で届く",
+   "expected": "原本照会と整合する状態へ収束し、受信順だけに依存しない",
+   "status": "LOCAL_PASS",
+   "evidence": [
+    {
+     "type": "automated_test",
+     "file": "AI_Company_OS/test/operations.test.mjs",
+     "tests": [
+      "M04 out-of-order refund and subscription events converge to the provider truth"
+     ],
+     "log": "review/p4-2026-11-01/final-tests.txt",
+     "run_at": "2026-11-01",
+     "node": "v24.22.2"
+    }
+   ],
+   "verification_scope": "local automated test (node:test, in-memory or temp SQLite, synthetic data, injected clock). Not an external provider test, not production, not a real device, no real customers."
+  },
+  {
+   "id": "M05",
+   "category": "M",
+   "priority": "P1",
+   "scenario": "本人時間・共通費・失敗案の費用を入力する",
+   "expected": "配賦と全社総額を保ち、採算から黙って除外しない",
+   "status": "LOCAL_PASS",
+   "evidence": [
+    {
+     "type": "automated_test",
+     "file": "AI_Company_OS/test/operations.test.mjs",
+     "tests": [
+      "M05 owner time, shared and failed-exploration costs are allocated without losing the company total"
+     ],
+     "log": "review/p4-2026-11-01/final-tests.txt",
+     "run_at": "2026-11-01",
+     "node": "v24.22.2"
+    }
+   ],
+   "verification_scope": "local automated test (node:test, in-memory or temp SQLite, synthetic data, injected clock). Not an external provider test, not production, not a real device, no real customers."
+  },
+  {
+   "id": "M06",
+   "category": "M",
+   "priority": "P1",
+   "scenario": "CAC母数0または費用不明",
+   "expected": "算定不可と理由を返し、0円CACにしない",
+   "status": "LOCAL_PASS",
+   "evidence": [
+    {
+     "type": "automated_test",
+     "file": "AI_Company_OS/test/operations.test.mjs",
+     "tests": [
+      "M06 CAC with zero new payers or unknown acquisition cost is not computable"
+     ],
+     "log": "review/p4-2026-11-01/final-tests.txt",
+     "run_at": "2026-11-01",
+     "node": "v24.22.2"
+    }
+   ],
+   "verification_scope": "local automated test (node:test, in-memory or temp SQLite, synthetic data, injected clock). Not an external provider test, not production, not a real device, no real customers."
+  },
+  {
+   "id": "M07",
+   "category": "M",
+   "priority": "P1",
+   "scenario": "JPY以外の取引が入る",
+   "expected": "通貨・換算を明示して対応するか未対応として保留し、黙って円へ変換しない",
+   "status": "LOCAL_PASS",
+   "evidence": [
+    {
+     "type": "automated_test",
+     "file": "AI_Company_OS/test/operations.test.mjs",
+     "tests": [
+      "M07 non-JPY transactions are reported unconverted, never silently added as yen"
+     ],
+     "log": "review/p4-2026-11-01/final-tests.txt",
+     "run_at": "2026-11-01",
+     "node": "v24.22.2"
+    }
+   ],
+   "verification_scope": "local automated test (node:test, in-memory or temp SQLite, synthetic data, injected clock). Not an external provider test, not production, not a real device, no real customers."
+  },
+  {
+   "id": "M08",
+   "category": "M",
+   "priority": "P1",
+   "scenario": "更新・初回利用の観察期間を迎えていない対象がいる",
+   "expected": "対象群と未到達を分け、継続・利用の率を歪めない",
+   "status": "LOCAL_PASS",
+   "evidence": [
+    {
+     "type": "automated_test",
+     "file": "AI_Company_OS/test/operations.test.mjs",
+     "tests": [
+      "M08 first-value rate counts only matured customers and excludes test/admin/monitor/bot"
+     ],
+     "log": "review/p4-2026-11-01/final-tests.txt",
+     "run_at": "2026-11-01",
+     "node": "v24.22.2"
+    }
+   ],
+   "verification_scope": "local automated test (node:test, in-memory or temp SQLite, synthetic data, injected clock). Not an external provider test, not production, not a real device, no real customers."
+  },
+  {
+   "id": "A01",
+   "category": "A",
+   "priority": "P0",
+   "scenario": "未認証でownerの読み書きへアクセスする",
+   "expected": "アクセスを拒否し、情報や許可を漏らさない",
+   "status": "LOCAL_PASS",
+   "evidence": [
+    {
+     "type": "automated_test",
+     "file": "AI_Company_OS/test/authority.test.mjs",
+     "tests": [
+      "A01 unauthenticated requests cannot read or change owner data and get no details"
+     ],
+     "log": "review/p4-2026-11-01/final-tests.txt",
+     "run_at": "2026-11-01",
+     "node": "v24.22.2"
+    }
+   ],
+   "verification_scope": "local automated test (node:test, in-memory or temp SQLite, synthetic data, injected clock). Not an external provider test, not production, not a real device, no real customers."
+  },
+  {
+   "id": "A02",
+   "category": "A",
+   "priority": "P0",
+   "scenario": "AIがownerの増額・上限確認・責任解消を要求する",
+   "expected": "固定主体と権限により拒否する",
+   "status": "LOCAL_PASS",
+   "evidence": [
+    {
+     "type": "automated_test",
+     "file": "AI_Company_OS/test/authority.test.mjs",
+     "tests": [
+      "A02 AI tools expose no owner operation; AI actors cannot raise budgets, bound risk or resolve obligations"
+     ],
+     "log": "review/p4-2026-11-01/final-tests.txt",
+     "run_at": "2026-11-01",
+     "node": "v24.22.2"
+    }
+   ],
+   "verification_scope": "local automated test (node:test, in-memory or temp SQLite, synthetic data, injected clock). Not an external provider test, not production, not a real device, no real customers."
+  },
+  {
+   "id": "A03",
+   "category": "A",
+   "priority": "P0",
+   "scenario": "承認後に成果物・対象・条件を変更する",
+   "expected": "旧承認を無条件で使えず、対象版を再検査する",
+   "status": "LOCAL_PASS",
+   "evidence": [
+    {
+     "type": "automated_test",
+     "file": "AI_Company_OS/test/authority.test.mjs",
+     "tests": [
+      "A03 approval binds the exact version; a changed card cannot reuse the old approval"
+     ],
+     "log": "review/p4-2026-11-01/final-tests.txt",
+     "run_at": "2026-11-01",
+     "node": "v24.22.2"
+    }
+   ],
+   "verification_scope": "local automated test (node:test, in-memory or temp SQLite, synthetic data, injected clock). Not an external provider test, not production, not a real device, no real customers."
+  },
+  {
+   "id": "A04",
+   "category": "A",
+   "priority": "P0",
+   "scenario": "許可が期限切れ・取消済みの操作を実行する",
+   "expected": "実行直前に拒否する",
+   "status": "LOCAL_PASS",
+   "evidence": [
+    {
+     "type": "automated_test",
+     "file": "AI_Company_OS/test/authority.test.mjs",
+     "tests": [
+      "A04 revoked or expired permits are refused immediately before execution"
+     ],
+     "log": "review/p4-2026-11-01/final-tests.txt",
+     "run_at": "2026-11-01",
+     "node": "v24.22.2"
+    }
+   ],
+   "verification_scope": "local automated test (node:test, in-memory or temp SQLite, synthetic data, injected clock). Not an external provider test, not production, not a real device, no real customers."
+  },
+  {
+   "id": "A05",
+   "category": "A",
+   "priority": "P0",
+   "scenario": "同じ冪等キーで異なるpayloadを送る",
+   "expected": "競合として拒否する",
+   "status": "LOCAL_PASS",
+   "evidence": [
+    {
+     "type": "automated_test",
+     "file": "AI_Company_OS/test/authority.test.mjs",
+     "tests": [
+      "A05 same idempotency key with a different payload is a conflict"
+     ],
+     "log": "review/p4-2026-11-01/final-tests.txt",
+     "run_at": "2026-11-01",
+     "node": "v24.22.2"
+    }
+   ],
+   "verification_scope": "local automated test (node:test, in-memory or temp SQLite, synthetic data, injected clock). Not an external provider test, not production, not a real device, no real customers."
+  },
+  {
+   "id": "A06",
+   "category": "A",
+   "priority": "P0",
+   "scenario": "外部操作が結果不明でworkerを再起動する",
+   "expected": "予約を保持し同じ操作IDで照会し、別IDで二重実行しない",
+   "status": "LOCAL_PASS",
+   "evidence": [
+    {
+     "type": "automated_test",
+     "file": "AI_Company_OS/test/authority.test.mjs",
+     "tests": [
+      "A06 unknown result keeps the funding hold, restart reconciles by the same id and never re-sends",
+      "A06 in-flight operations at restart become UNKNOWN, not re-queued"
+     ],
+     "log": "review/p4-2026-11-01/final-tests.txt",
+     "run_at": "2026-11-01",
+     "node": "v24.22.2"
+    }
+   ],
+   "verification_scope": "local automated test (node:test, in-memory or temp SQLite, synthetic data, injected clock). Not an external provider test, not production, not a real device, no real customers."
+  },
+  {
+   "id": "A07",
+   "category": "A",
+   "priority": "P0",
+   "scenario": "生成コードが本番鍵・顧客データへアクセスする",
+   "expected": "隔離と権限で遮断する",
+   "status": "LOCAL_PASS_PARTIAL",
+   "evidence": [
+    {
+     "type": "automated_test",
+     "file": "AI_Company_OS/test/authority.test.mjs",
+     "tests": [
+      "A07 generated/production code paths cannot read provider secrets: connections never return secret values"
+     ],
+     "log": "review/p4-2026-11-01/final-tests.txt",
+     "run_at": "2026-11-01",
+     "node": "v24.22.2"
+    }
+   ],
+   "verification_scope": "Verified: owner API never returns secret values; AI tools have no secret/DB/shell access. NOT implemented: OS-level sandbox for generated code (network/filesystem isolation)."
+  },
+  {
+   "id": "A08",
+   "category": "A",
+   "priority": "P0",
+   "scenario": "ブラウザーや他利用者が社員ID・ownerフラグを偽装する",
+   "expected": "サーバーの主体を優先し越権を拒否する",
+   "status": "LOCAL_PASS",
+   "evidence": [
+    {
+     "type": "automated_test",
+     "file": "AI_Company_OS/test/authority.test.mjs",
+     "tests": [
+      "A08/U06 body owner flags and employee ids are ignored; wrong passphrase, foreign origin and revoked sessions are rejected",
+      "A08 login is rate limited after repeated failures"
+     ],
+     "log": "review/p4-2026-11-01/final-tests.txt",
+     "run_at": "2026-11-01",
+     "node": "v24.22.2"
+    }
+   ],
+   "verification_scope": "local automated test (node:test, in-memory or temp SQLite, synthetic data, injected clock). Not an external provider test, not production, not a real device, no real customers."
+  },
+  {
+   "id": "A09",
+   "category": "A",
+   "priority": "P1",
+   "scenario": "有効な事前方針内の定型操作を要求する",
+   "expected": "条件を検査して実行でき、無用な再承認を毎回求めない",
+   "status": "LOCAL_PASS",
+   "evidence": [
+    {
+     "type": "automated_test",
+     "file": "AI_Company_OS/test/authority.test.mjs",
+     "tests": [
+      "A09 a routine action inside an owner-approved rule runs without re-approval; outside the rule it is refused"
+     ],
+     "log": "review/p4-2026-11-01/final-tests.txt",
+     "run_at": "2026-11-01",
+     "node": "v24.22.2"
+    }
+   ],
+   "verification_scope": "local automated test (node:test, in-memory or temp SQLite, synthetic data, injected clock). Not an external provider test, not production, not a real device, no real customers."
+  },
+  {
+   "id": "O01",
+   "category": "O",
+   "priority": "P0",
+   "scenario": "稼働事業を維持しながら一件の実証を開始する",
+   "expected": "稼働事業が実験枠を消費せず、維持資金も新規へ流れない",
+   "status": "LOCAL_PASS",
+   "evidence": [
+    {
+     "type": "automated_test",
+     "file": "AI_Company_OS/test/operations.test.mjs",
+     "tests": [
+      "O01 an operating service and one experiment coexist; protected funds are not experiment money"
+     ],
+     "log": "review/p4-2026-11-01/final-tests.txt",
+     "run_at": "2026-11-01",
+     "node": "v24.22.2"
+    }
+   ],
+   "verification_scope": "local automated test (node:test, in-memory or temp SQLite, synthetic data, injected clock). Not an external provider test, not production, not a real device, no real customers."
+  },
+  {
+   "id": "O02",
+   "category": "O",
+   "priority": "P0",
+   "scenario": "研究期限後も運営枠が有効",
+   "expected": "研究は止まり、指定条件内の既存保守を扱える",
+   "status": "LOCAL_PASS",
+   "evidence": [
+    {
+     "type": "automated_test",
+     "file": "AI_Company_OS/test/operations.test.mjs",
+     "tests": [
+      "O02 after the research deadline, research stops but approved maintenance still runs in its own period"
+     ],
+     "log": "review/p4-2026-11-01/final-tests.txt",
+     "run_at": "2026-11-01",
+     "node": "v24.22.2"
+    }
+   ],
+   "verification_scope": "local automated test (node:test, in-memory or temp SQLite, synthetic data, injected clock). Not an external provider test, not production, not a real device, no real customers."
+  },
+  {
+   "id": "O03",
+   "category": "O",
+   "priority": "P0",
+   "scenario": "不明費用の上限・分離条件が足りない",
+   "expected": "新規や未許可の保守を止め、予約を解放しない",
+   "status": "LOCAL_PASS",
+   "evidence": [
+    {
+     "type": "automated_test",
+     "file": "AI_Company_OS/test/operations.test.mjs",
+     "tests": [
+      "O03/O04 unbounded uncertainty blocks new work and unapproved maintenance; bounded isolated RUN keeps the hold"
+     ],
+     "log": "review/p4-2026-11-01/final-tests.txt",
+     "run_at": "2026-11-01",
+     "node": "v24.22.2"
+    }
+   ],
+   "verification_scope": "local automated test (node:test, in-memory or temp SQLite, synthetic data, injected clock). Not an external provider test, not production, not a real device, no real customers."
+  },
+  {
+   "id": "O04",
+   "category": "O",
+   "priority": "P0",
+   "scenario": "事前方針・保護枠・根拠・期限・対象を満たす分離RUN",
+   "expected": "UNKNOWNを保持し全社上限を守る指定保守だけが可能",
+   "status": "LOCAL_PASS",
+   "evidence": [
+    {
+     "type": "automated_test",
+     "file": "AI_Company_OS/test/operations.test.mjs",
+     "tests": [
+      "O03/O04 unbounded uncertainty blocks new work and unapproved maintenance; bounded isolated RUN keeps the hold"
+     ],
+     "log": "review/p4-2026-11-01/final-tests.txt",
+     "run_at": "2026-11-01",
+     "node": "v24.22.2"
+    }
+   ],
+   "verification_scope": "local automated test (node:test, in-memory or temp SQLite, synthetic data, injected clock). Not an external provider test, not production, not a real device, no real customers."
+  },
+  {
+   "id": "O05",
+   "category": "O",
+   "priority": "P0",
+   "scenario": "重大障害・対応期限超過・古い観測がある",
+   "expected": "新規実証・支出を保留し、必要な復旧・対応へ割り当てる",
+   "status": "LOCAL_PASS",
+   "evidence": [
+    {
+     "type": "automated_test",
+     "file": "AI_Company_OS/test/operations.test.mjs",
+     "tests": [
+      "O05 overdue support or a critical incident from the operations ledger holds new experiments"
+     ],
+     "log": "review/p4-2026-11-01/final-tests.txt",
+     "run_at": "2026-11-01",
+     "node": "v24.22.2"
+    }
+   ],
+   "verification_scope": "local automated test (node:test, in-memory or temp SQLite, synthetic data, injected clock). Not an external provider test, not production, not a real device, no real customers."
+  },
+  {
+   "id": "O06",
+   "category": "O",
+   "priority": "P0",
+   "scenario": "重い動画生成や開発でworkerが埋まる",
+   "expected": "監視・支払照合・顧客対応の実行余力を維持する",
+   "status": "LOCAL_PASS",
+   "evidence": [
+    {
+     "type": "automated_test",
+     "file": "AI_Company_OS/test/operations.test.mjs",
+     "tests": [
+      "O06 heavy generation cannot occupy capacity reserved for monitoring, reconciliation and support"
+     ],
+     "log": "review/p4-2026-11-01/final-tests.txt",
+     "run_at": "2026-11-01",
+     "node": "v24.22.2"
+    }
+   ],
+   "verification_scope": "local automated test (node:test, in-memory or temp SQLite, synthetic data, injected clock). Not an external provider test, not production, not a real device, no real customers."
+  },
+  {
+   "id": "O07",
+   "category": "O",
+   "priority": "P0",
+   "scenario": "実費が予約を超える・遅れて請求される",
+   "expected": "実費を記録し、以後の支出へ制御を反映する",
+   "status": "LOCAL_PASS",
+   "evidence": [
+    {
+     "type": "automated_test",
+     "file": "AI_Company_OS/test/operations.test.mjs",
+     "tests": [
+      "O07 actual cost above the reservation is recorded and freezes further spending"
+     ],
+     "log": "review/p4-2026-11-01/final-tests.txt",
+     "run_at": "2026-11-01",
+     "node": "v24.22.2"
+    }
+   ],
+   "verification_scope": "local automated test (node:test, in-memory or temp SQLite, synthetic data, injected clock). Not an external provider test, not production, not a real device, no real customers."
+  },
+  {
+   "id": "O08",
+   "category": "O",
+   "priority": "P0",
+   "scenario": "停止後に既存取引の照合・返金責任が残る",
+   "expected": "事実記録と義務を保持し、未解消のままCLOSEDへしない",
+   "status": "LOCAL_PASS",
+   "evidence": [
+    {
+     "type": "automated_test",
+     "file": "AI_Company_OS/test/operations.test.mjs",
+     "tests": [
+      "O08 a stopped service keeps refund/support/subscription obligations and cannot be closed until cleared"
+     ],
+     "log": "review/p4-2026-11-01/final-tests.txt",
+     "run_at": "2026-11-01",
+     "node": "v24.22.2"
+    }
+   ],
+   "verification_scope": "local automated test (node:test, in-memory or temp SQLite, synthetic data, injected clock). Not an external provider test, not production, not a real device, no real customers."
+  },
+  {
+   "id": "O09",
+   "category": "O",
+   "priority": "P0",
+   "scenario": "新しい異常の後から古い正常観測が届く",
+   "expected": "古い観測で正常化しない",
+   "status": "LOCAL_PASS",
+   "evidence": [
+    {
+     "type": "automated_test",
+     "file": "AI_Company_OS/test/operations.test.mjs",
+     "tests": [
+      "O09 an older normal observation arriving after a newer abnormal one does not restore readiness"
+     ],
+     "log": "review/p4-2026-11-01/final-tests.txt",
+     "run_at": "2026-11-01",
+     "node": "v24.22.2"
+    }
+   ],
+   "verification_scope": "local automated test (node:test, in-memory or temp SQLite, synthetic data, injected clock). Not an external provider test, not production, not a real device, no real customers."
+  },
+  {
+   "id": "O10",
+   "category": "O",
+   "priority": "P1",
+   "scenario": "旧DB・旧予約・既存の冪等キーから移行する",
+   "expected": "既存ID・金額・履歴・再送の意味を維持し復帰を検証する",
+   "status": "LOCAL_PASS",
+   "evidence": [
+    {
+     "type": "automated_test",
+     "file": "AI_Company_OS/test/operations.test.mjs",
+     "tests": [
+      "O10 a v0.5.0 database migrates with IDs, amounts, history and idempotent replays preserved"
+     ],
+     "log": "review/p4-2026-11-01/final-tests.txt",
+     "run_at": "2026-11-01",
+     "node": "v24.22.2"
+    }
+   ],
+   "verification_scope": "Fixture DB created with the original v0.5.0 code (test/fixtures/v050.sqlite) opened by the new runtime. Real owner data was not present to migrate."
+  },
+  {
+   "id": "U01",
+   "category": "U",
+   "priority": "P0",
+   "scenario": "スマホで承認・許可を二重タップする",
+   "expected": "一回の変更だけを反映し状態と識別子を返す",
+   "status": "LOCAL_PASS",
+   "evidence": [
+    {
+     "type": "automated_test",
+     "file": "AI_Company_OS/test/authority.test.mjs",
+     "tests": [
+      "U01 double tap on approve applies once and returns the same identifiers"
+     ],
+     "log": "review/p4-2026-11-01/final-tests.txt",
+     "run_at": "2026-11-01",
+     "node": "v24.22.2"
+    },
+    {
+     "type": "browser_emulation",
+     "file": "AI_Company_OS/scripts/ui-smoke.mjs",
+     "log": "review/p4-ui/ui-smoke.json",
+     "screenshots": "review/p4-ui/*.png",
+     "real_device": false
+    }
+   ],
+   "verification_scope": "Concurrent HTTP double-submit test plus browser dblclick in Chromium mobile emulation (review/p4-ui). Not on a real phone."
+  },
+  {
+   "id": "U02",
+   "category": "U",
+   "priority": "P1",
+   "scenario": "オフライン・古い画面から承認する",
+   "expected": "再同期と対象版を検査し、外部完了と先に表示しない",
+   "status": "LOCAL_PASS",
+   "evidence": [
+    {
+     "type": "automated_test",
+     "file": "AI_Company_OS/test/authority.test.mjs",
+     "tests": [
+      "U02 an approval from a stale screen is rejected after the card changed state"
+     ],
+     "log": "review/p4-2026-11-01/final-tests.txt",
+     "run_at": "2026-11-01",
+     "node": "v24.22.2"
+    },
+    {
+     "type": "browser_emulation",
+     "file": "AI_Company_OS/scripts/ui-smoke.mjs",
+     "log": "review/p4-ui/ui-smoke.json",
+     "screenshots": "review/p4-ui/*.png",
+     "real_device": false
+    }
+   ],
+   "verification_scope": "Stale-version rejection tested over HTTP; offline banner/disabled mutations tested in Chromium emulation. Not on a real phone."
+  },
+  {
+   "id": "U03",
+   "category": "U",
+   "priority": "P0",
+   "scenario": "スマホから全社停止する",
+   "expected": "受付・worker確認・外部の未停止・照合状態を表示する",
+   "status": "LOCAL_PASS",
+   "evidence": [
+    {
+     "type": "automated_test",
+     "file": "AI_Company_OS/test/authority.test.mjs",
+     "tests": [
+      "U03 company stop shows receipt, worker acknowledgement, unstoppable operations and continued reconciliation"
+     ],
+     "log": "review/p4-2026-11-01/final-tests.txt",
+     "run_at": "2026-11-01",
+     "node": "v24.22.2"
+    },
+    {
+     "type": "browser_emulation",
+     "file": "AI_Company_OS/scripts/ui-smoke.mjs",
+     "log": "review/p4-ui/ui-smoke.json",
+     "screenshots": "review/p4-ui/*.png",
+     "real_device": false
+    }
+   ],
+   "verification_scope": "Pause receipt, worker acknowledgement and re-auth for resume tested over HTTP and in Chromium emulation. Workers are simulated heartbeats."
+  },
+  {
+   "id": "U04",
+   "category": "U",
+   "priority": "P1",
+   "scenario": "通知非対応・拒否・遅延",
+   "expected": "アプリ内で判断待ちを確認でき、通知を承認扱いしない",
+   "status": "LOCAL_PASS",
+   "evidence": [
+    {
+     "type": "automated_test",
+     "file": "AI_Company_OS/test/authority.test.mjs",
+     "tests": [
+      "U04 decisions are visible in-app without any notification; notification state never approves"
+     ],
+     "log": "review/p4-2026-11-01/final-tests.txt",
+     "run_at": "2026-11-01",
+     "node": "v24.22.2"
+    }
+   ],
+   "verification_scope": "In-app decision list without any push notification; push notifications are NOT implemented."
+  },
+  {
+   "id": "U05",
+   "category": "U",
+   "priority": "P1",
+   "scenario": "候補・成果・費用をスマホで開く",
+   "expected": "原本・反証・時点・未確認・担当・次の判断へたどれる",
+   "status": "LOCAL_PASS",
+   "evidence": [
+    {
+     "type": "automated_test",
+     "file": "AI_Company_OS/test/authority.test.mjs",
+     "tests": [
+      "U05 from the phone API the owner can follow a candidate to its sources, counterevidence, owner and next decision"
+     ],
+     "log": "review/p4-2026-11-01/final-tests.txt",
+     "run_at": "2026-11-01",
+     "node": "v24.22.2"
+    }
+   ],
+   "verification_scope": "local automated test (node:test, in-memory or temp SQLite, synthetic data, injected clock). Not an external provider test, not production, not a real device, no real customers."
+  },
+  {
+   "id": "U06",
+   "category": "U",
+   "priority": "P0",
+   "scenario": "モバイル通信から本人と別利用者がアクセスする",
+   "expected": "本人だけが許可範囲へ入り、失効セッション・別利用者を拒否する",
+   "status": "LOCAL_PASS_PARTIAL",
+   "evidence": [
+    {
+     "type": "automated_test",
+     "file": "AI_Company_OS/test/authority.test.mjs",
+     "tests": [
+      "A08/U06 body owner flags and employee ids are ignored; wrong passphrase, foreign origin and revoked sessions are rejected"
+     ],
+     "log": "review/p4-2026-11-01/final-tests.txt",
+     "run_at": "2026-11-01",
+     "node": "v24.22.2"
+    },
+    {
+     "type": "browser_emulation",
+     "file": "AI_Company_OS/scripts/ui-smoke.mjs",
+     "log": "review/p4-ui/ui-smoke.json",
+     "screenshots": "review/p4-ui/*.png",
+     "real_device": false
+    }
+   ],
+   "verification_scope": "Server-side session/CSRF/origin/revocation tested over local HTTP plus Chromium iPhone-13 emulation (review/p4-ui/ui-smoke.json). No real phone, no mobile network, no HTTPS/Tailscale deployment verified."
+  },
+  {
+   "id": "K01",
+   "category": "K",
+   "priority": "P0",
+   "scenario": "機密・別顧客の原文を共通知識へ出力する",
+   "expected": "利用範囲を検査し出力を抑止する",
+   "status": "LOCAL_PASS",
+   "evidence": [
+    {
+     "type": "automated_test",
+     "file": "AI_Company_OS/test/knowledge-backup.test.mjs",
+     "tests": [
+      "K01 customer-confidential or restricted knowledge is not exported to the shared vault"
+     ],
+     "log": "review/p4-2026-11-01/final-tests.txt",
+     "run_at": "2026-11-01",
+     "node": "v24.22.2"
+    }
+   ],
+   "verification_scope": "local automated test (node:test, in-memory or temp SQLite, synthetic data, injected clock). Not an external provider test, not production, not a real device, no real customers."
+  },
+  {
+   "id": "K02",
+   "category": "K",
+   "priority": "P1",
+   "scenario": "Obsidianの手動編集が自動出力と競合する",
+   "expected": "手動変更を上書きせず差分を保持する",
+   "status": "LOCAL_PASS",
+   "evidence": [
+    {
+     "type": "automated_test",
+     "file": "AI_Company_OS/test/knowledge-backup.test.mjs",
+     "tests": [
+      "K02 manual Obsidian edits are preserved and the new export goes to 90_Conflicts"
+     ],
+     "log": "review/p4-2026-11-01/final-tests.txt",
+     "run_at": "2026-11-01",
+     "node": "v24.22.2"
+    }
+   ],
+   "verification_scope": "local automated test (node:test, in-memory or temp SQLite, synthetic data, injected clock). Not an external provider test, not production, not a real device, no real customers."
+  },
+  {
+   "id": "K03",
+   "category": "K",
+   "priority": "P0",
+   "scenario": "ノートに予算増額や公開許可を書く",
+   "expected": "正本の権限・資金を直接変更しない",
+   "status": "LOCAL_PASS",
+   "evidence": [
+    {
+     "type": "automated_test",
+     "file": "AI_Company_OS/test/knowledge-backup.test.mjs",
+     "tests": [
+      "K03 writing a budget increase or permit into a note changes nothing in the business record"
+     ],
+     "log": "review/p4-2026-11-01/final-tests.txt",
+     "run_at": "2026-11-01",
+     "node": "v24.22.2"
+    }
+   ],
+   "verification_scope": "local automated test (node:test, in-memory or temp SQLite, synthetic data, injected clock). Not an external provider test, not production, not a real device, no real customers."
+  },
+  {
+   "id": "K04",
+   "category": "K",
+   "priority": "P1",
+   "scenario": "教訓の根拠が失効・反証される",
+   "expected": "適用範囲と再確認を反映し、無期限の正解として使わない",
+   "status": "LOCAL_PASS",
+   "evidence": [
+    {
+     "type": "automated_test",
+     "file": "AI_Company_OS/test/knowledge-backup.test.mjs",
+     "tests": [
+      "K04 lessons past review date or whose source is contradicted are not used as permanent truth"
+     ],
+     "log": "review/p4-2026-11-01/final-tests.txt",
+     "run_at": "2026-11-01",
+     "node": "v24.22.2"
+    }
+   ],
+   "verification_scope": "local automated test (node:test, in-memory or temp SQLite, synthetic data, injected clock). Not an external provider test, not production, not a real device, no real customers."
+  },
+  {
+   "id": "K05",
+   "category": "K",
+   "priority": "P0",
+   "scenario": "顧客データ削除・復元を実行する",
+   "expected": "目的・保持・削除の条件を守り、他顧客や義務の正本を壊さない",
+   "status": "LOCAL_PASS",
+   "evidence": [
+    {
+     "type": "automated_test",
+     "file": "AI_Company_OS/test/knowledge-backup.test.mjs",
+     "tests": [
+      "K05 erasing one customer keeps financial facts and other customers intact"
+     ],
+     "log": "review/p4-2026-11-01/final-tests.txt",
+     "run_at": "2026-11-01",
+     "node": "v24.22.2"
+    }
+   ],
+   "verification_scope": "local automated test (node:test, in-memory or temp SQLite, synthetic data, injected clock). Not an external provider test, not production, not a real device, no real customers."
+  },
+  {
+   "id": "K06",
+   "category": "K",
+   "priority": "P0",
+   "scenario": "バックアップから復元する",
+   "expected": "許可の失効、未知操作、外部ID、成果物・資金と履歴を照合する",
+   "status": "LOCAL_PASS",
+   "evidence": [
+    {
+     "type": "automated_test",
+     "file": "AI_Company_OS/test/knowledge-backup.test.mjs",
+     "tests": [
+      "K06 restore starts paused, revokes sessions, turns in-flight into UNKNOWN and lists expired permits"
+     ],
+     "log": "review/p4-2026-11-01/final-tests.txt",
+     "run_at": "2026-11-01",
+     "node": "v24.22.2"
+    }
+   ],
+   "verification_scope": "local automated test (node:test, in-memory or temp SQLite, synthetic data, injected clock). Not an external provider test, not production, not a real device, no real customers."
+  },
+  {
+   "id": "E01",
+   "category": "E",
+   "priority": "P1",
+   "scenario": "一候補を調査から最小提供へ通す",
+   "expected": "原本・判断・実証・計画・ジョブ・成果物のIDがつながる",
+   "status": "LOCAL_PASS",
+   "evidence": [
+    {
+     "type": "automated_test",
+     "file": "AI_Company_OS/test/e2e-chain.test.mjs",
+     "tests": [
+      "E01 one candidate passes research -> decision -> experiment -> plan -> job -> artifact with connected IDs"
+     ],
+     "log": "review/p4-2026-11-01/final-tests.txt",
+     "run_at": "2026-11-01",
+     "node": "v24.22.2"
+    }
+   ],
+   "verification_scope": "local automated test (node:test, in-memory or temp SQLite, synthetic data, injected clock). Not an external provider test, not production, not a real device, no real customers."
+  },
+  {
+   "id": "E02",
+   "category": "E",
+   "priority": "P0",
+   "scenario": "一商品の外部テストを一巡させる",
+   "expected": "テストの利用・収入・支出・対応を追え、本番実績と区別できる",
+   "status": "LOCAL_PASS_PARTIAL",
+   "evidence": [
+    {
+     "type": "automated_test",
+     "file": "AI_Company_OS/test/e2e-chain.test.mjs",
+     "tests": [
+      "E02 test-mode usage, revenue, cost and support are traceable and separate from live results"
+     ],
+     "log": "review/p4-2026-11-01/final-tests.txt",
+     "run_at": "2026-11-01",
+     "node": "v24.22.2"
+    }
+   ],
+   "verification_scope": "Test-mode chain is traceable and separated from live, but provider events were signed locally with the Stripe-compatible scheme. No external Stripe test-mode account has been connected yet."
+  },
+  {
+   "id": "E03",
+   "category": "E",
+   "priority": "P0",
+   "scenario": "実際に許可された対象で本番実証する",
+   "expected": "実使用・収入・全費用・介入・欠測から継続・改善・停止を判断する",
+   "status": "NOT_RUN",
+   "evidence": [],
+   "verification_scope": null,
+   "blocked_by": "Owner-only setup: spending policy is disabled/0 yen, no publishing account, no live payment account, and the 2026-11-01 research batch selected no candidate (MORE_RESEARCH). See DELIVERY_REPORT_2026-11-01.md section 4."
+  },
+  {
+   "id": "E04",
+   "category": "E",
+   "priority": "P1",
+   "scenario": "需要が弱い実証とソフト故障の実証を比較する",
+   "expected": "市場の反応不足と技術の未達を区別し、成功を捏造しない",
+   "status": "LOCAL_PASS",
+   "evidence": [
+    {
+     "type": "automated_test",
+     "file": "AI_Company_OS/test/e2e-chain.test.mjs",
+     "tests": [
+      "E04 weak demand and broken delivery are classified differently"
+     ],
+     "log": "review/p4-2026-11-01/final-tests.txt",
+     "run_at": "2026-11-01",
+     "node": "v24.22.2"
+    }
+   ],
+   "verification_scope": "local automated test (node:test, in-memory or temp SQLite, synthetic data, injected clock). Not an external provider test, not production, not a real device, no real customers."
+  }
+ ],
+ "note": "Existing 109 v0.5.0 tests are kept and still pass but are NOT used as evidence here; every criterion cites a new test named with its ID. Snapshot before this update: review/REBUILD_ACCEPTANCE_MATRIX.2026-10-26.json",
+ "status_legend": {
+  "NOT_RUN": "not executed",
+  "LOCAL_PASS": "passed in local automated tests only (see verification_scope)",
+  "LOCAL_PASS_PARTIAL": "local tests pass for part of the scenario; remaining part listed in verification_scope",
+  "EXTERNAL_TEST_PASS": "(none yet) passed against a provider test environment",
+  "PRODUCTION_VERIFIED": "(none yet)",
+  "REAL_DEVICE_VERIFIED": "(none yet)"
+ },
+ "updated_at": "2026-11-01"
+}

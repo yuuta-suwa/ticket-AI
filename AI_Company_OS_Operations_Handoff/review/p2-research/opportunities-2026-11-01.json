@@ -1,0 +1,56 @@
+{
+  "note":"Opportunity cards and department assessments written by the AI departments (same model in different roles; NOT independent assurance). Scores 0-3 or null with basis.",
+  "opportunities":[
+    {"id":"opp-invoice-reminders","actor":"MARKETING_DIRECTOR","evidence":["o_ih_reminder","o_ih_validate","o_ts_reddit","o_ph_price","o_stripe_docs","o_wave_qb"],
+     "target":{"country":"US/UK/global English","language":"en","user":"solo freelancers who invoice clients without accounting software","payer":"the freelancer","scene":"an invoice becomes overdue and a follow-up email must be written"},
+     "value":{"problem_or_desire":"writing and remembering awkward overdue-payment follow-ups","alternative":"manual email; Stripe Invoicing built-in reminders (free per snippet); QuickBooks/FreshBooks/Wave reminders; Chaser/InvoiceSherpa","difference":"tone-tested reminder sequence for people who do not use those systems (hypothesis)","value_type":"time_saving"},
+     "why_now":{"observed":"several 2026 founder posts and launches on the same idea","inferred":"crowded; the change signal mostly reflects supply, not demand"},
+     "build":{"minimum_offer":"free web page that generates a 3-step polite reminder sequence for one overdue invoice (copy-paste, no account)","out_of_scope":["sending emails","accounting sync","payments"],"done_criteria":"user generates and copies a sequence in under 2 minutes"},
+     "delivery":{"channel":"answers in freelancer communities + search","access_basis":"no verified channel access; community self-promotion rules unchecked","permissions_needed":["publish a static page","post in communities (not granted)"]},
+     "revenue":{"streams":[{"type":"subscription","payer":"freelancer","rate":null,"note":"would compete with free Stripe reminders"}]},
+     "counterevidence":[{"text":"Stripe Invoicing sends automatic reminders by default (free) — strong substitute for Stripe users","obs":["o_stripe_docs"]},{"text":"Wave/QuickBooks/FreshBooks already include reminders","obs":["o_wave_qb"]},{"text":"most 'demand' evidence is founders validating their own products (interested parties), same origin type","obs":["o_ih_reminder","o_ih_validate"]}],
+     "gates":{"domain":"clear","rights":"confirmed","cost_bounded":true,"deliverable":true},"domain_tags":["productivity","freelance"]},
+    {"id":"opp-etsy-fee-tracker","actor":"PRODUCT_DIRECTOR","evidence":["o_etsy_tpl","o_crafty"],
+     "target":{"country":"US","language":"en","user":"small Etsy sellers (handmade/digital)","payer":"the seller","scene":"monthly: working out real profit after Etsy fees, ads, shipping and refunds"},
+     "value":{"problem_or_desire":"knowing true profit per item after all Etsy fees","alternative":"paid spreadsheet templates on Etsy (~$15), free calculators, Link My Books/Craftybase","difference":"import of the Etsy CSV that reconciles lump-sum deposits (hypothesis)","value_type":"time_saving"},
+     "why_now":{"inferred":"no change signal observed; evergreen need"},
+     "build":{"minimum_offer":"browser-only tool: upload Etsy monthly CSV, see fee breakdown and profit per listing (no data leaves the browser)","out_of_scope":["tax filing","inventory"],"done_criteria":"seller sees per-listing profit from a real CSV export"},
+     "delivery":{"channel":"Etsy seller forums + search 'etsy fee calculator'","access_basis":"search results show many competing calculators; channel access unverified","permissions_needed":["publish a static page"]},
+     "revenue":{"streams":[{"type":"one_time","payer":"seller","rate":null}]},
+     "counterevidence":[{"text":"free calculators and paid templates already exist; vendor claims of gaps come from competitors","obs":["o_crafty"]}],
+     "counterevidence_search_note":"site:reddit.com search returned no seller threads (not evidence of absence)",
+     "gates":{"domain":"clear","rights":"unknown","cost_bounded":true,"deliverable":true},"domain_tags":["ecommerce","productivity"]},
+    {"id":"opp-yt-ai-tool-tutorials","actor":"MARKETING_DIRECTOR","evidence":["o_yt_list","o_yt_outlier"],
+     "target":{"country":"global English","language":"en","user":"viewers learning a specific AI/productivity tool","payer":"YouTube ad share / affiliates / sponsors","scene":"searching how to do one task in a tool"},
+     "value":{"problem_or_desire":"learn one workflow quickly","alternative":"official docs, thousands of existing tutorials","difference":"none established","value_type":"learning"},
+     "why_now":{"inferred":"listicles claim tool tutorials work; written by vendors selling niche tools"},
+     "build":{"minimum_offer":"one screen-recorded tutorial on a narrow workflow","out_of_scope":["face-on-camera","series"],"done_criteria":"video answers one search query end-to-end"},
+     "delivery":{"channel":"YouTube search","access_basis":"no channel, no analytics, YouTube API not connected","permissions_needed":["YouTube account (owner)","publish (not granted)"]},
+     "revenue":{"streams":[{"type":"advertising","payer":"platform","rate":null},{"type":"affiliate","payer":"tool vendors","rate":null}]},
+     "counterevidence":[{"text":"only vendor listicles; no viewer demand data; YouTube limits repetitive/mass-produced content monetization","obs":["o_yt_list","o_yt_outlier"]}],
+     "gates":{"domain":"clear","rights":"unknown","cost_bounded":true,"deliverable":true},"domain_tags":["media","education"],"fame_signal_only":true}
+  ],
+  "assessments":{
+    "opp-invoice-reminders":{
+      "MARKETING":{"actor":"MARKETING_DIRECTOR","scores":{"demand_value":{"value":1,"basis":"only founder posts and an aggregator citing one Reddit post; snippets"},"reachability":{"value":null,"basis":"no channel tested"}},"findings":"Pain is plausible but evidence is from interested parties of one origin type; substitutes are free.","blockers":[],"unknowns":["paying intent","reachable channel"]},
+      "PRODUCT":{"actor":"PRODUCT_DIRECTOR","scores":{"buildability":{"value":3,"basis":"static page, no backend"},"maintenance_load":{"value":3,"basis":"no accounts or data"},"uniqueness":{"value":0,"basis":"Stripe/Wave/QuickBooks include reminders"}},"findings":"Trivial to build; differentiation is weak.","blockers":[],"unknowns":["whether tone generation matters"]},
+      "FINANCE":{"actor":"FINANCE_DIRECTOR","scores":{"revenue_structure":{"value":null,"basis":"no price evidence; competing with free"}},"findings":"0-yen build possible; revenue path unclear.","blockers":[],"unknowns":["price","hosting cost if free tier changes"],"cost_view":"build: owner time unknown; hosting: free tier assumed but unverified"},
+      "SUPPORT":{"actor":"SUPPORT_DIRECTOR","scores":{"maintenance_load":{"value":3,"basis":"no accounts"}},"findings":"Low support burden if no sending/accounts.","blockers":[],"unknowns":[]},
+      "AUDIT":{"actor":"AUDITOR","scores":{},"findings":"All customer-voice items are snippets; two share one origin; counterevidence (free substitutes) is strong.","blockers":[],"unknowns":["full text of sources"]}},
+    "opp-etsy-fee-tracker":{
+      "MARKETING":{"actor":"MARKETING_DIRECTOR","scores":{"demand_value":{"value":1,"basis":"existence of paid templates suggests spend, sales unknown"}},"findings":"Spend signal exists; no direct customer voice captured.","blockers":[],"unknowns":["customer voice","channel"]},
+      "PRODUCT":{"actor":"PRODUCT_DIRECTOR","scores":{"buildability":{"value":2,"basis":"depends on CSV format stability"}},"findings":"Feasible client-side.","blockers":[],"unknowns":["Etsy CSV terms of use"]},
+      "FINANCE":{"actor":"FINANCE_DIRECTOR","scores":{"revenue_structure":{"value":null,"basis":"no price test"}},"findings":"Low cost.","blockers":[],"unknowns":["price"]},
+      "SUPPORT":{"actor":"SUPPORT_DIRECTOR","scores":{"maintenance_load":{"value":2,"basis":"CSV format changes cause breakage"}},"findings":"Moderate.","blockers":[],"unknowns":[]},
+      "AUDIT":{"actor":"AUDITOR","scores":{},"findings":"Rights/terms for using Etsy exports and branding unknown; customer voice missing.","blockers":["rights-unknown"],"unknowns":["Etsy API/CSV terms"]}},
+    "opp-yt-ai-tool-tutorials":{
+      "MARKETING":{"actor":"MARKETING_DIRECTOR","scores":{"demand_value":{"value":null,"basis":"no viewer data"}},"findings":"Attention claims from vendors only.","blockers":[],"unknowns":["search volume","viewer retention"]},
+      "PRODUCT":{"actor":"PRODUCT_DIRECTOR","scores":{"uniqueness":{"value":0,"basis":"saturated, no unique angle"}},"findings":"No differentiated value.","blockers":[],"unknowns":[]},
+      "FINANCE":{"actor":"FINANCE_DIRECTOR","scores":{"revenue_structure":{"value":0,"basis":"monetization thresholds unmet; ad yield unknown"}},"findings":"No revenue in test window.","blockers":[],"unknowns":["ad yield"]},
+      "SUPPORT":{"actor":"SUPPORT_DIRECTOR","scores":{},"findings":"Low support.","blockers":[],"unknowns":[]},
+      "AUDIT":{"actor":"AUDITOR","scores":{},"findings":"Owner account and publish rights not granted; AI disclosure and monetization policy must be checked.","blockers":["publish-account-not-granted"],"unknowns":[]}}
+  },
+  "decision":{"id":"sel-2026-11-01-a","actor":"STRATEGY_DIRECTOR","outcome":"MORE_RESEARCH",
+    "rationale":"No candidate is eligible: evidence is snippet-only, independent origins are few, and free substitutes contradict the strongest candidate. Selecting one would require inventing demand. Next batch must read full text and capture direct customer voice.",
+    "next_questions":["Allow full-text domains (reddit.com, indiehackers.com, community forums) or connect Reddit/YouTube APIs, then re-run with the same run contract","For invoice reminders: how many target freelancers do NOT use Stripe/Wave/QuickBooks? (direct customer voice)","For Etsy fee tracker: confirm Etsy CSV/API terms and capture seller complaints in full text"]}
+}

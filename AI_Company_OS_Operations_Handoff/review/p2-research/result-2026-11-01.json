@@ -1,0 +1,543 @@
+{
+  "run": {
+    "id": "run-2026-11-01-a",
+    "project_id": null,
+    "body": {
+      "question": "英語圏の個人・小規模事業者が繰り返し時間を失っている作業、または楽しみ・学びとして求める内容で、0円で限定実証できるものは何か",
+      "locales": [
+        {
+          "language": "en",
+          "region": "US"
+        }
+      ],
+      "sources": [
+        "web_search",
+        "reddit",
+        "youtube",
+        "instagram",
+        "tiktok",
+        "app_reviews",
+        "competitor_pages",
+        "launches_research",
+        "product_reviews"
+      ],
+      "queries": [
+        "reddit freelancers wish there was a tool invoice late payment reminder 2026",
+        "site:reddit.com Etsy sellers spreadsheet tracking profit fees tool complaint",
+        "YouTube faceless channel niche low competition English 2026 viewers ask for tutorials",
+        "automatic invoice payment reminders free built-in Stripe Invoicing QuickBooks Wave FreshBooks"
+      ],
+      "published_range": null,
+      "limits": {
+        "max_items": 40,
+        "max_pages": 10,
+        "max_cost_yen": 0
+      },
+      "ends_at": "2026-11-02T05:08:36.112Z",
+      "discovery_paths": [
+        "problem_or_desire",
+        "change",
+        "own_results"
+      ],
+      "stop_condition": "limits or end time"
+    },
+    "status": "OPEN",
+    "stop_reason": null,
+    "created_by": "RESEARCH_CHIEF",
+    "created_at": "2026-11-01T05:08:36.113Z",
+    "closed_at": null,
+    "usage": {
+      "items": 12,
+      "pages": 4,
+      "cost_yen": 0,
+      "attempts_with_unknown_cost": 4
+    }
+  },
+  "attempts": [
+    {
+      "id": "run-2026-11-01-a:s1",
+      "source": "web_search",
+      "status": "PARTIAL",
+      "items": 4,
+      "meaning": "items-returned",
+      "reason": "snippets only"
+    },
+    {
+      "id": "run-2026-11-01-a:s2",
+      "source": "web_search",
+      "status": "PARTIAL",
+      "items": 3,
+      "meaning": "items-returned",
+      "reason": "snippets only; reddit results absent"
+    },
+    {
+      "id": "run-2026-11-01-a:s3",
+      "source": "web_search",
+      "status": "PARTIAL",
+      "items": 2,
+      "meaning": "items-returned",
+      "reason": "snippets only"
+    },
+    {
+      "id": "run-2026-11-01-a:s4",
+      "source": "web_search",
+      "status": "PARTIAL",
+      "items": 3,
+      "meaning": "items-returned",
+      "reason": "snippets only"
+    },
+    {
+      "id": "run-2026-11-01-a:f1",
+      "source": "launches_research",
+      "status": "FAILED",
+      "items": 0,
+      "meaning": "not-acquired-NOT-evidence-of-zero-demand",
+      "reason": "host www.indiehackers.com denied by session network policy (ENOTFOUND)"
+    },
+    {
+      "id": "run-2026-11-01-a:f2",
+      "source": "launches_research",
+      "status": "FAILED",
+      "items": 0,
+      "meaning": "not-acquired-NOT-evidence-of-zero-demand",
+      "reason": "host www.indiehackers.com denied by session network policy (ENOTFOUND)"
+    },
+    {
+      "id": "run-2026-11-01-a:f3",
+      "source": "competitor_pages",
+      "status": "FAILED",
+      "items": 0,
+      "meaning": "not-acquired-NOT-evidence-of-zero-demand",
+      "reason": "host api.craftybase.com denied by session network policy (ENOTFOUND)"
+    },
+    {
+      "id": "run-2026-11-01-a:c1",
+      "source": "reddit",
+      "status": "FAILED",
+      "items": 0,
+      "meaning": "not-acquired-NOT-evidence-of-zero-demand",
+      "reason": "container egress blocked (curl status 000)"
+    },
+    {
+      "id": "run-2026-11-01-a:c2",
+      "source": "youtube",
+      "status": "AUTH_REQUIRED",
+      "items": 0,
+      "meaning": "not-acquired-NOT-evidence-of-zero-demand",
+      "reason": "HTTP 403 without API key; YOUTUBE_API_KEY not configured"
+    },
+    {
+      "id": "run-2026-11-01-a:c3",
+      "source": "app_reviews",
+      "status": "FAILED",
+      "items": 0,
+      "meaning": "not-acquired-NOT-evidence-of-zero-demand",
+      "reason": "container egress blocked (curl status 000)"
+    },
+    {
+      "id": "run-2026-11-01-a:c4",
+      "source": "instagram",
+      "status": "NOT_CONNECTED",
+      "items": 0,
+      "meaning": "not-acquired-NOT-evidence-of-zero-demand",
+      "reason": "no Meta app / access token; Instagram Graph API requires app review"
+    },
+    {
+      "id": "run-2026-11-01-a:c5",
+      "source": "tiktok",
+      "status": "NOT_CONNECTED",
+      "items": 0,
+      "meaning": "not-acquired-NOT-evidence-of-zero-demand",
+      "reason": "no TikTok Research API access"
+    }
+  ],
+  "evaluations": [
+    {
+      "opportunity_id": "opp-invoice-reminders",
+      "revision": 1,
+      "content_hash": "dfdb1b80054fcb2172adb26617f9bbe751f298f028361f1bbd8f3e98f776544d",
+      "blockers": [],
+      "gaps": [
+        "evidence-type-missing:channel_or_behavior",
+        "snippet-only-evidence",
+        "counterevidence-scored-zero:uniqueness"
+      ],
+      "evidence": {
+        "raw_observations": 6,
+        "distinct_sources": 6,
+        "independent_origin_groups": 5,
+        "distinct_operators": 5,
+        "by_role": {
+          "customer_voice": 2,
+          "alternative_or_spend": 1,
+          "counterevidence": 2
+        },
+        "by_platform": {
+          "launches_research": 2,
+          "web_search": 1,
+          "competitor_pages": 3
+        },
+        "by_region_language": {
+          "US/en": 6
+        },
+        "snippet_only": 6,
+        "flagged_instructions": 0,
+        "note": "Independent count = distinct origin groups. Re-fetches and reposts are not new demand."
+      },
+      "dimensions": {
+        "demand_value": {
+          "values": [
+            1
+          ],
+          "min": 1,
+          "unscored": false
+        },
+        "reachability": {
+          "values": [
+            null
+          ],
+          "min": null,
+          "unscored": true
+        },
+        "buildability": {
+          "values": [
+            3
+          ],
+          "min": 3,
+          "unscored": false
+        },
+        "revenue_structure": {
+          "values": [
+            null
+          ],
+          "min": null,
+          "unscored": true
+        },
+        "maintenance_load": {
+          "values": [
+            3,
+            3
+          ],
+          "min": 3,
+          "unscored": false
+        },
+        "uniqueness": {
+          "values": [
+            0
+          ],
+          "min": 0,
+          "unscored": false
+        },
+        "reuse": {
+          "values": [],
+          "min": null,
+          "unscored": true
+        },
+        "mission_fit": {
+          "values": [],
+          "min": null,
+          "unscored": true
+        }
+      },
+      "recommendation": "MORE_RESEARCH",
+      "note": "Scores are aids. Missing scores stay null; gates are never offset by high scores; eligibility is not permission to spend or publish."
+    },
+    {
+      "opportunity_id": "opp-etsy-fee-tracker",
+      "revision": 1,
+      "content_hash": "0453b16e2adfb829deff2c3d68a6a45ed99103816b94851040379b30165fc700",
+      "blockers": [
+        "rights-unknown",
+        "audit:rights-unknown"
+      ],
+      "gaps": [
+        "evidence-type-missing:customer_voice",
+        "evidence-type-missing:channel_or_behavior",
+        "snippet-only-evidence"
+      ],
+      "evidence": {
+        "raw_observations": 2,
+        "distinct_sources": 2,
+        "independent_origin_groups": 2,
+        "distinct_operators": 2,
+        "by_role": {
+          "alternative_or_spend": 2
+        },
+        "by_platform": {
+          "competitor_pages": 2
+        },
+        "by_region_language": {
+          "US/en": 2
+        },
+        "snippet_only": 2,
+        "flagged_instructions": 0,
+        "note": "Independent count = distinct origin groups. Re-fetches and reposts are not new demand."
+      },
+      "dimensions": {
+        "demand_value": {
+          "values": [
+            1
+          ],
+          "min": 1,
+          "unscored": false
+        },
+        "reachability": {
+          "values": [],
+          "min": null,
+          "unscored": true
+        },
+        "buildability": {
+          "values": [
+            2
+          ],
+          "min": 2,
+          "unscored": false
+        },
+        "revenue_structure": {
+          "values": [
+            null
+          ],
+          "min": null,
+          "unscored": true
+        },
+        "maintenance_load": {
+          "values": [
+            2
+          ],
+          "min": 2,
+          "unscored": false
+        },
+        "uniqueness": {
+          "values": [],
+          "min": null,
+          "unscored": true
+        },
+        "reuse": {
+          "values": [],
+          "min": null,
+          "unscored": true
+        },
+        "mission_fit": {
+          "values": [],
+          "min": null,
+          "unscored": true
+        }
+      },
+      "recommendation": "HOLD",
+      "note": "Scores are aids. Missing scores stay null; gates are never offset by high scores; eligibility is not permission to spend or publish."
+    },
+    {
+      "opportunity_id": "opp-yt-ai-tool-tutorials",
+      "revision": 1,
+      "content_hash": "e72c49b6e87206d25f36cc0cc09716873b96bba06b0180242cb3cb17115b0691",
+      "blockers": [
+        "rights-unknown",
+        "audit:publish-account-not-granted"
+      ],
+      "gaps": [
+        "evidence-type-missing:customer_voice",
+        "evidence-type-missing:alternative_or_spend",
+        "evidence-type-missing:channel_or_behavior",
+        "snippet-only-evidence",
+        "attention-signal-only-not-purchase-evidence",
+        "counterevidence-scored-zero:revenue_structure,uniqueness"
+      ],
+      "evidence": {
+        "raw_observations": 2,
+        "distinct_sources": 2,
+        "independent_origin_groups": 1,
+        "distinct_operators": 2,
+        "by_role": {
+          "change_signal": 1
+        },
+        "by_platform": {
+          "web_search": 2
+        },
+        "by_region_language": {
+          "US/en": 2
+        },
+        "snippet_only": 2,
+        "flagged_instructions": 0,
+        "note": "Independent count = distinct origin groups. Re-fetches and reposts are not new demand."
+      },
+      "dimensions": {
+        "demand_value": {
+          "values": [
+            null
+          ],
+          "min": null,
+          "unscored": true
+        },
+        "reachability": {
+          "values": [],
+          "min": null,
+          "unscored": true
+        },
+        "buildability": {
+          "values": [],
+          "min": null,
+          "unscored": true
+        },
+        "revenue_structure": {
+          "values": [
+            0
+          ],
+          "min": 0,
+          "unscored": false
+        },
+        "maintenance_load": {
+          "values": [],
+          "min": null,
+          "unscored": true
+        },
+        "uniqueness": {
+          "values": [
+            0
+          ],
+          "min": 0,
+          "unscored": false
+        },
+        "reuse": {
+          "values": [],
+          "min": null,
+          "unscored": true
+        },
+        "mission_fit": {
+          "values": [],
+          "min": null,
+          "unscored": true
+        }
+      },
+      "recommendation": "HOLD",
+      "note": "Scores are aids. Missing scores stay null; gates are never offset by high scores; eligibility is not permission to spend or publish."
+    }
+  ],
+  "decision": {
+    "id": "sel-2026-11-01-a",
+    "body": {
+      "candidates": [
+        {
+          "id": "opp-invoice-reminders",
+          "revision": 1,
+          "content_hash": "dfdb1b80054fcb2172adb26617f9bbe751f298f028361f1bbd8f3e98f776544d",
+          "recommendation": "MORE_RESEARCH",
+          "blockers": [],
+          "gaps": [
+            "evidence-type-missing:channel_or_behavior",
+            "snippet-only-evidence",
+            "counterevidence-scored-zero:uniqueness"
+          ]
+        },
+        {
+          "id": "opp-etsy-fee-tracker",
+          "revision": 1,
+          "content_hash": "0453b16e2adfb829deff2c3d68a6a45ed99103816b94851040379b30165fc700",
+          "recommendation": "HOLD",
+          "blockers": [
+            "rights-unknown",
+            "audit:rights-unknown"
+          ],
+          "gaps": [
+            "evidence-type-missing:customer_voice",
+            "evidence-type-missing:channel_or_behavior",
+            "snippet-only-evidence"
+          ]
+        },
+        {
+          "id": "opp-yt-ai-tool-tutorials",
+          "revision": 1,
+          "content_hash": "e72c49b6e87206d25f36cc0cc09716873b96bba06b0180242cb3cb17115b0691",
+          "recommendation": "HOLD",
+          "blockers": [
+            "rights-unknown",
+            "audit:publish-account-not-granted"
+          ],
+          "gaps": [
+            "evidence-type-missing:customer_voice",
+            "evidence-type-missing:alternative_or_spend",
+            "evidence-type-missing:channel_or_behavior",
+            "snippet-only-evidence",
+            "attention-signal-only-not-purchase-evidence",
+            "counterevidence-scored-zero:revenue_structure,uniqueness"
+          ]
+        }
+      ],
+      "selected": null,
+      "outcome": "MORE_RESEARCH",
+      "rationale": "No candidate is eligible: evidence is snippet-only, independent origins are few, and free substitutes contradict the strongest candidate. Selecting one would require inventing demand. Next batch must read full text and capture direct customer voice.",
+      "next_questions": [
+        "Allow full-text domains (reddit.com, indiehackers.com, community forums) or connect Reddit/YouTube APIs, then re-run with the same run contract",
+        "For invoice reminders: how many target freelancers do NOT use Stripe/Wave/QuickBooks? (direct customer voice)",
+        "For Etsy fee tracker: confirm Etsy CSV/API terms and capture seller complaints in full text"
+      ],
+      "decided_by": "STRATEGY_DIRECTOR",
+      "review_at": null,
+      "owner_selected_product": false
+    },
+    "content_hash": "abc530f0f16e9e95b0463c8c4732bc637fd2ec4292232df6e03fa9343a618ed6",
+    "created_by": "STRATEGY_DIRECTOR",
+    "created_at": "2026-11-01T05:08:36.175Z"
+  },
+  "connections": [
+    {
+      "source": "youtube",
+      "status": "AUTH_REQUIRED"
+    },
+    {
+      "source": "instagram",
+      "status": "NOT_CONNECTED"
+    },
+    {
+      "source": "tiktok",
+      "status": "NOT_CONNECTED"
+    },
+    {
+      "source": "x",
+      "status": "AUTH_REQUIRED"
+    },
+    {
+      "source": "threads",
+      "status": "AUTH_REQUIRED"
+    },
+    {
+      "source": "reddit",
+      "status": "FAILED"
+    },
+    {
+      "source": "quora_forums",
+      "status": "NOT_CONNECTED"
+    },
+    {
+      "source": "web_search",
+      "status": "PARTIAL"
+    },
+    {
+      "source": "search_trends",
+      "status": "NOT_CONNECTED"
+    },
+    {
+      "source": "app_reviews",
+      "status": "FAILED"
+    },
+    {
+      "source": "product_reviews",
+      "status": "NOT_CONNECTED"
+    },
+    {
+      "source": "competitor_pages",
+      "status": "FAILED"
+    },
+    {
+      "source": "launches_research",
+      "status": "FAILED"
+    },
+    {
+      "source": "public_statistics",
+      "status": "NOT_CONNECTED"
+    },
+    {
+      "source": "own_data",
+      "status": "NOT_CONNECTED"
+    }
+  ]
+}

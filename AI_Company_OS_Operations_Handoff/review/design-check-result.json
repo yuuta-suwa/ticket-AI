@@ -1,0 +1,23 @@
+{
+  "scope": "documentation-consistency-and-hypothetical-arithmetic-only",
+  "runtime_roles_consistent": 42,
+  "future_acceptance_criteria": 60,
+  "acceptance_status_counts": {
+    "LOCAL_PASS": 56,
+    "LOCAL_PASS_PARTIAL": 3,
+    "NOT_RUN": 1
+  },
+  "subscription": {
+    "cash": 18600,
+    "economic": 2600,
+    "cash_after_initial": -21400,
+    "economic_after_initial": -37400,
+    "cac": 4400.0
+  },
+  "media": {
+    "cash": -9800,
+    "economic": -21800
+  },
+  "market_validation": false,
+  "external_execution_verified": false
+}

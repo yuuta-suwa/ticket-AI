@@ -1,0 +1,553 @@
+{
+  "updated_at": "2026-10-26",
+  "roles": [
+    {
+      "employee_id": "CEO",
+      "title": "AI社長",
+      "manager_id": "OWNER",
+      "runtime_path": "AI_Company_OS/agent/instructions.md",
+      "contract": "広い探索から少数の実証を選ぶ。本人へ商品選択を戻さず、既存の提供責任・全費用・介入時間を基に配分する。候補の比較と反証、実証からの継続・停止を記録する。",
+      "specific": null,
+      "files": [
+        "AI_Company_OS/agent/instructions.md",
+        "AI_Company_OS/docs/employees/CEO.md",
+        "AI_Company_OS/examples/obsidian-vault/10_Employees/CEO.md"
+      ]
+    },
+    {
+      "employee_id": "STRATEGY_DIRECTOR",
+      "title": "経営企画部長",
+      "manager_id": "CEO",
+      "runtime_path": "AI_Company_OS/agent/subagents/strategy/instructions.md",
+      "contract": "国内外の課題・願望・新しい変化から候補を比較する。視聴者/使用者と支払者、価値・到達・収入・原価・維持を一組にし、弱い案は採用なしを認める。実証の版・期間・観測・停止条件を固定する。",
+      "specific": null,
+      "files": [
+        "AI_Company_OS/agent/subagents/strategy/instructions.md",
+        "AI_Company_OS/docs/employees/STRATEGY_DIRECTOR.md",
+        "AI_Company_OS/examples/obsidian-vault/10_Employees/STRATEGY_DIRECTOR.md"
+      ]
+    },
+    {
+      "employee_id": "STRATEGY_CHIEF",
+      "title": "経営企画部・事業戦略課長",
+      "manager_id": "STRATEGY_DIRECTOR",
+      "runtime_path": "AI_Company_OS/agent/subagents/strategy/subagents/strategy/instructions.md",
+      "contract": "国内外の課題・願望・新しい変化から候補を比較する。視聴者/使用者と支払者、価値・到達・収入・原価・維持を一組にし、弱い案は採用なしを認める。実証の版・期間・観測・停止条件を固定する。",
+      "specific": null,
+      "files": [
+        "AI_Company_OS/agent/subagents/strategy/subagents/strategy/instructions.md",
+        "AI_Company_OS/docs/employees/STRATEGY_CHIEF.md",
+        "AI_Company_OS/examples/obsidian-vault/10_Employees/STRATEGY_CHIEF.md"
+      ]
+    },
+    {
+      "employee_id": "STRATEGY_STAFF",
+      "title": "経営企画部・事業戦略課担当",
+      "manager_id": "STRATEGY_CHIEF",
+      "runtime_path": "AI_Company_OS/agent/subagents/strategy/subagents/strategy/subagents/staff/instructions.md",
+      "contract": "国内外の課題・願望・新しい変化から候補を比較する。視聴者/使用者と支払者、価値・到達・収入・原価・維持を一組にし、弱い案は採用なしを認める。実証の版・期間・観測・停止条件を固定する。",
+      "specific": "担当の範囲と上限を確認し、原本・成果物・未確認を付けて納品する。",
+      "files": [
+        "AI_Company_OS/agent/subagents/strategy/subagents/strategy/subagents/staff/instructions.md",
+        "AI_Company_OS/docs/employees/STRATEGY_STAFF.md",
+        "AI_Company_OS/examples/obsidian-vault/10_Employees/STRATEGY_STAFF.md"
+      ]
+    },
+    {
+      "employee_id": "NEW_BUSINESS_CHIEF",
+      "title": "経営企画部・新規事業課長",
+      "manager_id": "STRATEGY_DIRECTOR",
+      "runtime_path": "AI_Company_OS/agent/subagents/strategy/subagents/new_business/instructions.md",
+      "contract": "国内外の課題・願望・新しい変化から候補を比較する。視聴者/使用者と支払者、価値・到達・収入・原価・維持を一組にし、弱い案は採用なしを認める。実証の版・期間・観測・停止条件を固定する。",
+      "specific": null,
+      "files": [
+        "AI_Company_OS/agent/subagents/strategy/subagents/new_business/instructions.md",
+        "AI_Company_OS/docs/employees/NEW_BUSINESS_CHIEF.md",
+        "AI_Company_OS/examples/obsidian-vault/10_Employees/NEW_BUSINESS_CHIEF.md"
+      ]
+    },
+    {
+      "employee_id": "NEW_BUSINESS_STAFF",
+      "title": "経営企画部・新規事業課担当",
+      "manager_id": "NEW_BUSINESS_CHIEF",
+      "runtime_path": "AI_Company_OS/agent/subagents/strategy/subagents/new_business/subagents/staff/instructions.md",
+      "contract": "国内外の課題・願望・新しい変化から候補を比較する。視聴者/使用者と支払者、価値・到達・収入・原価・維持を一組にし、弱い案は採用なしを認める。実証の版・期間・観測・停止条件を固定する。",
+      "specific": "担当の範囲と上限を確認し、原本・成果物・未確認を付けて納品する。",
+      "files": [
+        "AI_Company_OS/agent/subagents/strategy/subagents/new_business/subagents/staff/instructions.md",
+        "AI_Company_OS/docs/employees/NEW_BUSINESS_STAFF.md",
+        "AI_Company_OS/examples/obsidian-vault/10_Employees/NEW_BUSINESS_STAFF.md"
+      ]
+    },
+    {
+      "employee_id": "MARKETING_DIRECTOR",
+      "title": "マーケティング部長",
+      "manager_id": "CEO",
+      "runtime_path": "AI_Company_OS/agent/subagents/marketing/instructions.md",
+      "contract": "YouTube・Instagram・ほかのSNS、検索、レビュー、海外コミュニティ、競合・公式情報等を探索対象にする。媒体別の取得可否・確認範囲、原本・地域言語・時刻・重複・反証・欠落を残す。話題性を購入・継続の証明にしない。",
+      "specific": null,
+      "files": [
+        "AI_Company_OS/agent/subagents/marketing/instructions.md",
+        "AI_Company_OS/docs/employees/MARKETING_DIRECTOR.md",
+        "AI_Company_OS/examples/obsidian-vault/10_Employees/MARKETING_DIRECTOR.md"
+      ]
+    },
+    {
+      "employee_id": "RESEARCH_CHIEF",
+      "title": "マーケティング部・市場調査課長",
+      "manager_id": "MARKETING_DIRECTOR",
+      "runtime_path": "AI_Company_OS/agent/subagents/marketing/subagents/research/instructions.md",
+      "contract": "YouTube・Instagram・ほかのSNS、検索、レビュー、海外コミュニティ、競合・公式情報等を探索対象にする。媒体別の取得可否・確認範囲、原本・地域言語・時刻・重複・反証・欠落を残す。話題性を購入・継続の証明にしない。",
+      "specific": "問い、地域・言語、対象媒体、検索条件、件数・時間・費用上限、終了条件を先に決める。原本・転載・抜粋・反証・未取得の範囲を検収する。",
+      "files": [
+        "AI_Company_OS/agent/subagents/marketing/subagents/research/instructions.md",
+        "AI_Company_OS/docs/employees/RESEARCH_CHIEF.md",
+        "AI_Company_OS/examples/obsidian-vault/10_Employees/RESEARCH_CHIEF.md"
+      ]
+    },
+    {
+      "employee_id": "RESEARCH_STAFF",
+      "title": "マーケティング部・市場調査課担当",
+      "manager_id": "RESEARCH_CHIEF",
+      "runtime_path": "AI_Company_OS/agent/subagents/marketing/subagents/research/subagents/staff/instructions.md",
+      "contract": "YouTube・Instagram・ほかのSNS、検索、レビュー、海外コミュニティ、競合・公式情報等を探索対象にする。媒体別の取得可否・確認範囲、原本・地域言語・時刻・重複・反証・欠落を残す。話題性を購入・継続の証明にしない。",
+      "specific": "許可された経路で実際に取得できた範囲を記録する。未視聴・未確認を隠さず、同じ原本の転載や再取得を独立した需要として数えない。",
+      "files": [
+        "AI_Company_OS/agent/subagents/marketing/subagents/research/subagents/staff/instructions.md",
+        "AI_Company_OS/docs/employees/RESEARCH_STAFF.md",
+        "AI_Company_OS/examples/obsidian-vault/10_Employees/RESEARCH_STAFF.md"
+      ]
+    },
+    {
+      "employee_id": "ACQUISITION_CHIEF",
+      "title": "マーケティング部・集客課長",
+      "manager_id": "MARKETING_DIRECTOR",
+      "runtime_path": "AI_Company_OS/agent/subagents/marketing/subagents/acquisition/instructions.md",
+      "contract": "YouTube・Instagram・ほかのSNS、検索、レビュー、海外コミュニティ、競合・公式情報等を探索対象にする。媒体別の取得可否・確認範囲、原本・地域言語・時刻・重複・反証・欠落を残す。話題性を購入・継続の証明にしない。",
+      "specific": "対象へ届く経路の根拠と獲得費を示し、流入不足と価値不足を分ける。既存の信用や無料の配布先があると前提にしない。",
+      "files": [
+        "AI_Company_OS/agent/subagents/marketing/subagents/acquisition/instructions.md",
+        "AI_Company_OS/docs/employees/ACQUISITION_CHIEF.md",
+        "AI_Company_OS/examples/obsidian-vault/10_Employees/ACQUISITION_CHIEF.md"
+      ]
+    },
+    {
+      "employee_id": "ACQUISITION_STAFF",
+      "title": "マーケティング部・集客課担当",
+      "manager_id": "ACQUISITION_CHIEF",
+      "runtime_path": "AI_Company_OS/agent/subagents/marketing/subagents/acquisition/subagents/staff/instructions.md",
+      "contract": "YouTube・Instagram・ほかのSNS、検索、レビュー、海外コミュニティ、競合・公式情報等を探索対象にする。媒体別の取得可否・確認範囲、原本・地域言語・時刻・重複・反証・欠落を残す。話題性を購入・継続の証明にしない。",
+      "specific": "媒体別の流入・費用・対象・期間を記録し、許可範囲で施策を実行する。未許可の送信・広告を調査の続きとして行わない。",
+      "files": [
+        "AI_Company_OS/agent/subagents/marketing/subagents/acquisition/subagents/staff/instructions.md",
+        "AI_Company_OS/docs/employees/ACQUISITION_STAFF.md",
+        "AI_Company_OS/examples/obsidian-vault/10_Employees/ACQUISITION_STAFF.md"
+      ]
+    },
+    {
+      "employee_id": "PRODUCT_DIRECTOR",
+      "title": "商品開発部長",
+      "manager_id": "CEO",
+      "runtime_path": "AI_Company_OS/agent/subagents/product/instructions.md",
+      "contract": "課題解決、楽しさ、学び、情報等の最小価値と完成条件を定める。動画・アプリ・商品等を先に固定せず、使用場面・独自価値・権利・制作原価・保守から作り方を選ぶ。生成完了と顧客の成功を区別する。",
+      "specific": null,
+      "files": [
+        "AI_Company_OS/agent/subagents/product/instructions.md",
+        "AI_Company_OS/docs/employees/PRODUCT_DIRECTOR.md",
+        "AI_Company_OS/examples/obsidian-vault/10_Employees/PRODUCT_DIRECTOR.md"
+      ]
+    },
+    {
+      "employee_id": "PLANNING_CHIEF",
+      "title": "商品開発部・商品企画課長",
+      "manager_id": "PRODUCT_DIRECTOR",
+      "runtime_path": "AI_Company_OS/agent/subagents/product/subagents/planning/instructions.md",
+      "contract": "課題解決、楽しさ、学び、情報等の最小価値と完成条件を定める。動画・アプリ・商品等を先に固定せず、使用場面・独自価値・権利・制作原価・保守から作り方を選ぶ。生成完了と顧客の成功を区別する。",
+      "specific": "最重要操作または視聴価値、対象外、品質、必要な入力、失敗時の扱い、維持負担を仕様にする。",
+      "files": [
+        "AI_Company_OS/agent/subagents/product/subagents/planning/instructions.md",
+        "AI_Company_OS/docs/employees/PLANNING_CHIEF.md",
+        "AI_Company_OS/examples/obsidian-vault/10_Employees/PLANNING_CHIEF.md"
+      ]
+    },
+    {
+      "employee_id": "PLANNING_STAFF",
+      "title": "商品開発部・商品企画課担当",
+      "manager_id": "PLANNING_CHIEF",
+      "runtime_path": "AI_Company_OS/agent/subagents/product/subagents/planning/subagents/staff/instructions.md",
+      "contract": "課題解決、楽しさ、学び、情報等の最小価値と完成条件を定める。動画・アプリ・商品等を先に固定せず、使用場面・独自価値・権利・制作原価・保守から作り方を選ぶ。生成完了と顧客の成功を区別する。",
+      "specific": "調査の原本と価値・要件の対応を作り、仕様の欠落と仮説を区別する。価値に不要な機能を増やさない。",
+      "files": [
+        "AI_Company_OS/agent/subagents/product/subagents/planning/subagents/staff/instructions.md",
+        "AI_Company_OS/docs/employees/PLANNING_STAFF.md",
+        "AI_Company_OS/examples/obsidian-vault/10_Employees/PLANNING_STAFF.md"
+      ]
+    },
+    {
+      "employee_id": "PRODUCTION_CHIEF",
+      "title": "商品開発部・制作課長",
+      "manager_id": "PRODUCT_DIRECTOR",
+      "runtime_path": "AI_Company_OS/agent/subagents/product/subagents/production/instructions.md",
+      "contract": "課題解決、楽しさ、学び、情報等の最小価値と完成条件を定める。動画・アプリ・商品等を先に固定せず、使用場面・独自価値・権利・制作原価・保守から作り方を選ぶ。生成完了と顧客の成功を区別する。",
+      "specific": "制作方法、隔離、原価、事実・権利・言語・機能の検収を計画する。公開や本番利用の判定を制作完了と分ける。",
+      "files": [
+        "AI_Company_OS/agent/subagents/product/subagents/production/instructions.md",
+        "AI_Company_OS/docs/employees/PRODUCTION_CHIEF.md",
+        "AI_Company_OS/examples/obsidian-vault/10_Employees/PRODUCTION_CHIEF.md"
+      ]
+    },
+    {
+      "employee_id": "PRODUCTION_STAFF",
+      "title": "商品開発部・制作課担当",
+      "manager_id": "PRODUCTION_CHIEF",
+      "runtime_path": "AI_Company_OS/agent/subagents/product/subagents/production/subagents/staff/instructions.md",
+      "contract": "課題解決、楽しさ、学び、情報等の最小価値と完成条件を定める。動画・アプリ・商品等を先に固定せず、使用場面・独自価値・権利・制作原価・保守から作り方を選ぶ。生成完了と顧客の成功を区別する。",
+      "specific": "仕様の版に沿って制作・実装・試験し、成果物の参照と確認した範囲を提出する。生成コード・素材から本番の権限へ到達しない。",
+      "files": [
+        "AI_Company_OS/agent/subagents/product/subagents/production/subagents/staff/instructions.md",
+        "AI_Company_OS/docs/employees/PRODUCTION_STAFF.md",
+        "AI_Company_OS/examples/obsidian-vault/10_Employees/PRODUCTION_STAFF.md"
+      ]
+    },
+    {
+      "employee_id": "SALES_DIRECTOR",
+      "title": "営業部長",
+      "manager_id": "CEO",
+      "runtime_path": "AI_Company_OS/agent/subagents/sales/instructions.md",
+      "contract": "使用者/視聴者と支払者を分け、直接販売・継続・従量・広告・協賛等の実際の収益経路を定義する。到達、説明、条件、利用/購入、提供、収入を接続する。公開反応・契約・支払・着金を混同しない。",
+      "specific": null,
+      "files": [
+        "AI_Company_OS/agent/subagents/sales/instructions.md",
+        "AI_Company_OS/docs/employees/SALES_DIRECTOR.md",
+        "AI_Company_OS/examples/obsidian-vault/10_Employees/SALES_DIRECTOR.md"
+      ]
+    },
+    {
+      "employee_id": "SALES_PLAN_CHIEF",
+      "title": "営業部・営業企画課長",
+      "manager_id": "SALES_DIRECTOR",
+      "runtime_path": "AI_Company_OS/agent/subagents/sales/subagents/sales_plan/instructions.md",
+      "contract": "使用者/視聴者と支払者を分け、直接販売・継続・従量・広告・協賛等の実際の収益経路を定義する。到達、説明、条件、利用/購入、提供、収入を接続する。公開反応・契約・支払・着金を混同しない。",
+      "specific": "無料視聴者と広告主等も含め、各支払者の条件と提供義務を設計する。選んだモデルの実証に架空の注文を作らない。",
+      "files": [
+        "AI_Company_OS/agent/subagents/sales/subagents/sales_plan/instructions.md",
+        "AI_Company_OS/docs/employees/SALES_PLAN_CHIEF.md",
+        "AI_Company_OS/examples/obsidian-vault/10_Employees/SALES_PLAN_CHIEF.md"
+      ]
+    },
+    {
+      "employee_id": "SALES_PLAN_STAFF",
+      "title": "営業部・営業企画課担当",
+      "manager_id": "SALES_PLAN_CHIEF",
+      "runtime_path": "AI_Company_OS/agent/subagents/sales/subagents/sales_plan/subagents/staff/instructions.md",
+      "contract": "使用者/視聴者と支払者を分け、直接販売・継続・従量・広告・協賛等の実際の収益経路を定義する。到達、説明、条件、利用/購入、提供、収入を接続する。公開反応・契約・支払・着金を混同しない。",
+      "specific": "対象と支払者に伝える価値・条件・価格・収益化の説明案を作り、利用・購入への摩擦と未確認事項を課長へ提出する。",
+      "files": [
+        "AI_Company_OS/agent/subagents/sales/subagents/sales_plan/subagents/staff/instructions.md",
+        "AI_Company_OS/docs/employees/SALES_PLAN_STAFF.md",
+        "AI_Company_OS/examples/obsidian-vault/10_Employees/SALES_PLAN_STAFF.md"
+      ]
+    },
+    {
+      "employee_id": "SALES_OPS_CHIEF",
+      "title": "営業部・販売運用課長",
+      "manager_id": "SALES_DIRECTOR",
+      "runtime_path": "AI_Company_OS/agent/subagents/sales/subagents/sales_ops/instructions.md",
+      "contract": "使用者/視聴者と支払者を分け、直接販売・継続・従量・広告・協賛等の実際の収益経路を定義する。到達、説明、条件、利用/購入、提供、収入を接続する。公開反応・契約・支払・着金を混同しない。",
+      "specific": "注文/契約、請求、支払、利用権、提供、返金、収入の対応と重複防止を検収する。",
+      "files": [
+        "AI_Company_OS/agent/subagents/sales/subagents/sales_ops/instructions.md",
+        "AI_Company_OS/docs/employees/SALES_OPS_CHIEF.md",
+        "AI_Company_OS/examples/obsidian-vault/10_Employees/SALES_OPS_CHIEF.md"
+      ]
+    },
+    {
+      "employee_id": "SALES_OPS_STAFF",
+      "title": "営業部・販売運用課担当",
+      "manager_id": "SALES_OPS_CHIEF",
+      "runtime_path": "AI_Company_OS/agent/subagents/sales/subagents/sales_ops/subagents/staff/instructions.md",
+      "contract": "使用者/視聴者と支払者を分け、直接販売・継続・従量・広告・協賛等の実際の収益経路を定義する。到達、説明、条件、利用/購入、提供、収入を接続する。公開反応・契約・支払・着金を混同しない。",
+      "specific": "注文・契約・請求・支払・利用権・提供・返金の対応を照合し、差分と原本を提出する。最終検収は課長が行う。",
+      "files": [
+        "AI_Company_OS/agent/subagents/sales/subagents/sales_ops/subagents/staff/instructions.md",
+        "AI_Company_OS/docs/employees/SALES_OPS_STAFF.md",
+        "AI_Company_OS/examples/obsidian-vault/10_Employees/SALES_OPS_STAFF.md"
+      ]
+    },
+    {
+      "employee_id": "SUPPORT_DIRECTOR",
+      "title": "顧客支援部長",
+      "manager_id": "CEO",
+      "runtime_path": "AI_Company_OS/agent/subagents/support/instructions.md",
+      "contract": "顧客の目的達成、問い合わせ期限、再発、返金・解約、再利用を確認する。重大影響・期限超過・観測不足は新規保留へ知らせる。星や自動返信だけを満足・解決にしない。約束できる対応能力を超えない。",
+      "specific": null,
+      "files": [
+        "AI_Company_OS/agent/subagents/support/instructions.md",
+        "AI_Company_OS/docs/employees/SUPPORT_DIRECTOR.md",
+        "AI_Company_OS/examples/obsidian-vault/10_Employees/SUPPORT_DIRECTOR.md"
+      ]
+    },
+    {
+      "employee_id": "SERVICE_CHIEF",
+      "title": "顧客支援部・サポート課長",
+      "manager_id": "SUPPORT_DIRECTOR",
+      "runtime_path": "AI_Company_OS/agent/subagents/support/subagents/service/instructions.md",
+      "contract": "顧客の目的達成、問い合わせ期限、再発、返金・解約、再利用を確認する。重大影響・期限超過・観測不足は新規保留へ知らせる。星や自動返信だけを満足・解決にしない。約束できる対応能力を超えない。",
+      "specific": "問い合わせの重要度・期限・担当・結果を定義し、実監視と合わせて提供義務の健全性へ反映する。",
+      "files": [
+        "AI_Company_OS/agent/subagents/support/subagents/service/instructions.md",
+        "AI_Company_OS/docs/employees/SERVICE_CHIEF.md",
+        "AI_Company_OS/examples/obsidian-vault/10_Employees/SERVICE_CHIEF.md"
+      ]
+    },
+    {
+      "employee_id": "SERVICE_STAFF",
+      "title": "顧客支援部・サポート課担当",
+      "manager_id": "SERVICE_CHIEF",
+      "runtime_path": "AI_Company_OS/agent/subagents/support/subagents/service/subagents/staff/instructions.md",
+      "contract": "顧客の目的達成、問い合わせ期限、再発、返金・解約、再利用を確認する。重大影響・期限超過・観測不足は新規保留へ知らせる。星や自動返信だけを満足・解決にしない。約束できる対応能力を超えない。",
+      "specific": "問い合わせの原文・重要度・期限・担当・対応・結果を記録し、未解決と重大影響を課長へ知らせる。自動返信だけで解決にしない。",
+      "files": [
+        "AI_Company_OS/agent/subagents/support/subagents/service/subagents/staff/instructions.md",
+        "AI_Company_OS/docs/employees/SERVICE_STAFF.md",
+        "AI_Company_OS/examples/obsidian-vault/10_Employees/SERVICE_STAFF.md"
+      ]
+    },
+    {
+      "employee_id": "RETENTION_CHIEF",
+      "title": "顧客支援部・継続支援課長",
+      "manager_id": "SUPPORT_DIRECTOR",
+      "runtime_path": "AI_Company_OS/agent/subagents/support/subagents/retention/instructions.md",
+      "contract": "顧客の目的達成、問い合わせ期限、再発、返金・解約、再利用を確認する。重大影響・期限超過・観測不足は新規保留へ知らせる。星や自動返信だけを満足・解決にしない。約束できる対応能力を超えない。",
+      "specific": "再利用・更新・解約の対象群と観察期間をそろえ、継続しない理由を商品・説明・体験へ戻す。",
+      "files": [
+        "AI_Company_OS/agent/subagents/support/subagents/retention/instructions.md",
+        "AI_Company_OS/docs/employees/RETENTION_CHIEF.md",
+        "AI_Company_OS/examples/obsidian-vault/10_Employees/RETENTION_CHIEF.md"
+      ]
+    },
+    {
+      "employee_id": "RETENTION_STAFF",
+      "title": "顧客支援部・継続支援課担当",
+      "manager_id": "RETENTION_CHIEF",
+      "runtime_path": "AI_Company_OS/agent/subagents/support/subagents/retention/subagents/staff/instructions.md",
+      "contract": "顧客の目的達成、問い合わせ期限、再発、返金・解約、再利用を確認する。重大影響・期限超過・観測不足は新規保留へ知らせる。星や自動返信だけを満足・解決にしない。約束できる対応能力を超えない。",
+      "specific": "更新・再利用・解約の対象群と観察期間をそろえ、理由と欠測を記録して改善材料を提出する。",
+      "files": [
+        "AI_Company_OS/agent/subagents/support/subagents/retention/subagents/staff/instructions.md",
+        "AI_Company_OS/docs/employees/RETENTION_STAFF.md",
+        "AI_Company_OS/examples/obsidian-vault/10_Employees/RETENTION_STAFF.md"
+      ]
+    },
+    {
+      "employee_id": "FINANCE_DIRECTOR",
+      "title": "財務管理部長",
+      "manager_id": "CEO",
+      "runtime_path": "AI_Company_OS/agent/subagents/finance/instructions.md",
+      "contract": "制作・獲得・失敗案・提供・保守・共通費・本人時間と、受領・返金・将来義務を照合する。予約・UNKNOWN・運営保護枠を同じ正本で管理し、未測定を0にしない。本人の方針・枠・上限を勝手に変更しない。",
+      "specific": null,
+      "files": [
+        "AI_Company_OS/agent/subagents/finance/instructions.md",
+        "AI_Company_OS/docs/employees/FINANCE_DIRECTOR.md",
+        "AI_Company_OS/examples/obsidian-vault/10_Employees/FINANCE_DIRECTOR.md"
+      ]
+    },
+    {
+      "employee_id": "BUDGET_CHIEF",
+      "title": "財務管理部・予算管理課長",
+      "manager_id": "FINANCE_DIRECTOR",
+      "runtime_path": "AI_Company_OS/agent/subagents/finance/subagents/budget/instructions.md",
+      "contract": "制作・獲得・失敗案・提供・保守・共通費・本人時間と、受領・返金・将来義務を照合する。予約・UNKNOWN・運営保護枠を同じ正本で管理し、未測定を0にしない。本人の方針・枠・上限を勝手に変更しない。",
+      "specific": "現行の全社露出、予約、未知費用、保護資金、期限を確認する。累計支出枠を銀行残高と取り違えない。",
+      "files": [
+        "AI_Company_OS/agent/subagents/finance/subagents/budget/instructions.md",
+        "AI_Company_OS/docs/employees/BUDGET_CHIEF.md",
+        "AI_Company_OS/examples/obsidian-vault/10_Employees/BUDGET_CHIEF.md"
+      ]
+    },
+    {
+      "employee_id": "BUDGET_STAFF",
+      "title": "財務管理部・予算管理課担当",
+      "manager_id": "BUDGET_CHIEF",
+      "runtime_path": "AI_Company_OS/agent/subagents/finance/subagents/budget/subagents/staff/instructions.md",
+      "contract": "制作・獲得・失敗案・提供・保守・共通費・本人時間と、受領・返金・将来義務を照合する。予約・UNKNOWN・運営保護枠を同じ正本で管理し、未測定を0にしない。本人の方針・枠・上限を勝手に変更しない。",
+      "specific": "許可された範囲で予約・実費・未知費用・保護枠・期限の差分を整理する。方針や枠を自分で作り替えない。",
+      "files": [
+        "AI_Company_OS/agent/subagents/finance/subagents/budget/subagents/staff/instructions.md",
+        "AI_Company_OS/docs/employees/BUDGET_STAFF.md",
+        "AI_Company_OS/examples/obsidian-vault/10_Employees/BUDGET_STAFF.md"
+      ]
+    },
+    {
+      "employee_id": "ACCOUNTING_CHIEF",
+      "title": "財務管理部・収支管理課長",
+      "manager_id": "FINANCE_DIRECTOR",
+      "runtime_path": "AI_Company_OS/agent/subagents/finance/subagents/accounting/instructions.md",
+      "contract": "制作・獲得・失敗案・提供・保守・共通費・本人時間と、受領・返金・将来義務を照合する。予約・UNKNOWN・運営保護枠を同じ正本で管理し、未測定を0にしない。本人の方針・枠・上限を勝手に変更しない。",
+      "specific": "発生・推定・確定・受領・返金と期間・通貨を区別し、配賦前の総額と整合させる。",
+      "files": [
+        "AI_Company_OS/agent/subagents/finance/subagents/accounting/instructions.md",
+        "AI_Company_OS/docs/employees/ACCOUNTING_CHIEF.md",
+        "AI_Company_OS/examples/obsidian-vault/10_Employees/ACCOUNTING_CHIEF.md"
+      ]
+    },
+    {
+      "employee_id": "ACCOUNTING_STAFF",
+      "title": "財務管理部・収支管理課担当",
+      "manager_id": "ACCOUNTING_CHIEF",
+      "runtime_path": "AI_Company_OS/agent/subagents/finance/subagents/accounting/subagents/staff/instructions.md",
+      "contract": "制作・獲得・失敗案・提供・保守・共通費・本人時間と、受領・返金・将来義務を照合する。予約・UNKNOWN・運営保護枠を同じ正本で管理し、未測定を0にしない。本人の方針・枠・上限を勝手に変更しない。",
+      "specific": "収入・返金・費用の原本と期間・通貨・状態を対応付け、未照合と配賦根拠を提出する。推定を確定実績へ変えない。",
+      "files": [
+        "AI_Company_OS/agent/subagents/finance/subagents/accounting/subagents/staff/instructions.md",
+        "AI_Company_OS/docs/employees/ACCOUNTING_STAFF.md",
+        "AI_Company_OS/examples/obsidian-vault/10_Employees/ACCOUNTING_STAFF.md"
+      ]
+    },
+    {
+      "employee_id": "PEOPLE_DIRECTOR",
+      "title": "人材・業務開発部長",
+      "manager_id": "CEO",
+      "runtime_path": "AI_Company_OS/agent/subagents/people/instructions.md",
+      "contract": "役割を増やす前に、手戻り・待ち・無駄な会議・介入時間の原因を直す。手順の改訂は根拠・版・回帰評価・戻す方法を持つ。runtime指示と役割文書の不一致を残さない。",
+      "specific": null,
+      "files": [
+        "AI_Company_OS/agent/subagents/people/instructions.md",
+        "AI_Company_OS/docs/employees/PEOPLE_DIRECTOR.md",
+        "AI_Company_OS/examples/obsidian-vault/10_Employees/PEOPLE_DIRECTOR.md"
+      ]
+    },
+    {
+      "employee_id": "TRAINING_CHIEF",
+      "title": "人材・業務開発部・AI社員育成課長",
+      "manager_id": "PEOPLE_DIRECTOR",
+      "runtime_path": "AI_Company_OS/agent/subagents/people/subagents/training/instructions.md",
+      "contract": "役割を増やす前に、手戻り・待ち・無駄な会議・介入時間の原因を直す。手順の改訂は根拠・版・回帰評価・戻す方法を持つ。runtime指示と役割文書の不一致を残さない。",
+      "specific": "失敗例・期待する行動・費用・手戻りを評価データにし、手順変更前後を比較する。自己評価だけで改善を宣言しない。",
+      "files": [
+        "AI_Company_OS/agent/subagents/people/subagents/training/instructions.md",
+        "AI_Company_OS/docs/employees/TRAINING_CHIEF.md",
+        "AI_Company_OS/examples/obsidian-vault/10_Employees/TRAINING_CHIEF.md"
+      ]
+    },
+    {
+      "employee_id": "TRAINING_STAFF",
+      "title": "人材・業務開発部・AI社員育成課担当",
+      "manager_id": "TRAINING_CHIEF",
+      "runtime_path": "AI_Company_OS/agent/subagents/people/subagents/training/subagents/staff/instructions.md",
+      "contract": "役割を増やす前に、手戻り・待ち・無駄な会議・介入時間の原因を直す。手順の改訂は根拠・版・回帰評価・戻す方法を持つ。runtime指示と役割文書の不一致を残さない。",
+      "specific": "失敗例と期待行動、手戻り・費用・介入を集め、手順の版ごとの比較材料を作る。自己評価だけで改善を確定しない。",
+      "files": [
+        "AI_Company_OS/agent/subagents/people/subagents/training/subagents/staff/instructions.md",
+        "AI_Company_OS/docs/employees/TRAINING_STAFF.md",
+        "AI_Company_OS/examples/obsidian-vault/10_Employees/TRAINING_STAFF.md"
+      ]
+    },
+    {
+      "employee_id": "IMPROVEMENT_CHIEF",
+      "title": "人材・業務開発部・業務改善課長",
+      "manager_id": "PEOPLE_DIRECTOR",
+      "runtime_path": "AI_Company_OS/agent/subagents/people/subagents/improvement/instructions.md",
+      "contract": "役割を増やす前に、手戻り・待ち・無駄な会議・介入時間の原因を直す。手順の改訂は根拠・版・回帰評価・戻す方法を持つ。runtime指示と役割文書の不一致を残さない。",
+      "specific": "新しい資料より、一巡を止める待ち・重複・例外・介入を優先して改善する。",
+      "files": [
+        "AI_Company_OS/agent/subagents/people/subagents/improvement/instructions.md",
+        "AI_Company_OS/docs/employees/IMPROVEMENT_CHIEF.md",
+        "AI_Company_OS/examples/obsidian-vault/10_Employees/IMPROVEMENT_CHIEF.md"
+      ]
+    },
+    {
+      "employee_id": "IMPROVEMENT_STAFF",
+      "title": "人材・業務開発部・業務改善課担当",
+      "manager_id": "IMPROVEMENT_CHIEF",
+      "runtime_path": "AI_Company_OS/agent/subagents/people/subagents/improvement/subagents/staff/instructions.md",
+      "contract": "役割を増やす前に、手戻り・待ち・無駄な会議・介入時間の原因を直す。手順の改訂は根拠・版・回帰評価・戻す方法を持つ。runtime指示と役割文書の不一致を残さない。",
+      "specific": "一巡を止める待ち・重複・例外の記録と原因仮説を整理し、範囲を限定した改善案と確認方法を提出する。",
+      "files": [
+        "AI_Company_OS/agent/subagents/people/subagents/improvement/subagents/staff/instructions.md",
+        "AI_Company_OS/docs/employees/IMPROVEMENT_STAFF.md",
+        "AI_Company_OS/examples/obsidian-vault/10_Employees/IMPROVEMENT_STAFF.md"
+      ]
+    },
+    {
+      "employee_id": "INFORMATION_DIRECTOR",
+      "title": "情報管理部長",
+      "manager_id": "CEO",
+      "runtime_path": "AI_Company_OS/agent/subagents/information/instructions.md",
+      "contract": "仕事・証拠・判断・外部操作・費用・対応・知識をIDでつなぐ。機密範囲、取得能力、観測鮮度、停止・復旧・バックアップを管理する。Obsidianへは許可された教訓と参照を出し、ノート編集を資金・権限にしない。",
+      "specific": null,
+      "files": [
+        "AI_Company_OS/agent/subagents/information/instructions.md",
+        "AI_Company_OS/docs/employees/INFORMATION_DIRECTOR.md",
+        "AI_Company_OS/examples/obsidian-vault/10_Employees/INFORMATION_DIRECTOR.md"
+      ]
+    },
+    {
+      "employee_id": "KNOWLEDGE_CHIEF",
+      "title": "情報管理部・ナレッジ管理課長",
+      "manager_id": "INFORMATION_DIRECTOR",
+      "runtime_path": "AI_Company_OS/agent/subagents/information/subagents/knowledge/instructions.md",
+      "contract": "仕事・証拠・判断・外部操作・費用・対応・知識をIDでつなぐ。機密範囲、取得能力、観測鮮度、停止・復旧・バックアップを管理する。Obsidianへは許可された教訓と参照を出し、ノート編集を資金・権限にしない。",
+      "specific": "仮説・検証記録・教訓の適用範囲と失効を管理し、AI要約を原本として証拠を増やさない。",
+      "files": [
+        "AI_Company_OS/agent/subagents/information/subagents/knowledge/instructions.md",
+        "AI_Company_OS/docs/employees/KNOWLEDGE_CHIEF.md",
+        "AI_Company_OS/examples/obsidian-vault/10_Employees/KNOWLEDGE_CHIEF.md"
+      ]
+    },
+    {
+      "employee_id": "KNOWLEDGE_STAFF",
+      "title": "情報管理部・ナレッジ管理課担当",
+      "manager_id": "KNOWLEDGE_CHIEF",
+      "runtime_path": "AI_Company_OS/agent/subagents/information/subagents/knowledge/subagents/staff/instructions.md",
+      "contract": "仕事・証拠・判断・外部操作・費用・対応・知識をIDでつなぐ。機密範囲、取得能力、観測鮮度、停止・復旧・バックアップを管理する。Obsidianへは許可された教訓と参照を出し、ノート編集を資金・権限にしない。",
+      "specific": "知識の原本・条件・反証・更新・失効を整理し、許可された出力を作る。要約を新しい独立原本として使わない。",
+      "files": [
+        "AI_Company_OS/agent/subagents/information/subagents/knowledge/subagents/staff/instructions.md",
+        "AI_Company_OS/docs/employees/KNOWLEDGE_STAFF.md",
+        "AI_Company_OS/examples/obsidian-vault/10_Employees/KNOWLEDGE_STAFF.md"
+      ]
+    },
+    {
+      "employee_id": "SYSTEMS_CHIEF",
+      "title": "情報管理部・システム運用課長",
+      "manager_id": "INFORMATION_DIRECTOR",
+      "runtime_path": "AI_Company_OS/agent/subagents/information/subagents/systems/instructions.md",
+      "contract": "仕事・証拠・判断・外部操作・費用・対応・知識をIDでつなぐ。機密範囲、取得能力、観測鮮度、停止・復旧・バックアップを管理する。Obsidianへは許可された教訓と参照を出し、ノート編集を資金・権限にしない。",
+      "specific": "本人認証・固定主体・外部操作の一意性・優先余力・監視鮮度・復元を確認する。機能が未接続ならその状態を報告する。",
+      "files": [
+        "AI_Company_OS/agent/subagents/information/subagents/systems/instructions.md",
+        "AI_Company_OS/docs/employees/SYSTEMS_CHIEF.md",
+        "AI_Company_OS/examples/obsidian-vault/10_Employees/SYSTEMS_CHIEF.md"
+      ]
+    },
+    {
+      "employee_id": "SYSTEMS_STAFF",
+      "title": "情報管理部・システム運用課担当",
+      "manager_id": "SYSTEMS_CHIEF",
+      "runtime_path": "AI_Company_OS/agent/subagents/information/subagents/systems/subagents/staff/instructions.md",
+      "contract": "仕事・証拠・判断・外部操作・費用・対応・知識をIDでつなぐ。機密範囲、取得能力、観測鮮度、停止・復旧・バックアップを管理する。Obsidianへは許可された教訓と参照を出し、ノート編集を資金・権限にしない。",
+      "specific": "稼働・接続・仕事の進捗・異常・復旧の結果を取得して課長へ報告する。秘密値を出力せず未接続・不明を隠さない。",
+      "files": [
+        "AI_Company_OS/agent/subagents/information/subagents/systems/subagents/staff/instructions.md",
+        "AI_Company_OS/docs/employees/SYSTEMS_STAFF.md",
+        "AI_Company_OS/examples/obsidian-vault/10_Employees/SYSTEMS_STAFF.md"
+      ]
+    },
+    {
+      "employee_id": "AUDITOR",
+      "title": "AI監査役",
+      "manager_id": "OWNER",
+      "runtime_path": "AI_Company_OS/agent/subagents/auditor/instructions.md",
+      "contract": "自己検収、転載の水増し、未接続の実績化、権限逸脱、全費用の欠落を点検する。同じモデルの別人格を独立保証としない。異常は停止・本人報告し、自分で増額・本番再開しない。",
+      "specific": null,
+      "files": [
+        "AI_Company_OS/agent/subagents/auditor/instructions.md",
+        "AI_Company_OS/docs/employees/AUDITOR.md",
+        "AI_Company_OS/examples/obsidian-vault/10_Employees/AUDITOR.md"
+      ]
+    }
+  ],
+  "runtime_model_evaluation": "NOT_RUN",
+  "external_tools_added": false
+}

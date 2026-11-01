@@ -1,0 +1,22 @@
+{
+  "date": "2026-10-26",
+  "code_version": "0.5.0",
+  "design_revision": "2026-10-26-rebuild",
+  "existing_local_tests": {
+    "total": 109,
+    "passed": 109,
+    "failed": 0,
+    "scope": "local regression, not market or live-provider proof"
+  },
+  "typecheck": "passed",
+  "operating_local_integration_scenarios": 3,
+  "runtime_instruction_roles_updated": 42,
+  "functional_source_or_dependency_changes": [],
+  "new_acceptance_criteria": 60,
+  "new_acceptance_criteria_status": "NOT_RUN",
+  "external_execution_verified": false,
+  "market_or_customer_validation": false,
+  "profitability": "UNVERIFIED",
+  "M_and_A_value": "UNVERIFIED",
+  "existing_files_changed": 144
+}

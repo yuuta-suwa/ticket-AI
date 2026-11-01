@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>AI会社OS 管理</title>
+<style>
+:root{--bg:#f6f6f4;--card:#fff;--ink:#1b1b1a;--muted:#6b6b66;--line:#e2e1dc;--accent:#1f5f8b;--warn:#a1520b;--bad:#a12a2a;--ok:#2d6a3e}
+@media (prefers-color-scheme:dark){:root{--bg:#141413;--card:#1e1e1c;--ink:#ecebe6;--muted:#a3a29b;--line:#34332f;--accent:#7fb3d9;--warn:#e0a060;--bad:#e07a7a;--ok:#8cc79b}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Hiragino Sans",sans-serif}
+header{position:sticky;top:0;background:var(--card);border-bottom:1px solid var(--line);padding:10px 16px;z-index:2}
+header h1{font-size:16px;margin:0}#banner{font-size:13px;color:var(--warn)}
+nav{display:flex;overflow-x:auto;gap:4px;padding:8px 12px;background:var(--card);border-bottom:1px solid var(--line)}
+nav button{flex:0 0 auto;border:1px solid var(--line);background:none;color:var(--ink);border-radius:16px;padding:6px 12px;font-size:14px}
+nav button[aria-current=true]{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+main{padding:12px 16px 80px;max-width:720px;margin:0 auto}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px;margin:10px 0}
+.card h2{font-size:15px;margin:0 0 6px}.muted{color:var(--muted);font-size:13px}
+.tag{display:inline-block;font-size:12px;border-radius:10px;padding:1px 8px;border:1px solid var(--line);margin:2px 4px 2px 0}
+.tag.nc{color:var(--warn);border-color:var(--warn)}.tag.bad{color:var(--bad);border-color:var(--bad)}.tag.ok{color:var(--ok);border-color:var(--ok)}
+button.act{border:0;border-radius:8px;padding:10px 14px;font-size:15px;margin:4px 6px 0 0;background:var(--accent);color:var(--bg)}
+button.act.secondary{background:none;color:var(--accent);border:1px solid var(--accent)}button.act.danger{background:var(--bad)}
+button:disabled{opacity:.5}input,textarea{width:100%;font:inherit;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
+dl{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;margin:0}dt{color:var(--muted);font-size:13px}dd{margin:0;word-break:break-word}
+pre{white-space:pre-wrap;word-break:break-word;font-size:12px;background:var(--bg);padding:8px;border-radius:6px;max-height:300px;overflow:auto}
+a{color:var(--accent)}
+</style>
+</head>
+<body>
+<header><h1>AI会社OS 管理</h1><div id="banner" role="status"></div></header>
+<nav id="tabs" hidden></nav>
+<main id="view"><section class="card" id="login"><h2>本人ログイン</h2>
+<p class="muted">本人認証はサーバーで判定します。この画面にはオーナー権限の情報を保存しません。</p>
+<form id="loginForm"><input type="password" id="pass" autocomplete="current-password" placeholder="パスフレーズ" aria-label="パスフレーズ"><button class="act" type="submit">ログイン</button></form><p id="loginMsg" class="muted"></p></section></main>
+<script>
+const S={csrf:null,tab:'overview',cache:{},pending:new Map()};
+const $=s=>document.querySelector(s);
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const label=v=>v===null||v===undefined?'<span class="tag nc">不明</span>':esc(v);
+const status=s=>`<span class="tag ${/NOT_CONNECTED|AUTH_REQUIRED|UNSUPPORTED|未接続/.test(s)?'nc':/FAIL|UNKNOWN|REJECT|EXPIRED|REVOKED|BLOCK/.test(s)?'bad':/AVAILABLE|APPLIED|SUCCEEDED|ELIGIBLE|ACTIVE/.test(s)?'ok':''}">${esc(s)}</span>`;
+function banner(){const off=!navigator.onLine;$('#banner').textContent=off?'オフライン：表示は最後に取得した内容です。承認・許可・停止は送信できません。':(S.cache.at?'取得：'+new Date(S.cache.at).toLocaleString():'');document.querySelectorAll('button.mut').forEach(b=>b.disabled=off);}
+addEventListener('online',banner);addEventListener('offline',banner);
+async function api(path,opts={}){
+  const r=await fetch(path,{credentials:'same-origin',...opts,headers:{'content-type':'application/json',...(S.csrf?{'x-csrf-token':S.csrf}:{}),...(opts.headers||{})}});
+  const body=await r.json().catch(()=>({}));if(r.status===401&&body.code==='UNAUTHENTICATED'&&path!=='/v1/owner/login'){S.csrf=null;showLogin('セッションが無効です。再ログインしてください。');throw new Error('auth');}
+  if(!r.ok)throw Object.assign(new Error(body.error||r.status),{status:r.status,code:body.code});return body;
+}
+// Each logical action gets ONE idempotency key, reused on retries and double taps.
+async function mutate(key,path,payload,btn){
+  if(!navigator.onLine){alert('オフラインのため送信できません');return;}
+  if(S.pending.has(key))return S.pending.get(key);
+  if(btn)btn.disabled=true;
+  const p=api(path,{method:'POST',body:JSON.stringify({...payload,idempotency_key:key})}).then(r=>{render();return r;})
+    .catch(async e=>{if(e.code==='REAUTH_REQUIRED'){const pw=prompt('再認証が必要です。パスフレーズ：');if(pw){await api('/v1/owner/reauth',{method:'POST',body:JSON.stringify({passphrase:pw})});S.pending.delete(key);return mutate(key,path,payload,btn);}}
+      alert('受付されませんでした：'+e.message);S.pending.delete(key);if(btn)btn.disabled=false;});
+  S.pending.set(key,p);return p;
+}
+function showLogin(msg){$('#tabs').hidden=true;$('#view').innerHTML=$('#view').dataset.login||$('#view').innerHTML;bindLogin();if(msg)$('#loginMsg').textContent=msg;}
+function bindLogin(){$('#view').dataset.login=$('#view').dataset.login||$('#view').innerHTML;$('#loginForm').onsubmit=async e=>{e.preventDefault();try{const r=await api('/v1/owner/login',{method:'POST',body:JSON.stringify({passphrase:$('#pass').value})});S.csrf=r.csrf;$('#pass').value='';start();}catch(err){if(err.message!=='auth')$('#loginMsg').textContent='ログインできません：'+err.message;}};}
+const TABS=[['overview','全社'],['opps','機会'],['decisions','判断待ち'],['work','仕事'],['quality','顧客・品質'],['money','資金'],['conn','接続・知識']];
+function start(){const t=$('#tabs');t.hidden=false;t.innerHTML=TABS.map(([k,v])=>`<button data-t="${k}" aria-current="${k===S.tab}">${v}</button>`).join('');t.onclick=e=>{const k=e.target.dataset.t;if(k){S.tab=k;start();}};render();}
+async function render(){
+  const v=$('#view');try{
+  if(S.tab==='overview'){const o=await api('/v1/owner/overview');S.cache.at=o.generated_at;const c=await api('/v1/owner/control');
+    v.innerHTML=`<section class="card"><h2>全社の状態</h2><dl><dt>新規実行</dt><dd>${o.company.paused?status('停止中'):status('ACTIVE')}</dd>
+      <dt>照合した現金貢献</dt><dd>${o.kpi.cash_contribution.live_transactions.length?esc(JSON.stringify(o.kpi.cash_contribution.live_transactions)):'<span class="tag nc">未接続</span> 本番の支払記録なし'}</dd>
+      <dt>提供義務のある事業</dt><dd>${o.kpi.service_health.obligated_services}件 / 新規可否 ${o.kpi.service_health.growth_readiness.ready?status('READY'):status('BLOCKED')}</dd>
+      <dt>本人の介入時間</dt><dd>${o.kpi.owner_time.minutes===null?'<span class="tag nc">不明（未記録）</span>':esc(o.kpi.owner_time.minutes)+'分'}</dd>
+      <dt>判断待ち</dt><dd>${o.pending_decisions}件</dd><dt>問い合わせ未解決</dt><dd>${o.support}件</dd></dl>
+      <p class="muted">新規の阻害理由：${esc(o.kpi.service_health.growth_readiness.blockers.map(b=>(b.venture_id||'全社')+': '+b.reasons.join(', ')).join(' / ')||'なし')}</p></section>
+      <section class="card"><h2>全社停止</h2><p class="muted">停止は新しい仕事と支出を止めます。送信済みの外部処理は取り消せない場合があり、照合は続けます。</p>
+      <dl><dt>受付</dt><dd>${label(c.accepted_at)}</dd><dt>worker確認</dt><dd>${c.paused?(c.all_live_workers_acknowledged?status('全worker確認済み'):status('確認待ち')):'-'} ${c.stale_workers.length?'応答なし: '+esc(c.stale_workers.join(',')):''}</dd>
+      <dt>止められない外部処理</dt><dd>${c.external_operations_not_stoppable.length?esc(c.external_operations_not_stoppable.map(x=>x.id+':'+x.status).join(', ')):'なし'}</dd></dl>
+      ${c.paused?`<button class="act mut" id="resume">再開（再認証が必要）</button>`:`<button class="act danger mut" id="pause">全社の新規実行を停止</button>`}</section>
+      <section class="card"><h2>事業</h2>${o.ventures.map(x=>`<div>${esc(x.id)} ${status(x.state)}</div>`).join('')||'<p class="muted">登録なし</p>'}</section>`;
+    const pk='pause-'+(c.pause_seq??0);$('#pause')&&($('#pause').onclick=e=>{const r=prompt('停止理由');if(r)mutate(pk,'/v1/owner/control/pause',{reason:r},e.target);});
+    $('#resume')&&($('#resume').onclick=e=>mutate('resume-'+c.pause_seq,'/v1/owner/control/resume',{},e.target));}
+  if(S.tab==='opps'){const list=await api('/v1/owner/opportunities');
+    v.innerHTML=list.map(o=>`<section class="card"><h2>${esc(o.body.build.minimum_offer)}</h2><p class="muted">${esc(o.id)} rev${o.revision} ・ ${status(o.evaluation.recommendation)}</p>
+      <dl><dt>誰へ</dt><dd>${esc(o.body.target.country)}/${esc(o.body.target.language)} ${esc(o.body.target.user)}（支払者：${esc(o.body.target.payer)}）</dd><dt>価値</dt><dd>${esc(o.body.value.problem_or_desire)}</dd>
+      <dt>代替</dt><dd>${esc(o.body.value.alternative)}</dd><dt>届け方</dt><dd>${esc(o.body.delivery.channel)}</dd>
+      <dt>根拠</dt><dd>独立した元情報 ${o.evaluation.evidence.independent_origin_groups} / 観測 ${o.evaluation.evidence.raw_observations}（検索抜粋のみ ${o.evaluation.evidence.snippet_only}）</dd>
+      <dt>阻害</dt><dd>${esc(o.evaluation.blockers.join('、')||'なし')}</dd><dt>不足</dt><dd>${esc(o.evaluation.gaps.join('、')||'なし')}</dd>
+      <dt>反証</dt><dd>${o.body.counterevidence.map(c=>esc(c.text)).join('<br>')}</dd></dl><button class="act secondary" data-o="${esc(o.id)}">出典と評価を見る</button><div id="d-${esc(o.id)}"></div></section>`).join('')||'<p class="muted">候補なし</p>';
+    v.querySelectorAll('[data-o]').forEach(b=>b.onclick=async()=>{const d=await api('/v1/owner/opportunities/'+encodeURIComponent(b.dataset.o));
+      $('#d-'+CSS.escape(b.dataset.o)).innerHTML=d.evidence.map(e=>`<div class="card"><div>${status(e.body.coverage)} ${esc(e.display.coverage_label)}</div><div class="muted">${esc(e.source.platform)} ・ 公開 ${label(e.source.published_at)} ・ 取得 ${esc(e.observed_at)} ・ ${esc(e.body.locale.region)}/${esc(e.body.locale.language)}</div>
+      ${e.source.url?`<a href="${esc(e.source.url)}" rel="noopener noreferrer" target="_blank">原本</a>`:''}<div>${esc(e.body.excerpt)}</div>${e.body.flags.length?'<span class="tag bad">埋め込み命令を資料として扱い無視</span>':''}</div>`).join('')+
+      d.assessments.map(a=>`<div class="card"><b>${esc(a.department)}</b>（${esc(a.actor)}）<div>${esc(a.body.findings)}</div><div class="muted">阻害: ${esc(a.body.blockers.join('、')||'なし')} / 不明: ${esc(a.body.unknowns.join('、')||'なし')}</div></div>`).join('');});}
+  if(S.tab==='decisions'){const list=await api('/v1/owner/decisions');
+    v.innerHTML=list.map(d=>`<section class="card"><h2>${esc(d.body.title)}</h2><p>${status(d.kind==='APPROVAL'?'承認':d.kind==='PERMISSION'?'操作の許可':'重大例外')} ${status(d.status)}</p>
+      <dl><dt>提案</dt><dd>${esc(d.body.proposal)}</dd><dt>対象版</dt><dd>${esc(d.subject_type)} ${esc(d.subject_id)} v${d.subject_version} <span class="muted">${esc(d.content_hash.slice(0,12))}</span></dd>
+      <dt>根拠</dt><dd>${esc(d.body.evidence_refs.join(', '))}</dd><dt>反証・不明</dt><dd>${esc([...d.body.counterevidence,...d.body.unknowns].join(' / ')||'なし')}</dd>
+      ${d.body.requested_grant?`<dt>実行先</dt><dd>${esc(d.body.requested_grant.operation)} → ${esc(d.body.requested_grant.target)}</dd><dt>費用・回数</dt><dd>${esc(d.body.requested_grant.max_cost_yen)}円 / ${esc(d.body.requested_grant.max_count)}回まで、期限 ${esc(d.body.requested_grant.valid_until)}</dd>`:''}
+      <dt>顧客への影響</dt><dd>${label(d.body.customer_impact)}</dd><dt>戻す方法</dt><dd>${label(d.body.rollback)}</dd><dt>失効</dt><dd>${esc(d.expires_at)}</dd></dl>
+      ${d.status==='PENDING'?`<button class="act mut" data-a="approve" data-id="${esc(d.id)}" data-v="${d.version}" data-h="${esc(d.content_hash)}">${d.kind==='PERMISSION'?'許可する':'承認する'}</button><button class="act secondary mut" data-a="reject" data-id="${esc(d.id)}" data-v="${d.version}" data-h="${esc(d.content_hash)}">差し戻す</button>`:''}
+      <p class="muted">通知の到着・既読は承認になりません。ボタンを押した後も「受付」と「外部完了」は別に表示します。</p></section>`).join('')||'<p class="muted">判断待ちはありません</p>';
+    v.querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>{const reason=prompt(b.dataset.a==='approve'?'承認・許可の理由':'差し戻し理由');if(!reason)return;
+      mutate('dec-'+b.dataset.id+'-v'+b.dataset.v+'-'+b.dataset.a,`/v1/owner/decisions/${encodeURIComponent(b.dataset.id)}/${b.dataset.a}`,{entity_version:Number(b.dataset.v),content_hash:b.dataset.h,reason},b);});}
+  if(S.tab==='work'){const w=await api('/v1/owner/tasks');
+    v.innerHTML=`<section class="card"><h2>社員別</h2>${w.scorecard.map(s=>`<div>${esc(s.title)}：${s.tasks}件（検収${s.accepted}）<span class="muted"> 顧客価値 ${esc(s.customer_value)}</span></div>`).join('')||'<p class="muted">仕事なし</p>'}</section>`+
+      w.tasks.map(t=>`<section class="card"><h2>${esc(t.title)}</h2><p class="muted">${esc(t.assignee)} → 検収 ${esc(t.reviewer)} ${status(t.status)}</p><button class="act secondary mut" data-task="${esc(t.id)}">追加指示</button></section>`).join('');
+    v.querySelectorAll('[data-task]').forEach(b=>b.onclick=()=>{const text=prompt('追加指示（許可や予算にはなりません）');if(text)mutate('dir-'+b.dataset.task+'-'+Date.now(),`/v1/owner/tasks/${encodeURIComponent(b.dataset.task)}/directives`,{text,priority:'normal'},b);});}
+  if(S.tab==='quality'){const cs=await api('/v1/owner/cases'),h=await api('/v1/owner/health');
+    v.innerHTML=`<section class="card"><h2>運営の健康</h2>${h.growth_readiness.blockers.map(b=>`<div>${esc(b.venture_id||'全社')}: ${esc(b.reasons.join(', '))}</div>`).join('')||'阻害なし'}<p class="muted">${esc(h.growth_readiness.verification)}</p></section>`+
+      cs.map(c=>`<section class="card"><h2>${esc(c.summary)}</h2><p>${status(c.status)} ${c.overdue?status('期限超過'):''} <span class="muted">${esc(c.severity)} 期限 ${esc(c.due_at)}</span></p></section>`).join('');}
+  if(S.tab==='money'){const vs=await api('/v1/owner/ventures');
+    v.innerHTML=`<section class="card"><h2>資金（全社正本）</h2><dl><dt>支出方針</dt><dd>${vs.policy.enabled?status('有効'):status('無効')} 上限 ${esc(vs.policy.gross_spend_limit_yen)}円</dd>
+      <dt>記録済み支出</dt><dd>${esc(vs.funding.gross_recorded_spend_yen)}円</dd><dt>予約・不明</dt><dd>${esc(vs.funding.held_yen)}円（結果不明 ${vs.funding.unknown_operations}件）</dd>
+      <dt>保護枠</dt><dd>${esc(vs.funding.protected_operating_yen)}円</dd><dt>銀行残高</dt><dd><span class="tag nc">未接続</span></dd></dl><p class="muted">方針・枠の変更は本人のローカル操作の入口でのみ行います。</p></section>`;}
+  if(S.tab==='conn'){const c=await api('/v1/owner/connections'),k=await api('/v1/owner/knowledge');
+    v.innerHTML=`<section class="card"><h2>情報源</h2>${c.sources.map(s=>`<div>${esc(s.label)} ${status(s.status)}<span class="muted"> ${esc(s.available_capabilities.join(',')||'取得能力なし')}</span></div>`).join('')}</section>
+      <section class="card"><h2>決済・提供の接続</h2>${c.providers.map(p=>`<div>${esc(p.provider)} ${esc(p.environment)} → ${esc(p.venture_id)}</div>`).join('')||'<span class="tag nc">未接続</span>'}</section>
+      <section class="card"><h2>知識</h2>${k.map(x=>`<div>${esc(x.body.title)} ${status(x.status)} <span class="muted">${esc(x.body.scope)} 見直し ${esc(x.body.review_after)}</span></div>`).join('')||'<p class="muted">なし</p>'}</section>`;}
+  }catch(e){if(e.message!=='auth')v.innerHTML=`<section class="card"><h2>取得できませんでした</h2><p>${esc(e.message)}</p></section>`;}
+  banner();
+}
+bindLogin();banner();
+</script>
+</body>
+</html>

@@ -1,0 +1,29 @@
+{
+  "eve_version": "0.83.0",
+  "status": "ready",
+  "diagnostics": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "departments": 8,
+  "sections": 16,
+  "employee_records": 42,
+  "agent_definitions": 42,
+  "root_tools": [
+    "claim_work",
+    "company_status",
+    "create_project",
+    "issue_work",
+    "message",
+    "pause_company",
+    "recover_work",
+    "review_work",
+    "scorecard",
+    "search_memory",
+    "submit_work",
+    "task_context"
+  ],
+  "model_calls_executed": 0,
+  "default_extensions_disabled_by_start_script": true,
+  "live_collaboration_tested": false
+}

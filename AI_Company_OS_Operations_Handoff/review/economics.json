@@ -1,0 +1,30 @@
+{
+  "label": "HYPOTHETICAL_CALCULATION_ONLY",
+  "currency": "JPY",
+  "market_forecast": false,
+  "assumptions": "All figures are fictitious and matched to the same example period; no actual processor fees or customer results.",
+  "subscription": {
+    "gross_received": 60000,
+    "refunds": 3000,
+    "payment_cost": 2400,
+    "infrastructure": 8000,
+    "api": 12000,
+    "ads": 12000,
+    "acquisition_creation": 4000,
+    "owner_hours": 8,
+    "owner_hour_value": 2000,
+    "owner_acquisition_hours": 3,
+    "new_paid_customers": 5,
+    "initial_cost": 40000
+  },
+  "media": {
+    "ad_received": 12000,
+    "referral_received": 3000,
+    "production": 15000,
+    "translation": 4800,
+    "tools": 3000,
+    "distribution": 2000,
+    "owner_hours": 6,
+    "owner_hour_value": 2000
+  }
+}

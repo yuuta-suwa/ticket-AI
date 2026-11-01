@@ -1,0 +1,23 @@
+{
+  "mode": "in-memory-design-audit",
+  "live_external_execution": false,
+  "scope": "Prototype funding limitations, not observed customer outages",
+  "findings": [
+    {
+      "scenario": "an operating service cannot leave the active experiment slot",
+      "result": "CURRENT_LIMITATION_REPRODUCED",
+      "observed_error": "Active venture limit reached"
+    },
+    {
+      "scenario": "an uncertain R&D cost blocks a separate maintenance reservation",
+      "result": "CURRENT_LIMITATION_REPRODUCED",
+      "observed_error": "Reconciliation required before further spending"
+    },
+    {
+      "scenario": "an experiment deadline also blocks later maintenance funding",
+      "result": "CURRENT_LIMITATION_REPRODUCED",
+      "observed_error": "Venture not active or learning deadline expired"
+    }
+  ],
+  "conclusion": "Separate operating-service lifecycle and protected maintenance obligations before claiming parallel service operation and new venture exploration."
+}

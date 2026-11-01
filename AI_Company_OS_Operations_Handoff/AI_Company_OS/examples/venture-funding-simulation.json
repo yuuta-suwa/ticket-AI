@@ -1,0 +1,41 @@
+{
+  "mode": "simulation",
+  "live_external_execution": false,
+  "notice": "メモリ内の架空例。実際の支出・公開・販売なし。",
+  "snapshots": [
+    {
+      "stage": "default",
+      "funding": {
+        "gross_recorded_spend_yen": 0,
+        "held_yen": 0,
+        "exposure_yen": 0,
+        "unknown_operations": 0,
+        "in_flight_operations": 0,
+        "unreviewed_overruns": 0
+      },
+      "enabled": false
+    },
+    {
+      "stage": "unknown",
+      "funding": {
+        "gross_recorded_spend_yen": 0,
+        "held_yen": 1000,
+        "exposure_yen": 1000,
+        "unknown_operations": 1,
+        "in_flight_operations": 0,
+        "unreviewed_overruns": 0
+      }
+    },
+    {
+      "stage": "overrun_recorded",
+      "funding": {
+        "gross_recorded_spend_yen": 1500,
+        "held_yen": 0,
+        "exposure_yen": 1500,
+        "unknown_operations": 0,
+        "in_flight_operations": 0,
+        "unreviewed_overruns": 1
+      }
+    }
+  ]
+}

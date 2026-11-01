@@ -1,0 +1,62 @@
+{
+  "mode": "simulation",
+  "scenario": {
+    "order_id": "sample-order",
+    "domain": "simulation",
+    "payments": {
+      "received": 33000,
+      "refunded": 0,
+      "net_received": 33000
+    },
+    "measured_delivery_time_value_yen": 10000,
+    "allocated_acquisition_cost_yen": 16000,
+    "allocation_rule": "campaign-cost-to-first-paid-order-of-distinct-customer-refunds-retain-cost",
+    "actual_variable_costs": {
+      "ai_yen": 2000,
+      "fees_yen": 1188,
+      "other_yen": 1000,
+      "source_ref": "simulation:scenario-variable-costs",
+      "zero_delivery_reason": null
+    },
+    "cost_coverage": "OWNER_CONFIRMED",
+    "missing": [],
+    "economic_contribution_before_tax_and_fixed_costs_yen": 2812,
+    "contribution_share": 0.08521212121212121,
+    "verification": "local-owner-records-not-independent-financial-audit"
+  },
+  "actual_business_validation": {
+    "business_success": "UNVERIFIED",
+    "decision": "CONTINUE_VALIDATION",
+    "thresholds_are": "proposed-operating-rules-not-statistical-PMF-proof",
+    "independent_paid_customers": 0,
+    "customers_with_usage": 0,
+    "paid_repeat_customers": 0,
+    "paid_referred_customers": 0,
+    "refunds_yen": 0,
+    "unreviewed_refund_orders": 0,
+    "unallocated_acquisition_cost_yen": 0,
+    "portfolio_contribution_yen": null,
+    "checks": {
+      "independent_paid_customers": false,
+      "customers_with_usage": false,
+      "paid_repeat_or_referral": false,
+      "complete_costs": false,
+      "two_orders_with_30pct_contribution": false,
+      "positive_portfolio": false,
+      "no_unreviewed_refunds": true
+    },
+    "missing": [
+      "independent_paid_customers",
+      "customers_with_usage",
+      "paid_repeat_or_referral",
+      "complete_costs",
+      "two_orders_with_30pct_contribution",
+      "positive_portfolio"
+    ],
+    "real_payment_feed_connected": false,
+    "remote_owner_auth_implemented": false,
+    "evidence_basis": "owner-recorded-only",
+    "order_economics": []
+  },
+  "notice": "模擬シナリオは実績の判定から除外しています。実際の販売と外部連携は実施していません。"
+}

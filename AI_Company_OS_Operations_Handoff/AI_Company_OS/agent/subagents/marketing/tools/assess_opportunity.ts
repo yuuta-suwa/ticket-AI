@@ -1,0 +1,2 @@
+import { assessOpportunityTool } from '../../../lib/tools.js';
+export default assessOpportunityTool("MARKETING_DIRECTOR");

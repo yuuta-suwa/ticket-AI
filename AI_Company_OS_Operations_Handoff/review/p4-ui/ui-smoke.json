@@ -1,0 +1,52 @@
+{
+  "mode": "local-chromium-mobile-emulation (iPhone 13 viewport)",
+  "real_device": false,
+  "data": "synthetic demo database (temporary)",
+  "at": "2026-11-01T05:06:02.883Z",
+  "results": [
+    {
+      "name": "login form shown before auth",
+      "ok": true
+    },
+    {
+      "name": "wrong passphrase rejected",
+      "ok": true
+    },
+    {
+      "name": "owner login",
+      "ok": true
+    },
+    {
+      "name": "unconnected/unknown labels shown",
+      "ok": true
+    },
+    {
+      "name": "no horizontal scroll at phone width",
+      "ok": true
+    },
+    {
+      "name": "opportunity card with sources and counterevidence",
+      "ok": true
+    },
+    {
+      "name": "decision card shows version, cost, impact, rollback",
+      "ok": true
+    },
+    {
+      "name": "double tap on permit applies once (re-auth prompt answered)",
+      "ok": true
+    },
+    {
+      "name": "offline: mutations disabled and stale banner shown",
+      "ok": true
+    },
+    {
+      "name": "company stop shows receipt and worker acknowledgement state",
+      "ok": true
+    },
+    {
+      "name": "expired session forces re-login",
+      "ok": true
+    }
+  ]
+}

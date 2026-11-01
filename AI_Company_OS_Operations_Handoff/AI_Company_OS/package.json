@@ -1,0 +1,35 @@
+{
+  "name": "ai-company-os",
+  "version": "0.6.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev": "node scripts/start-agent.mjs",
+    "demo": "node src/cli.mjs demo",
+    "status": "node src/cli.mjs status",
+    "export:vault": "node src/cli.mjs export",
+    "test": "node --test test/*.test.mjs",
+    "typecheck": "tsc --noEmit",
+    "revenue:demo": "node src/revenue-cli.mjs demo",
+    "revenue:status": "node src/revenue-cli.mjs status",
+    "venture:status": "node src/venture-cli.mjs status",
+    "commercial:status": "node src/commercial-cli.mjs status",
+    "server": "node scripts/start-server.mjs",
+    "owner": "node src/owner-cli.mjs",
+    "ui:smoke": "node scripts/ui-smoke.mjs",
+    "research:batch": "node scripts/run-research-batch.mjs",
+    "backup": "node src/owner-cli.mjs backup"
+  },
+  "dependencies": {
+    "ai": "7.0.152",
+    "eve": "0.83.0",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "26.6.5",
+    "typescript": "7.0.2"
+  }
+}

@@ -1,0 +1,609 @@
+{
+  "schema_version": 1,
+  "design_revision": "2026-10-26-rebuild",
+  "purpose": "Future implementation acceptance contract; not completed tests",
+  "current_runtime_version": "0.5.0",
+  "criteria": [
+    {
+      "id": "R01",
+      "category": "R",
+      "priority": "P1",
+      "scenario": "YouTube・Instagramの一方が未接続の調査を開始",
+      "expected": "媒体別の能力と未接続を表示し、未取得を0件にしない",
+      "status": "NOT_RUN",
+      "evidence": [],
+      "verification_scope": null
+    },
+    {
+      "id": "R02",
+      "category": "R",
+      "priority": "P1",
+      "scenario": "検索抜粋しか取得できない動画を候補にする",
+      "expected": "全文・動画視聴済みと表示せず、確認範囲を保持する",
+      "status": "NOT_RUN",
+      "evidence": [],
+      "verification_scope": null
+    },
+    {
+      "id": "R03",
+      "category": "R",
+      "priority": "P1",
+      "scenario": "同一発表の転載を三媒体から取得する",
+      "expected": "元情報をまとめ、独立した三つの需要証拠にしない",
+      "status": "NOT_RUN",
+      "evidence": [],
+      "verification_scope": null
+    },
+    {
+      "id": "R04",
+      "category": "R",
+      "priority": "P1",
+      "scenario": "同じ原本を別日に再取得する",
+      "expected": "時系列の版として保存し、新しい顧客の声へ数え直さない",
+      "status": "NOT_RUN",
+      "evidence": [],
+      "verification_scope": null
+    },
+    {
+      "id": "R05",
+      "category": "R",
+      "priority": "P1",
+      "scenario": "429または認証不足で取得が失敗する",
+      "expected": "失敗・制限・原因・範囲を記録し、需要ゼロと判定しない",
+      "status": "NOT_RUN",
+      "evidence": [],
+      "verification_scope": null
+    },
+    {
+      "id": "R06",
+      "category": "R",
+      "priority": "P1",
+      "scenario": "異なる国・言語・観測期間の値を比較する",
+      "expected": "条件を表示し、そのまま同じ母数の増加率へ集計しない",
+      "status": "NOT_RUN",
+      "evidence": [],
+      "verification_scope": null
+    },
+    {
+      "id": "R07",
+      "category": "R",
+      "priority": "P0",
+      "scenario": "投稿や記事に権限変更・鍵の送信の命令がある",
+      "expected": "資料として扱い、命令を実行しない",
+      "status": "NOT_RUN",
+      "evidence": [],
+      "verification_scope": null
+    },
+    {
+      "id": "R08",
+      "category": "R",
+      "priority": "P1",
+      "scenario": "検索や生成が件数・費用上限に達する",
+      "expected": "新しい取得を止め、取得範囲と終了理由を残す",
+      "status": "NOT_RUN",
+      "evidence": [],
+      "verification_scope": null
+    },
+    {
+      "id": "R09",
+      "category": "R",
+      "priority": "P1",
+      "scenario": "非公開の収益・保存数・視聴維持率が必要になる",
+      "expected": "nullと取得不能理由を保存し、競合の実績を捏造しない",
+      "status": "NOT_RUN",
+      "evidence": [],
+      "verification_scope": null
+    },
+    {
+      "id": "R10",
+      "category": "R",
+      "priority": "P1",
+      "scenario": "原本が削除・価格が更新される",
+      "expected": "過去判断の参照を残し、利用中の知識へ再確認を出す",
+      "status": "NOT_RUN",
+      "evidence": [],
+      "verification_scope": null
+    },
+    {
+      "id": "D01",
+      "category": "D",
+      "priority": "P1",
+      "scenario": "全候補の根拠が弱い",
+      "expected": "採用なし・追加調査を選べる",
+      "status": "NOT_RUN",
+      "evidence": [],
+      "verification_scope": null
+    },
+    {
+      "id": "D02",
+      "category": "D",
+      "priority": "P0",
+      "scenario": "高得点だが禁止対象や権利不明の候補がある",
+      "expected": "得点で阻害条件を相殺せず、対象の実行を保留する",
+      "status": "NOT_RUN",
+      "evidence": [],
+      "verification_scope": null
+    },
+    {
+      "id": "D03",
+      "category": "D",
+      "priority": "P1",
+      "scenario": "主張に反する顧客の声がある",
+      "expected": "反証を判断へ結び、都合の良い根拠だけを残さない",
+      "status": "NOT_RUN",
+      "evidence": [],
+      "verification_scope": null
+    },
+    {
+      "id": "D04",
+      "category": "D",
+      "priority": "P1",
+      "scenario": "広告収入単価は不明だが制作費を制限できる",
+      "expected": "限定実証の準備と採算・拡大の証拠を区別する",
+      "status": "NOT_RUN",
+      "evidence": [],
+      "verification_scope": null
+    },
+    {
+      "id": "D05",
+      "category": "D",
+      "priority": "P1",
+      "scenario": "観察終了時に母数や期間が不足する",
+      "expected": "不明または条件付き延長とし、成功へ変更しない",
+      "status": "NOT_RUN",
+      "evidence": [],
+      "verification_scope": null
+    },
+    {
+      "id": "D06",
+      "category": "D",
+      "priority": "P1",
+      "scenario": "結果を見て目標指標の変更が要求される",
+      "expected": "旧版と変更理由を残し、事前目標を上書きしない",
+      "status": "NOT_RUN",
+      "evidence": [],
+      "verification_scope": null
+    },
+    {
+      "id": "D07",
+      "category": "D",
+      "priority": "P1",
+      "scenario": "本人が商品を選んでいない",
+      "expected": "AI部門が根拠で比較し、本人へ選定を戻して停止しない",
+      "status": "NOT_RUN",
+      "evidence": [],
+      "verification_scope": null
+    },
+    {
+      "id": "M01",
+      "category": "M",
+      "priority": "P0",
+      "scenario": "無料視聴者と広告主のある計画を作る",
+      "expected": "使用者・支払者・収入経路を分け、架空の注文を作らない",
+      "status": "NOT_RUN",
+      "evidence": [],
+      "verification_scope": null
+    },
+    {
+      "id": "M02",
+      "category": "M",
+      "priority": "P0",
+      "scenario": "テスト環境の支払イベントを受信する",
+      "expected": "本番売上・顧客実績へ含めない",
+      "status": "NOT_RUN",
+      "evidence": [],
+      "verification_scope": null
+    },
+    {
+      "id": "M03",
+      "category": "M",
+      "priority": "P0",
+      "scenario": "同じ支払通知を再送する",
+      "expected": "取引・利用権・収入を二重反映しない",
+      "status": "NOT_RUN",
+      "evidence": [],
+      "verification_scope": null
+    },
+    {
+      "id": "M04",
+      "category": "M",
+      "priority": "P0",
+      "scenario": "返金や請求のイベントが順不同で届く",
+      "expected": "原本照会と整合する状態へ収束し、受信順だけに依存しない",
+      "status": "NOT_RUN",
+      "evidence": [],
+      "verification_scope": null
+    },
+    {
+      "id": "M05",
+      "category": "M",
+      "priority": "P1",
+      "scenario": "本人時間・共通費・失敗案の費用を入力する",
+      "expected": "配賦と全社総額を保ち、採算から黙って除外しない",
+      "status": "NOT_RUN",
+      "evidence": [],
+      "verification_scope": null
+    },
+    {
+      "id": "M06",
+      "category": "M",
+      "priority": "P1",
+      "scenario": "CAC母数0または費用不明",
+      "expected": "算定不可と理由を返し、0円CACにしない",
+      "status": "NOT_RUN",
+      "evidence": [],
+      "verification_scope": null
+    },
+    {
+      "id": "M07",
+      "category": "M",
+      "priority": "P1",
+      "scenario": "JPY以外の取引が入る",
+      "expected": "通貨・換算を明示して対応するか未対応として保留し、黙って円へ変換しない",
+      "status": "NOT_RUN",
+      "evidence": [],
+      "verification_scope": null
+    },
+    {
+      "id": "M08",
+      "category": "M",
+      "priority": "P1",
+      "scenario": "更新・初回利用の観察期間を迎えていない対象がいる",
+      "expected": "対象群と未到達を分け、継続・利用の率を歪めない",
+      "status": "NOT_RUN",
+      "evidence": [],
+      "verification_scope": null
+    },
+    {
+      "id": "A01",
+      "category": "A",
+      "priority": "P0",
+      "scenario": "未認証でownerの読み書きへアクセスする",
+      "expected": "アクセスを拒否し、情報や許可を漏らさない",
+      "status": "NOT_RUN",
+      "evidence": [],
+      "verification_scope": null
+    },
+    {
+      "id": "A02",
+      "category": "A",
+      "priority": "P0",
+      "scenario": "AIがownerの増額・上限確認・責任解消を要求する",
+      "expected": "固定主体と権限により拒否する",
+      "status": "NOT_RUN",
+      "evidence": [],
+      "verification_scope": null
+    },
+    {
+      "id": "A03",
+      "category": "A",
+      "priority": "P0",
+      "scenario": "承認後に成果物・対象・条件を変更する",
+      "expected": "旧承認を無条件で使えず、対象版を再検査する",
+      "status": "NOT_RUN",
+      "evidence": [],
+      "verification_scope": null
+    },
+    {
+      "id": "A04",
+      "category": "A",
+      "priority": "P0",
+      "scenario": "許可が期限切れ・取消済みの操作を実行する",
+      "expected": "実行直前に拒否する",
+      "status": "NOT_RUN",
+      "evidence": [],
+      "verification_scope": null
+    },
+    {
+      "id": "A05",
+      "category": "A",
+      "priority": "P0",
+      "scenario": "同じ冪等キーで異なるpayloadを送る",
+      "expected": "競合として拒否する",
+      "status": "NOT_RUN",
+      "evidence": [],
+      "verification_scope": null
+    },
+    {
+      "id": "A06",
+      "category": "A",
+      "priority": "P0",
+      "scenario": "外部操作が結果不明でworkerを再起動する",
+      "expected": "予約を保持し同じ操作IDで照会し、別IDで二重実行しない",
+      "status": "NOT_RUN",
+      "evidence": [],
+      "verification_scope": null
+    },
+    {
+      "id": "A07",
+      "category": "A",
+      "priority": "P0",
+      "scenario": "生成コードが本番鍵・顧客データへアクセスする",
+      "expected": "隔離と権限で遮断する",
+      "status": "NOT_RUN",
+      "evidence": [],
+      "verification_scope": null
+    },
+    {
+      "id": "A08",
+      "category": "A",
+      "priority": "P0",
+      "scenario": "ブラウザーや他利用者が社員ID・ownerフラグを偽装する",
+      "expected": "サーバーの主体を優先し越権を拒否する",
+      "status": "NOT_RUN",
+      "evidence": [],
+      "verification_scope": null
+    },
+    {
+      "id": "A09",
+      "category": "A",
+      "priority": "P1",
+      "scenario": "有効な事前方針内の定型操作を要求する",
+      "expected": "条件を検査して実行でき、無用な再承認を毎回求めない",
+      "status": "NOT_RUN",
+      "evidence": [],
+      "verification_scope": null
+    },
+    {
+      "id": "O01",
+      "category": "O",
+      "priority": "P0",
+      "scenario": "稼働事業を維持しながら一件の実証を開始する",
+      "expected": "稼働事業が実験枠を消費せず、維持資金も新規へ流れない",
+      "status": "NOT_RUN",
+      "evidence": [],
+      "verification_scope": null
+    },
+    {
+      "id": "O02",
+      "category": "O",
+      "priority": "P0",
+      "scenario": "研究期限後も運営枠が有効",
+      "expected": "研究は止まり、指定条件内の既存保守を扱える",
+      "status": "NOT_RUN",
+      "evidence": [],
+      "verification_scope": null
+    },
+    {
+      "id": "O03",
+      "category": "O",
+      "priority": "P0",
+      "scenario": "不明費用の上限・分離条件が足りない",
+      "expected": "新規や未許可の保守を止め、予約を解放しない",
+      "status": "NOT_RUN",
+      "evidence": [],
+      "verification_scope": null
+    },
+    {
+      "id": "O04",
+      "category": "O",
+      "priority": "P0",
+      "scenario": "事前方針・保護枠・根拠・期限・対象を満たす分離RUN",
+      "expected": "UNKNOWNを保持し全社上限を守る指定保守だけが可能",
+      "status": "NOT_RUN",
+      "evidence": [],
+      "verification_scope": null
+    },
+    {
+      "id": "O05",
+      "category": "O",
+      "priority": "P0",
+      "scenario": "重大障害・対応期限超過・古い観測がある",
+      "expected": "新規実証・支出を保留し、必要な復旧・対応へ割り当てる",
+      "status": "NOT_RUN",
+      "evidence": [],
+      "verification_scope": null
+    },
+    {
+      "id": "O06",
+      "category": "O",
+      "priority": "P0",
+      "scenario": "重い動画生成や開発でworkerが埋まる",
+      "expected": "監視・支払照合・顧客対応の実行余力を維持する",
+      "status": "NOT_RUN",
+      "evidence": [],
+      "verification_scope": null
+    },
+    {
+      "id": "O07",
+      "category": "O",
+      "priority": "P0",
+      "scenario": "実費が予約を超える・遅れて請求される",
+      "expected": "実費を記録し、以後の支出へ制御を反映する",
+      "status": "NOT_RUN",
+      "evidence": [],
+      "verification_scope": null
+    },
+    {
+      "id": "O08",
+      "category": "O",
+      "priority": "P0",
+      "scenario": "停止後に既存取引の照合・返金責任が残る",
+      "expected": "事実記録と義務を保持し、未解消のままCLOSEDへしない",
+      "status": "NOT_RUN",
+      "evidence": [],
+      "verification_scope": null
+    },
+    {
+      "id": "O09",
+      "category": "O",
+      "priority": "P0",
+      "scenario": "新しい異常の後から古い正常観測が届く",
+      "expected": "古い観測で正常化しない",
+      "status": "NOT_RUN",
+      "evidence": [],
+      "verification_scope": null
+    },
+    {
+      "id": "O10",
+      "category": "O",
+      "priority": "P1",
+      "scenario": "旧DB・旧予約・既存の冪等キーから移行する",
+      "expected": "既存ID・金額・履歴・再送の意味を維持し復帰を検証する",
+      "status": "NOT_RUN",
+      "evidence": [],
+      "verification_scope": null
+    },
+    {
+      "id": "U01",
+      "category": "U",
+      "priority": "P0",
+      "scenario": "スマホで承認・許可を二重タップする",
+      "expected": "一回の変更だけを反映し状態と識別子を返す",
+      "status": "NOT_RUN",
+      "evidence": [],
+      "verification_scope": null
+    },
+    {
+      "id": "U02",
+      "category": "U",
+      "priority": "P1",
+      "scenario": "オフライン・古い画面から承認する",
+      "expected": "再同期と対象版を検査し、外部完了と先に表示しない",
+      "status": "NOT_RUN",
+      "evidence": [],
+      "verification_scope": null
+    },
+    {
+      "id": "U03",
+      "category": "U",
+      "priority": "P0",
+      "scenario": "スマホから全社停止する",
+      "expected": "受付・worker確認・外部の未停止・照合状態を表示する",
+      "status": "NOT_RUN",
+      "evidence": [],
+      "verification_scope": null
+    },
+    {
+      "id": "U04",
+      "category": "U",
+      "priority": "P1",
+      "scenario": "通知非対応・拒否・遅延",
+      "expected": "アプリ内で判断待ちを確認でき、通知を承認扱いしない",
+      "status": "NOT_RUN",
+      "evidence": [],
+      "verification_scope": null
+    },
+    {
+      "id": "U05",
+      "category": "U",
+      "priority": "P1",
+      "scenario": "候補・成果・費用をスマホで開く",
+      "expected": "原本・反証・時点・未確認・担当・次の判断へたどれる",
+      "status": "NOT_RUN",
+      "evidence": [],
+      "verification_scope": null
+    },
+    {
+      "id": "U06",
+      "category": "U",
+      "priority": "P0",
+      "scenario": "モバイル通信から本人と別利用者がアクセスする",
+      "expected": "本人だけが許可範囲へ入り、失効セッション・別利用者を拒否する",
+      "status": "NOT_RUN",
+      "evidence": [],
+      "verification_scope": null
+    },
+    {
+      "id": "K01",
+      "category": "K",
+      "priority": "P0",
+      "scenario": "機密・別顧客の原文を共通知識へ出力する",
+      "expected": "利用範囲を検査し出力を抑止する",
+      "status": "NOT_RUN",
+      "evidence": [],
+      "verification_scope": null
+    },
+    {
+      "id": "K02",
+      "category": "K",
+      "priority": "P1",
+      "scenario": "Obsidianの手動編集が自動出力と競合する",
+      "expected": "手動変更を上書きせず差分を保持する",
+      "status": "NOT_RUN",
+      "evidence": [],
+      "verification_scope": null
+    },
+    {
+      "id": "K03",
+      "category": "K",
+      "priority": "P0",
+      "scenario": "ノートに予算増額や公開許可を書く",
+      "expected": "正本の権限・資金を直接変更しない",
+      "status": "NOT_RUN",
+      "evidence": [],
+      "verification_scope": null
+    },
+    {
+      "id": "K04",
+      "category": "K",
+      "priority": "P1",
+      "scenario": "教訓の根拠が失効・反証される",
+      "expected": "適用範囲と再確認を反映し、無期限の正解として使わない",
+      "status": "NOT_RUN",
+      "evidence": [],
+      "verification_scope": null
+    },
+    {
+      "id": "K05",
+      "category": "K",
+      "priority": "P0",
+      "scenario": "顧客データ削除・復元を実行する",
+      "expected": "目的・保持・削除の条件を守り、他顧客や義務の正本を壊さない",
+      "status": "NOT_RUN",
+      "evidence": [],
+      "verification_scope": null
+    },
+    {
+      "id": "K06",
+      "category": "K",
+      "priority": "P0",
+      "scenario": "バックアップから復元する",
+      "expected": "許可の失効、未知操作、外部ID、成果物・資金と履歴を照合する",
+      "status": "NOT_RUN",
+      "evidence": [],
+      "verification_scope": null
+    },
+    {
+      "id": "E01",
+      "category": "E",
+      "priority": "P1",
+      "scenario": "一候補を調査から最小提供へ通す",
+      "expected": "原本・判断・実証・計画・ジョブ・成果物のIDがつながる",
+      "status": "NOT_RUN",
+      "evidence": [],
+      "verification_scope": null
+    },
+    {
+      "id": "E02",
+      "category": "E",
+      "priority": "P0",
+      "scenario": "一商品の外部テストを一巡させる",
+      "expected": "テストの利用・収入・支出・対応を追え、本番実績と区別できる",
+      "status": "NOT_RUN",
+      "evidence": [],
+      "verification_scope": null
+    },
+    {
+      "id": "E03",
+      "category": "E",
+      "priority": "P0",
+      "scenario": "実際に許可された対象で本番実証する",
+      "expected": "実使用・収入・全費用・介入・欠測から継続・改善・停止を判断する",
+      "status": "NOT_RUN",
+      "evidence": [],
+      "verification_scope": null
+    },
+    {
+      "id": "E04",
+      "category": "E",
+      "priority": "P1",
+      "scenario": "需要が弱い実証とソフト故障の実証を比較する",
+      "expected": "市場の反応不足と技術の未達を区別し、成功を捏造しない",
+      "status": "NOT_RUN",
+      "evidence": [],
+      "verification_scope": null
+    }
+  ],
+  "note": "Existing 109 local tests do not by themselves verify this rebuilt end-to-end contract."
+}

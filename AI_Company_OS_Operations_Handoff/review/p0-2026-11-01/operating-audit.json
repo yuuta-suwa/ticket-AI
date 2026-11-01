@@ -1,0 +1,43 @@
+{
+  "mode": "in-memory-local-integration",
+  "live_external_execution": false,
+  "customer_or_market_validation": false,
+  "results": [
+    {
+      "scenario": "operating service and one new experiment coexist",
+      "result": "RESOLVED_IN_LOCAL_CONTROL",
+      "evidence": {
+        "service": "OPERATING",
+        "experiment": "ACTIVE"
+      }
+    },
+    {
+      "scenario": "isolated uncertainty retains funding and permits only preapproved maintenance",
+      "result": "RESOLVED_IN_LOCAL_CONTROL",
+      "evidence": {
+        "maintenance": "SETTLED",
+        "uncertain_cost_still_held": true,
+        "new_growth_blocked": true,
+        "funding": {
+          "gross_recorded_spend_yen": 250,
+          "held_yen": 600,
+          "exposure_yen": 4600,
+          "unknown_operations": 1,
+          "in_flight_operations": 0,
+          "unreviewed_overruns": 0,
+          "protected_operating_yen": 3750
+        }
+      }
+    },
+    {
+      "scenario": "maintenance uses its own operating period after the research deadline",
+      "result": "RESOLVED_IN_LOCAL_CONTROL",
+      "evidence": {
+        "research_deadline_passed": true,
+        "maintenance": "SETTLED",
+        "stale_health_does_not_authorize_growth": true
+      }
+    }
+  ],
+  "caveat": "Health and provider bounds are synthetic operator records. Authentication, live monitoring, bank/provider verification and delivery are not connected."
+}

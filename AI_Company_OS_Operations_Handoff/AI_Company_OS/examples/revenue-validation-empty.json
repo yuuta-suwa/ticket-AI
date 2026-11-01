@@ -1,0 +1,34 @@
+{
+  "business_success": "UNVERIFIED",
+  "decision": "CONTINUE_VALIDATION",
+  "thresholds_are": "proposed-operating-rules-not-statistical-PMF-proof",
+  "independent_paid_customers": 0,
+  "customers_with_usage": 0,
+  "paid_repeat_customers": 0,
+  "paid_referred_customers": 0,
+  "refunds_yen": 0,
+  "unreviewed_refund_orders": 0,
+  "unallocated_acquisition_cost_yen": 0,
+  "portfolio_contribution_yen": null,
+  "checks": {
+    "independent_paid_customers": false,
+    "customers_with_usage": false,
+    "paid_repeat_or_referral": false,
+    "complete_costs": false,
+    "two_orders_with_30pct_contribution": false,
+    "positive_portfolio": false,
+    "no_unreviewed_refunds": true
+  },
+  "missing": [
+    "independent_paid_customers",
+    "customers_with_usage",
+    "paid_repeat_or_referral",
+    "complete_costs",
+    "two_orders_with_30pct_contribution",
+    "positive_portfolio"
+  ],
+  "real_payment_feed_connected": false,
+  "remote_owner_auth_implemented": false,
+  "evidence_basis": "owner-recorded-only",
+  "order_economics": []
+}

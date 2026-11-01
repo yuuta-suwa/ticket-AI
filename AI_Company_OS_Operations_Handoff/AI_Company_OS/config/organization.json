@@ -1,0 +1,492 @@
+{
+  "version": 1,
+  "company": "AI Company OS",
+  "departments": [
+    {
+      "id": "STRATEGY",
+      "name": "経営企画部"
+    },
+    {
+      "id": "MARKETING",
+      "name": "マーケティング部"
+    },
+    {
+      "id": "PRODUCT",
+      "name": "商品開発部"
+    },
+    {
+      "id": "SALES",
+      "name": "営業部"
+    },
+    {
+      "id": "SUPPORT",
+      "name": "顧客支援部"
+    },
+    {
+      "id": "FINANCE",
+      "name": "財務管理部"
+    },
+    {
+      "id": "PEOPLE",
+      "name": "人材・業務開発部"
+    },
+    {
+      "id": "INFORMATION",
+      "name": "情報管理部"
+    }
+  ],
+  "employees": [
+    {
+      "id": "CEO",
+      "title": "AI社長",
+      "grade": "ceo",
+      "manager_id": "OWNER",
+      "department": "EXECUTIVE",
+      "mission": "オーナーの目的と制約を各部の計画へ変換し、成果・採算から優先順位を更新する",
+      "deliverable": "全社方針・配分案・経営報告",
+      "metric": "顧客価値、採算、品質、人の介入時間"
+    },
+    {
+      "id": "STRATEGY_DIRECTOR",
+      "title": "経営企画部長",
+      "grade": "director",
+      "manager_id": "CEO",
+      "department": "STRATEGY",
+      "mission": "事業の優先順位と検証計画を統括する",
+      "deliverable": "投資配分案・継続撤退案",
+      "metric": "顧客価値の検証と採算"
+    },
+    {
+      "id": "STRATEGY_CHIEF",
+      "title": "経営企画部・事業戦略課長",
+      "grade": "chief",
+      "manager_id": "STRATEGY_DIRECTOR",
+      "department": "STRATEGY",
+      "section": "STRATEGY",
+      "mission": "目的、対象顧客、価値、検証条件を定義する",
+      "deliverable": "事業計画・検証計画",
+      "metric": "検証完了率と判断までの時間"
+    },
+    {
+      "id": "STRATEGY_STAFF",
+      "title": "経営企画部・事業戦略課担当",
+      "grade": "staff",
+      "manager_id": "STRATEGY_CHIEF",
+      "department": "STRATEGY",
+      "section": "STRATEGY",
+      "mission": "目的、対象顧客、価値、検証条件を定義する。担当の具体作業を実行する",
+      "deliverable": "事業計画・検証計画",
+      "metric": "検証完了率と判断までの時間"
+    },
+    {
+      "id": "NEW_BUSINESS_CHIEF",
+      "title": "経営企画部・新規事業課長",
+      "grade": "chief",
+      "manager_id": "STRATEGY_DIRECTOR",
+      "department": "STRATEGY",
+      "section": "NEW_BUSINESS",
+      "mission": "新しい事業候補を比較し小さく検証する",
+      "deliverable": "候補比較・需要検証案",
+      "metric": "支払意思を確認できた仮説の割合"
+    },
+    {
+      "id": "NEW_BUSINESS_STAFF",
+      "title": "経営企画部・新規事業課担当",
+      "grade": "staff",
+      "manager_id": "NEW_BUSINESS_CHIEF",
+      "department": "STRATEGY",
+      "section": "NEW_BUSINESS",
+      "mission": "新しい事業候補を比較し小さく検証する。担当の具体作業を実行する",
+      "deliverable": "候補比較・需要検証案",
+      "metric": "支払意思を確認できた仮説の割合"
+    },
+    {
+      "id": "MARKETING_DIRECTOR",
+      "title": "マーケティング部長",
+      "grade": "director",
+      "manager_id": "CEO",
+      "department": "MARKETING",
+      "mission": "顧客理解と集客の成果を統括する",
+      "deliverable": "顧客課題・販路・施策案",
+      "metric": "獲得費用と購入につながる反応"
+    },
+    {
+      "id": "RESEARCH_CHIEF",
+      "title": "マーケティング部・市場調査課長",
+      "grade": "chief",
+      "manager_id": "MARKETING_DIRECTOR",
+      "department": "MARKETING",
+      "section": "RESEARCH",
+      "mission": "顧客の声と競合を出典つきで調べる",
+      "deliverable": "出典つき調査・反証・情報の鮮度",
+      "metric": "出典確認率と仮説への寄与"
+    },
+    {
+      "id": "RESEARCH_STAFF",
+      "title": "マーケティング部・市場調査課担当",
+      "grade": "staff",
+      "manager_id": "RESEARCH_CHIEF",
+      "department": "MARKETING",
+      "section": "RESEARCH",
+      "mission": "顧客の声と競合を出典つきで調べる。担当の具体作業を実行する",
+      "deliverable": "出典つき調査・反証・情報の鮮度",
+      "metric": "出典確認率と仮説への寄与"
+    },
+    {
+      "id": "ACQUISITION_CHIEF",
+      "title": "マーケティング部・集客課長",
+      "grade": "chief",
+      "manager_id": "MARKETING_DIRECTOR",
+      "department": "MARKETING",
+      "section": "ACQUISITION",
+      "mission": "許可された経路で集客施策を企画する",
+      "deliverable": "媒体別施策・配信案・改善案",
+      "metric": "有効流入と獲得費用"
+    },
+    {
+      "id": "ACQUISITION_STAFF",
+      "title": "マーケティング部・集客課担当",
+      "grade": "staff",
+      "manager_id": "ACQUISITION_CHIEF",
+      "department": "MARKETING",
+      "section": "ACQUISITION",
+      "mission": "許可された経路で集客施策を企画する。担当の具体作業を実行する",
+      "deliverable": "媒体別施策・配信案・改善案",
+      "metric": "有効流入と獲得費用"
+    },
+    {
+      "id": "PRODUCT_DIRECTOR",
+      "title": "商品開発部長",
+      "grade": "director",
+      "manager_id": "CEO",
+      "department": "PRODUCT",
+      "mission": "顧客価値と商品の品質を統括する",
+      "deliverable": "商品仕様・制作物・品質報告",
+      "metric": "提供完了と顧客の問題解決"
+    },
+    {
+      "id": "PLANNING_CHIEF",
+      "title": "商品開発部・商品企画課長",
+      "grade": "chief",
+      "manager_id": "PRODUCT_DIRECTOR",
+      "department": "PRODUCT",
+      "section": "PLANNING",
+      "mission": "顧客課題から仕様と提供範囲を定義する",
+      "deliverable": "商品要件・完了条件・価格仮説",
+      "metric": "顧客課題と仕様の対応率"
+    },
+    {
+      "id": "PLANNING_STAFF",
+      "title": "商品開発部・商品企画課担当",
+      "grade": "staff",
+      "manager_id": "PLANNING_CHIEF",
+      "department": "PRODUCT",
+      "section": "PLANNING",
+      "mission": "顧客課題から仕様と提供範囲を定義する。担当の具体作業を実行する",
+      "deliverable": "商品要件・完了条件・価格仮説",
+      "metric": "顧客課題と仕様の対応率"
+    },
+    {
+      "id": "PRODUCTION_CHIEF",
+      "title": "商品開発部・制作課長",
+      "grade": "chief",
+      "manager_id": "PRODUCT_DIRECTOR",
+      "department": "PRODUCT",
+      "section": "PRODUCTION",
+      "mission": "仕様に沿って成果物を制作し検証する",
+      "deliverable": "商品原稿・制作物・確認結果",
+      "metric": "初回検収合格率と修正費用"
+    },
+    {
+      "id": "PRODUCTION_STAFF",
+      "title": "商品開発部・制作課担当",
+      "grade": "staff",
+      "manager_id": "PRODUCTION_CHIEF",
+      "department": "PRODUCT",
+      "section": "PRODUCTION",
+      "mission": "仕様に沿って成果物を制作し検証する。担当の具体作業を実行する",
+      "deliverable": "商品原稿・制作物・確認結果",
+      "metric": "初回検収合格率と修正費用"
+    },
+    {
+      "id": "SALES_DIRECTOR",
+      "title": "営業部長",
+      "grade": "director",
+      "manager_id": "CEO",
+      "department": "SALES",
+      "mission": "販売の導線と実績を統括する",
+      "deliverable": "提案・販売設計・受注報告",
+      "metric": "費用控除後の売上貢献"
+    },
+    {
+      "id": "SALES_PLAN_CHIEF",
+      "title": "営業部・営業企画課長",
+      "grade": "chief",
+      "manager_id": "SALES_DIRECTOR",
+      "department": "SALES",
+      "section": "SALES_PLAN",
+      "mission": "顧客に伝える価値と販売手順を設計する",
+      "deliverable": "提案骨子・販売ページ案",
+      "metric": "顧客理解と購入率"
+    },
+    {
+      "id": "SALES_PLAN_STAFF",
+      "title": "営業部・営業企画課担当",
+      "grade": "staff",
+      "manager_id": "SALES_PLAN_CHIEF",
+      "department": "SALES",
+      "section": "SALES_PLAN",
+      "mission": "顧客に伝える価値と販売手順を設計する。担当の具体作業を実行する",
+      "deliverable": "提案骨子・販売ページ案",
+      "metric": "顧客理解と購入率"
+    },
+    {
+      "id": "SALES_OPS_CHIEF",
+      "title": "営業部・販売運用課長",
+      "grade": "chief",
+      "manager_id": "SALES_DIRECTOR",
+      "department": "SALES",
+      "section": "SALES_OPS",
+      "mission": "注文・提供・返金などの流れを運用する",
+      "deliverable": "受注管理・販売結果",
+      "metric": "処理の正確性と二重処理ゼロ"
+    },
+    {
+      "id": "SALES_OPS_STAFF",
+      "title": "営業部・販売運用課担当",
+      "grade": "staff",
+      "manager_id": "SALES_OPS_CHIEF",
+      "department": "SALES",
+      "section": "SALES_OPS",
+      "mission": "注文・提供・返金などの流れを運用する。担当の具体作業を実行する",
+      "deliverable": "受注管理・販売結果",
+      "metric": "処理の正確性と二重処理ゼロ"
+    },
+    {
+      "id": "SUPPORT_DIRECTOR",
+      "title": "顧客支援部長",
+      "grade": "director",
+      "manager_id": "CEO",
+      "department": "SUPPORT",
+      "mission": "提供品質と顧客との継続関係を統括する",
+      "deliverable": "顧客課題・改善要望・解決報告",
+      "metric": "解決率と苦情・返金"
+    },
+    {
+      "id": "SERVICE_CHIEF",
+      "title": "顧客支援部・サポート課長",
+      "grade": "chief",
+      "manager_id": "SUPPORT_DIRECTOR",
+      "department": "SUPPORT",
+      "section": "SERVICE",
+      "mission": "問い合わせを整理し適切な対応を作る",
+      "deliverable": "回答案・解決手順・引継ぎ",
+      "metric": "解決率と解決時間"
+    },
+    {
+      "id": "SERVICE_STAFF",
+      "title": "顧客支援部・サポート課担当",
+      "grade": "staff",
+      "manager_id": "SERVICE_CHIEF",
+      "department": "SUPPORT",
+      "section": "SERVICE",
+      "mission": "問い合わせを整理し適切な対応を作る。担当の具体作業を実行する",
+      "deliverable": "回答案・解決手順・引継ぎ",
+      "metric": "解決率と解決時間"
+    },
+    {
+      "id": "RETENTION_CHIEF",
+      "title": "顧客支援部・継続支援課長",
+      "grade": "chief",
+      "manager_id": "SUPPORT_DIRECTOR",
+      "department": "SUPPORT",
+      "section": "RETENTION",
+      "mission": "利用状況から継続価値を高める",
+      "deliverable": "継続支援案・離脱要因",
+      "metric": "継続率と顧客負担"
+    },
+    {
+      "id": "RETENTION_STAFF",
+      "title": "顧客支援部・継続支援課担当",
+      "grade": "staff",
+      "manager_id": "RETENTION_CHIEF",
+      "department": "SUPPORT",
+      "section": "RETENTION",
+      "mission": "利用状況から継続価値を高める。担当の具体作業を実行する",
+      "deliverable": "継続支援案・離脱要因",
+      "metric": "継続率と顧客負担"
+    },
+    {
+      "id": "FINANCE_DIRECTOR",
+      "title": "財務管理部長",
+      "grade": "director",
+      "manager_id": "CEO",
+      "department": "FINANCE",
+      "mission": "予算と採算を監視する",
+      "deliverable": "予算表・採算報告・停止提案",
+      "metric": "費用把握率と予算逸脱ゼロ"
+    },
+    {
+      "id": "BUDGET_CHIEF",
+      "title": "財務管理部・予算管理課長",
+      "grade": "chief",
+      "manager_id": "FINANCE_DIRECTOR",
+      "department": "FINANCE",
+      "section": "BUDGET",
+      "mission": "利用可能な予算と予約中費用を確認する",
+      "deliverable": "予算残高・予約費用・例外報告",
+      "metric": "費用漏れと上限超過ゼロ"
+    },
+    {
+      "id": "BUDGET_STAFF",
+      "title": "財務管理部・予算管理課担当",
+      "grade": "staff",
+      "manager_id": "BUDGET_CHIEF",
+      "department": "FINANCE",
+      "section": "BUDGET",
+      "mission": "利用可能な予算と予約中費用を確認する。担当の具体作業を実行する",
+      "deliverable": "予算残高・予約費用・例外報告",
+      "metric": "費用漏れと上限超過ゼロ"
+    },
+    {
+      "id": "ACCOUNTING_CHIEF",
+      "title": "財務管理部・収支管理課長",
+      "grade": "chief",
+      "manager_id": "FINANCE_DIRECTOR",
+      "department": "FINANCE",
+      "section": "ACCOUNTING",
+      "mission": "速報と確定を分け収支を照合する",
+      "deliverable": "収支台帳・採算検証",
+      "metric": "入金照合率と施策貢献額"
+    },
+    {
+      "id": "ACCOUNTING_STAFF",
+      "title": "財務管理部・収支管理課担当",
+      "grade": "staff",
+      "manager_id": "ACCOUNTING_CHIEF",
+      "department": "FINANCE",
+      "section": "ACCOUNTING",
+      "mission": "速報と確定を分け収支を照合する。担当の具体作業を実行する",
+      "deliverable": "収支台帳・採算検証",
+      "metric": "入金照合率と施策貢献額"
+    },
+    {
+      "id": "PEOPLE_DIRECTOR",
+      "title": "人材・業務開発部長",
+      "grade": "director",
+      "manager_id": "CEO",
+      "department": "PEOPLE",
+      "mission": "AI社員の職務と業務品質を改善する",
+      "deliverable": "社員評価・役割改善・手順更新案",
+      "metric": "品質改善と介入時間削減"
+    },
+    {
+      "id": "TRAINING_CHIEF",
+      "title": "人材・業務開発部・AI社員育成課長",
+      "grade": "chief",
+      "manager_id": "PEOPLE_DIRECTOR",
+      "department": "PEOPLE",
+      "section": "TRAINING",
+      "mission": "実績と失敗から職務手順を改善する",
+      "deliverable": "評価票・改善手順・比較結果",
+      "metric": "再発率と評価データ上の改善"
+    },
+    {
+      "id": "TRAINING_STAFF",
+      "title": "人材・業務開発部・AI社員育成課担当",
+      "grade": "staff",
+      "manager_id": "TRAINING_CHIEF",
+      "department": "PEOPLE",
+      "section": "TRAINING",
+      "mission": "実績と失敗から職務手順を改善する。担当の具体作業を実行する",
+      "deliverable": "評価票・改善手順・比較結果",
+      "metric": "再発率と評価データ上の改善"
+    },
+    {
+      "id": "IMPROVEMENT_CHIEF",
+      "title": "人材・業務開発部・業務改善課長",
+      "grade": "chief",
+      "manager_id": "PEOPLE_DIRECTOR",
+      "department": "PEOPLE",
+      "section": "IMPROVEMENT",
+      "mission": "重複、待ち、無駄な会議を減らす",
+      "deliverable": "業務手順・自動化案",
+      "metric": "完了時間と処理費用"
+    },
+    {
+      "id": "IMPROVEMENT_STAFF",
+      "title": "人材・業務開発部・業務改善課担当",
+      "grade": "staff",
+      "manager_id": "IMPROVEMENT_CHIEF",
+      "department": "PEOPLE",
+      "section": "IMPROVEMENT",
+      "mission": "重複、待ち、無駄な会議を減らす。担当の具体作業を実行する",
+      "deliverable": "業務手順・自動化案",
+      "metric": "完了時間と処理費用"
+    },
+    {
+      "id": "INFORMATION_DIRECTOR",
+      "title": "情報管理部長",
+      "grade": "director",
+      "manager_id": "CEO",
+      "department": "INFORMATION",
+      "mission": "記録の整合性とシステム稼働を統括する",
+      "deliverable": "情報体系・同期状況・運用報告",
+      "metric": "追跡可能性と復旧時間"
+    },
+    {
+      "id": "KNOWLEDGE_CHIEF",
+      "title": "情報管理部・ナレッジ管理課長",
+      "grade": "chief",
+      "manager_id": "INFORMATION_DIRECTOR",
+      "department": "INFORMATION",
+      "section": "KNOWLEDGE",
+      "mission": "原記録と成果をつなぎ検証済み知識を整理する",
+      "deliverable": "知識カード・出典・Obsidianノート",
+      "metric": "根拠追跡率と期限切れ知識"
+    },
+    {
+      "id": "KNOWLEDGE_STAFF",
+      "title": "情報管理部・ナレッジ管理課担当",
+      "grade": "staff",
+      "manager_id": "KNOWLEDGE_CHIEF",
+      "department": "INFORMATION",
+      "section": "KNOWLEDGE",
+      "mission": "原記録と成果をつなぎ検証済み知識を整理する。担当の具体作業を実行する",
+      "deliverable": "知識カード・出典・Obsidianノート",
+      "metric": "根拠追跡率と期限切れ知識"
+    },
+    {
+      "id": "SYSTEMS_CHIEF",
+      "title": "情報管理部・システム運用課長",
+      "grade": "chief",
+      "manager_id": "INFORMATION_DIRECTOR",
+      "department": "INFORMATION",
+      "section": "SYSTEMS",
+      "mission": "実行状態、障害、バックアップを管理する",
+      "deliverable": "稼働報告・復旧手順",
+      "metric": "稼働率と復元確認"
+    },
+    {
+      "id": "SYSTEMS_STAFF",
+      "title": "情報管理部・システム運用課担当",
+      "grade": "staff",
+      "manager_id": "SYSTEMS_CHIEF",
+      "department": "INFORMATION",
+      "section": "SYSTEMS",
+      "mission": "実行状態、障害、バックアップを管理する。担当の具体作業を実行する",
+      "deliverable": "稼働報告・復旧手順",
+      "metric": "稼働率と復元確認"
+    },
+    {
+      "id": "AUDITOR",
+      "title": "AI監査役",
+      "grade": "auditor",
+      "manager_id": "OWNER",
+      "department": "AUDIT",
+      "mission": "自己検収、権限逸脱、根拠のない実績報告を監査する。異常時は停止する",
+      "deliverable": "監査指摘・検収結果・停止理由",
+      "metric": "重大な見逃しと誤停止"
+    }
+  ]
+}

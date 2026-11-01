@@ -1,0 +1,19 @@
+{
+  "status": "assumptions-not-observed-results",
+  "currency": "JPY",
+  "customer_receipt": 33000,
+  "card_fee_rate": 0.036,
+  "ai_and_variable_tools": 2000,
+  "production_and_delivery_hours": 5,
+  "allocated_acquisition_hours_per_paying_customer": 8,
+  "human_hour_value": 2000,
+  "allocated_acquisition_cash": 0,
+  "rework_and_refund_buffer": 1000,
+  "excludes": [
+    "taxes",
+    "fixed_overhead",
+    "unexpected_losses"
+  ],
+  "acquisition_allocation": "Include unsuccessful prospecting, interviews, proposals and follow-up; allocate to distinct paying customers.",
+  "note": "営業・制作・修正・検品・使用確認を実測する。33,000円と55,000円の受容性は未検証。手数料は標準カード決済3.6%の仮定。予備費は台帳の実原価ではない。"
+}

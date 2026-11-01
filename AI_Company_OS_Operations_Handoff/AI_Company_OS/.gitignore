@@ -1,0 +1,7 @@
+node_modules/
+.eve/
+data/
+.env
+.env.*
+!.env.example
+*.log

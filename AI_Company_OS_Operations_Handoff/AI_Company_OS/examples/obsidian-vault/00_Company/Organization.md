@@ -1,0 +1,48 @@
+# AI会社・組織一覧
+
+状態：試作。8部・16課・42職務。
+
+| 社員ID | 所属・役職 | 上司 |
+|---|---|---|
+| ACCOUNTING_CHIEF | [[10_Employees/ACCOUNTING_CHIEF|財務管理部・収支管理課長]] | FINANCE_DIRECTOR |
+| ACCOUNTING_STAFF | [[10_Employees/ACCOUNTING_STAFF|財務管理部・収支管理課担当]] | ACCOUNTING_CHIEF |
+| ACQUISITION_CHIEF | [[10_Employees/ACQUISITION_CHIEF|マーケティング部・集客課長]] | MARKETING_DIRECTOR |
+| ACQUISITION_STAFF | [[10_Employees/ACQUISITION_STAFF|マーケティング部・集客課担当]] | ACQUISITION_CHIEF |
+| AUDITOR | [[10_Employees/AUDITOR|AI監査役]] | OWNER |
+| BUDGET_CHIEF | [[10_Employees/BUDGET_CHIEF|財務管理部・予算管理課長]] | FINANCE_DIRECTOR |
+| BUDGET_STAFF | [[10_Employees/BUDGET_STAFF|財務管理部・予算管理課担当]] | BUDGET_CHIEF |
+| CEO | [[10_Employees/CEO|AI社長]] | OWNER |
+| FINANCE_DIRECTOR | [[10_Employees/FINANCE_DIRECTOR|財務管理部長]] | CEO |
+| IMPROVEMENT_CHIEF | [[10_Employees/IMPROVEMENT_CHIEF|人材・業務開発部・業務改善課長]] | PEOPLE_DIRECTOR |
+| IMPROVEMENT_STAFF | [[10_Employees/IMPROVEMENT_STAFF|人材・業務開発部・業務改善課担当]] | IMPROVEMENT_CHIEF |
+| INFORMATION_DIRECTOR | [[10_Employees/INFORMATION_DIRECTOR|情報管理部長]] | CEO |
+| KNOWLEDGE_CHIEF | [[10_Employees/KNOWLEDGE_CHIEF|情報管理部・ナレッジ管理課長]] | INFORMATION_DIRECTOR |
+| KNOWLEDGE_STAFF | [[10_Employees/KNOWLEDGE_STAFF|情報管理部・ナレッジ管理課担当]] | KNOWLEDGE_CHIEF |
+| MARKETING_DIRECTOR | [[10_Employees/MARKETING_DIRECTOR|マーケティング部長]] | CEO |
+| NEW_BUSINESS_CHIEF | [[10_Employees/NEW_BUSINESS_CHIEF|経営企画部・新規事業課長]] | STRATEGY_DIRECTOR |
+| NEW_BUSINESS_STAFF | [[10_Employees/NEW_BUSINESS_STAFF|経営企画部・新規事業課担当]] | NEW_BUSINESS_CHIEF |
+| PEOPLE_DIRECTOR | [[10_Employees/PEOPLE_DIRECTOR|人材・業務開発部長]] | CEO |
+| PLANNING_CHIEF | [[10_Employees/PLANNING_CHIEF|商品開発部・商品企画課長]] | PRODUCT_DIRECTOR |
+| PLANNING_STAFF | [[10_Employees/PLANNING_STAFF|商品開発部・商品企画課担当]] | PLANNING_CHIEF |
+| PRODUCTION_CHIEF | [[10_Employees/PRODUCTION_CHIEF|商品開発部・制作課長]] | PRODUCT_DIRECTOR |
+| PRODUCTION_STAFF | [[10_Employees/PRODUCTION_STAFF|商品開発部・制作課担当]] | PRODUCTION_CHIEF |
+| PRODUCT_DIRECTOR | [[10_Employees/PRODUCT_DIRECTOR|商品開発部長]] | CEO |
+| RESEARCH_CHIEF | [[10_Employees/RESEARCH_CHIEF|マーケティング部・市場調査課長]] | MARKETING_DIRECTOR |
+| RESEARCH_STAFF | [[10_Employees/RESEARCH_STAFF|マーケティング部・市場調査課担当]] | RESEARCH_CHIEF |
+| RETENTION_CHIEF | [[10_Employees/RETENTION_CHIEF|顧客支援部・継続支援課長]] | SUPPORT_DIRECTOR |
+| RETENTION_STAFF | [[10_Employees/RETENTION_STAFF|顧客支援部・継続支援課担当]] | RETENTION_CHIEF |
+| SALES_DIRECTOR | [[10_Employees/SALES_DIRECTOR|営業部長]] | CEO |
+| SALES_OPS_CHIEF | [[10_Employees/SALES_OPS_CHIEF|営業部・販売運用課長]] | SALES_DIRECTOR |
+| SALES_OPS_STAFF | [[10_Employees/SALES_OPS_STAFF|営業部・販売運用課担当]] | SALES_OPS_CHIEF |
+| SALES_PLAN_CHIEF | [[10_Employees/SALES_PLAN_CHIEF|営業部・営業企画課長]] | SALES_DIRECTOR |
+| SALES_PLAN_STAFF | [[10_Employees/SALES_PLAN_STAFF|営業部・営業企画課担当]] | SALES_PLAN_CHIEF |
+| SERVICE_CHIEF | [[10_Employees/SERVICE_CHIEF|顧客支援部・サポート課長]] | SUPPORT_DIRECTOR |
+| SERVICE_STAFF | [[10_Employees/SERVICE_STAFF|顧客支援部・サポート課担当]] | SERVICE_CHIEF |
+| STRATEGY_CHIEF | [[10_Employees/STRATEGY_CHIEF|経営企画部・事業戦略課長]] | STRATEGY_DIRECTOR |
+| STRATEGY_DIRECTOR | [[10_Employees/STRATEGY_DIRECTOR|経営企画部長]] | CEO |
+| STRATEGY_STAFF | [[10_Employees/STRATEGY_STAFF|経営企画部・事業戦略課担当]] | STRATEGY_CHIEF |
+| SUPPORT_DIRECTOR | [[10_Employees/SUPPORT_DIRECTOR|顧客支援部長]] | CEO |
+| SYSTEMS_CHIEF | [[10_Employees/SYSTEMS_CHIEF|情報管理部・システム運用課長]] | INFORMATION_DIRECTOR |
+| SYSTEMS_STAFF | [[10_Employees/SYSTEMS_STAFF|情報管理部・システム運用課担当]] | SYSTEMS_CHIEF |
+| TRAINING_CHIEF | [[10_Employees/TRAINING_CHIEF|人材・業務開発部・AI社員育成課長]] | PEOPLE_DIRECTOR |
+| TRAINING_STAFF | [[10_Employees/TRAINING_STAFF|人材・業務開発部・AI社員育成課担当]] | TRAINING_CHIEF |

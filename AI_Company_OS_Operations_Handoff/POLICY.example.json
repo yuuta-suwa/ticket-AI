@@ -1,0 +1,11 @@
+{
+  "enabled": false,
+  "gross_spend_limit_yen": 0,
+  "per_venture_limit_yen": 0,
+  "active_venture_limit": 1,
+  "allowed_kinds": [],
+  "expires_at": null,
+  "source_ref": "未設定。本人が対象・資金・期限を確認して設定する",
+  "operating_grant_limit_yen": 0,
+  "allow_isolated_run": false
+}
