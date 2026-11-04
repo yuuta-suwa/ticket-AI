@@ -1,0 +1,643 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#101A2E">
+<meta name="description" content="LIFE STAGE 2.0 ワーク — 全メンバー向け7ステージとコアメンバー向け90日プログラム">
+<title>LIFE STAGE 2.0</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<style>
+:root{
+  --bg:#101A2E; --surface:#192640; --surface2:#1F2E4D; --line:rgba(245,245,240,.10); --line2:rgba(199,170,112,.35);
+  --text:#F5F5F0; --muted:#A9B1C3; --gold:#C7AA70; --gold-soft:rgba(199,170,112,.14);
+  --ok:#7FC8A9; --warn:#E3B566; --err:#E58C8C;
+  --r:18px; --t:180ms; --nav:64px;
+  --font:"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic UI",system-ui,sans-serif;
+  --serif:"Cormorant Garamond","Times New Roman",serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font);font-size:16px;line-height:1.75;-webkit-font-smoothing:antialiased}
+body{min-height:100vh;padding-bottom:calc(var(--nav) + env(safe-area-inset-bottom) + 16px);
+  background:radial-gradient(120% 60% at 50% -10%,rgba(199,170,112,.10),transparent 60%),var(--bg)}
+a{color:var(--gold)}
+button,input,textarea,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.wrap{max-width:720px;margin:0 auto;padding:0 16px}
+/* header */
+header.top{position:sticky;top:0;z-index:20;background:rgba(16,26,46,.86);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.top .row{display:flex;align-items:center;justify-content:space-between;gap:12px;height:56px}
+.brand{font-family:var(--serif);letter-spacing:.24em;font-size:15px;color:var(--gold);white-space:nowrap}
+.brand b{font-weight:600;color:var(--text);letter-spacing:.12em}
+.save{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px;white-space:nowrap}
+.save i{width:7px;height:7px;border-radius:50%;background:var(--ok);display:inline-block}
+.save.saving i{background:var(--warn)} .save.error i{background:var(--err)}
+.course{display:flex;gap:6px;padding:0 0 10px}
+.course button{flex:1;min-height:44px;border-radius:12px;border:1px solid var(--line);background:transparent;cursor:pointer;font-size:14px;color:var(--muted);transition:all var(--t)}
+.course button[aria-selected="true"]{border-color:var(--line2);background:var(--gold-soft);color:var(--text)}
+.course small{display:block;font-size:10px;letter-spacing:.18em;color:var(--gold);line-height:1.2;margin-top:2px}
+/* nav */
+nav.bottom{position:fixed;left:0;right:0;bottom:0;z-index:20;background:rgba(16,26,46,.94);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+nav.bottom .wrap{display:grid;grid-template-columns:repeat(5,1fr);height:var(--nav)}
+nav.bottom button{background:none;border:0;cursor:pointer;color:var(--muted);font-size:10.5px;white-space:nowrap;letter-spacing:-.02em;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:44px}
+nav.bottom button svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.6}
+nav.bottom button[aria-current="page"]{color:var(--gold)}
+/* content */
+main{padding:20px 0 24px}
+.view{animation:in 240ms ease both}
+@keyframes in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.eyebrow{font-family:var(--serif);letter-spacing:.28em;font-size:12px;color:var(--gold);text-transform:uppercase}
+h1{font-size:24px;line-height:1.45;margin:6px 0 8px;font-weight:600;letter-spacing:.02em}
+h2{font-size:18px;margin:0 0 6px;font-weight:600}
+h3{font-size:15px;margin:0 0 4px;font-weight:600}
+p{margin:0 0 10px}
+.muted{color:var(--muted)} .small{font-size:13px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px;margin:14px 0}
+.card.hero{background:linear-gradient(160deg,var(--surface2),var(--surface));border-color:var(--line2)}
+.grid{display:grid;gap:10px}
+.grid.two{grid-template-columns:1fr 1fr}
+@media (max-width:420px){.grid.two{grid-template-columns:1fr}}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 20px;border-radius:14px;border:1px solid var(--line2);background:var(--gold);color:#14213A;font-weight:600;cursor:pointer;transition:transform var(--t),opacity var(--t);text-decoration:none}
+.btn:active{transform:scale(.98)}
+.btn.ghost{background:transparent;color:var(--text)}
+.btn.block{width:100%}
+.btn[disabled]{opacity:.4;cursor:not-allowed}
+.btn.sm{min-height:40px;padding:0 14px;font-size:14px;border-radius:12px}
+.row{display:flex;gap:10px;align-items:center}
+.row.wrapx{flex-wrap:wrap}
+.spacer{flex:1}
+.list{list-style:none;padding:0;margin:0}
+.item{display:flex;align-items:center;gap:14px;padding:14px;border-radius:16px;background:var(--surface);border:1px solid var(--line);margin:10px 0;cursor:pointer;width:100%;text-align:left;transition:border-color var(--t)}
+.item:hover{border-color:var(--line2)}
+.num{font-family:var(--serif);font-size:22px;color:var(--gold);width:34px;flex:none;text-align:center}
+.item .t{flex:1;min-width:0}
+.item .t b{display:block;font-size:13px;letter-spacing:.12em;color:var(--gold);font-weight:500}
+.item .t span{display:block;font-size:15px}
+.badge{font-size:11px;padding:3px 9px;border-radius:999px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.badge.ok{border-color:rgba(127,200,169,.5);color:var(--ok)}
+.badge.gold{border-color:var(--line2);color:var(--gold)}
+.bar{height:6px;border-radius:6px;background:rgba(245,245,240,.08);overflow:hidden}
+.bar > i{display:block;height:100%;background:linear-gradient(90deg,#A88B52,var(--gold));border-radius:6px;transition:width 400ms ease}
+label.f{display:block;font-size:14px;margin:14px 0 6px;color:var(--muted)}
+input[type=text],input[type=number],input[type=date],input[type=password],textarea,select{width:100%;background:#0E1728;border:1px solid var(--line);border-radius:12px;padding:12px 14px;min-height:48px;font-size:16px;line-height:1.7;transition:border-color var(--t)}
+textarea{min-height:140px;resize:vertical}
+input:focus,textarea:focus,select:focus{outline:none;border-color:var(--gold)}
+.hint{font-size:13px;color:var(--muted);background:rgba(245,245,240,.04);border-left:2px solid var(--gold);padding:10px 12px;border-radius:0 10px 10px 0;margin:10px 0}
+.steps{display:flex;gap:4px;margin:12px 0}
+.steps i{flex:1;height:3px;border-radius:3px;background:rgba(245,245,240,.12)}
+.steps i.on{background:var(--gold)}
+.kpi{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.kpi div{background:#0E1728;border:1px solid var(--line);border-radius:12px;padding:10px;text-align:center}
+.kpi b{display:block;font-size:20px;font-family:var(--serif);color:var(--gold)}
+.kpi span{font-size:11px;color:var(--muted)}
+.tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin:8px 0;scrollbar-width:none}
+.tabs button{flex:none;min-height:40px;padding:0 14px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--muted);cursor:pointer;font-size:13px}
+.tabs button[aria-selected="true"]{color:var(--text);border-color:var(--line2);background:var(--gold-soft)}
+.chat{display:flex;flex-direction:column;gap:10px}
+.msg{padding:12px 14px;border-radius:14px;max-width:92%;white-space:pre-wrap;font-size:15px}
+.msg.me{align-self:flex-end;background:var(--gold-soft);border:1px solid var(--line2)}
+.msg.ai{align-self:flex-start;background:var(--surface);border:1px solid var(--line)}
+.book-page{background:#F5F5F0;color:#172B4D;border-radius:14px;padding:22px;margin:14px 0}
+.book-page .eyebrow{color:#8A7442}
+.book-page h2{font-family:var(--serif);font-size:22px;letter-spacing:.04em}
+.book-page p{white-space:pre-wrap}
+.empty{text-align:center;padding:28px 12px;color:var(--muted)}
+.lock{display:grid;place-items:center;text-align:center;padding:24px 8px}
+.lock svg{width:44px;height:44px;stroke:var(--gold);fill:none;stroke-width:1.4;margin-bottom:8px}
+.toast{position:fixed;left:50%;bottom:calc(var(--nav) + 24px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--surface2);border:1px solid var(--line2);padding:10px 16px;border-radius:12px;font-size:14px;z-index:40;opacity:0;pointer-events:none;transition:opacity var(--t);max-width:calc(100% - 32px)}
+.toast.show{opacity:1}
+/* intro */
+.intro{position:fixed;inset:0;z-index:50;background:var(--bg);display:grid;place-items:center;padding:24px;text-align:center}
+.intro .glow{position:absolute;inset:0;background:radial-gradient(50% 40% at 50% 40%,rgba(199,170,112,.22),transparent 70%);animation:glow 2.4s ease both;pointer-events:none}
+@keyframes glow{from{opacity:0;transform:scale(.8)}to{opacity:1;transform:none}}
+.intro .in{position:relative;max-width:420px;animation:in 900ms 200ms ease both}
+.intro .logo{font-family:var(--serif);font-size:34px;letter-spacing:.3em;color:var(--gold);margin-bottom:6px}
+.skip{position:absolute;top:calc(14px + env(safe-area-inset-top));right:16px;background:none;border:1px solid var(--line);color:var(--muted);border-radius:999px;padding:8px 14px;cursor:pointer;min-height:40px}
+hr.s{border:0;border-top:1px solid var(--line);margin:16px 0}
+.seg{display:flex;gap:6px}
+.seg button{flex:1;min-height:44px;border-radius:12px;border:1px solid var(--line);background:transparent;cursor:pointer;color:var(--muted);font-size:14px}
+.seg button[aria-pressed="true"]{border-color:var(--line2);color:var(--text);background:var(--gold-soft)}
+.log{border:1px solid var(--line);border-radius:14px;padding:12px;margin:10px 0;background:#0E1728;font-size:14px}
+.log dl{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;margin:6px 0 0}
+.log dt{color:var(--gold);font-size:12px} .log dd{margin:0;white-space:pre-wrap}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media print{
+  body{background:#fff;color:#172B4D;padding:0}
+  header.top,nav.bottom,.noprint,.toast{display:none!important}
+  .book-page{border:0;margin:0 0 18px;page-break-inside:avoid;padding:0}
+  main{padding:0}
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <div class="row">
+      <div class="brand">LIFE STAGE <b>2.0</b></div>
+      <div class="save" id="save" role="status" aria-live="polite"><i></i><span>保存済み</span></div>
+    </div>
+    <div class="course" role="tablist" aria-label="コース切替">
+      <button role="tab" data-course="all" aria-selected="true">全メンバー<small>EXPRESS &amp; CONNECT</small></button>
+      <button role="tab" data-course="core" aria-selected="false">コアメンバー<small>CORE 90 DAYS</small></button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap" id="app" tabindex="-1"></main>
+
+<nav class="bottom" aria-label="メインナビゲーション">
+  <div class="wrap">
+    <button data-tab="home"><svg viewBox="0 0 24 24"><path d="M4 11l8-7 8 7v9H4z"/><path d="M10 20v-6h4v6"/></svg>ホーム</button>
+    <button data-tab="journey"><svg viewBox="0 0 24 24"><circle cx="6" cy="18" r="2"/><circle cx="18" cy="6" r="2"/><path d="M8 18h5a3 3 0 000-6h-2a3 3 0 010-6h5"/></svg>ジャーニー</button>
+    <button data-tab="ai"><svg viewBox="0 0 24 24"><path d="M12 3l1.8 4.6L18 9.4l-4.2 1.8L12 16l-1.8-4.8L6 9.4l4.2-1.8z"/><path d="M18 15l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/></svg>AI</button>
+    <button data-tab="book"><svg viewBox="0 0 24 24"><path d="M5 4h10a4 4 0 014 4v12H9a4 4 0 01-4-4z"/><path d="M5 16a4 4 0 014-4h10"/></svg>ブック</button>
+    <button data-tab="me"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0116 0"/></svg>マイページ</button>
+  </div>
+</nav>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+"use strict";
+/* ============ 教材定義（全メンバー 7ステージ） ============ */
+const STAGES = [
+ {id:"s1",en:"MY LIFE VALUE",ja:"人生の価値を言葉にする",out:"価値カード",
+  lead:"あなたがこれまで大切にしてきたものは、誰かに伝えた瞬間に「価値」になります。",
+  qs:[
+   {q:"人生で大切にしてきた価値観を3つ挙げてください。",ex:"例：誠実さ／挑戦／家族との時間"},
+   {q:"その価値観が生まれた具体的な経験は？",ex:"いつ・どこで・誰と・何があったかを1つ。"},
+   {q:"その価値観は、これまで誰の役に立ちましたか？",ex:"例：後輩が悩んだ時、最後まで話を聴いたことで…"},
+  ],
+  compose:a=>`大切にしている価値観：${a[0]||"—"}\n\nその原点：${a[1]||"—"}\n\n誰かの役に立った場面：${a[2]||"—"}`},
+ {id:"s2",en:"TELL YOUR STORY",ja:"90秒で自分を伝える",out:"MY LIFE STORY",
+  lead:"事実だけでなく、その時の気持ちと学びを入れると、相手の心に残るストーリーになります。",
+  qs:[
+   {q:"人生の転機になった出来事は？",ex:"事実を短く。"},
+   {q:"その時、何を感じましたか？",ex:"悔しかった／怖かった／うれしかった など、感情の言葉で。"},
+   {q:"そこから何を学びましたか？",ex:"今も行動の基準になっていること。"},
+   {q:"その学びは、今のあなたと未来にどうつながっていますか？",ex:"「だから今、私は〜しています」の形で。"},
+  ],
+  compose:a=>`${a[0]||""}\nその時、${a[1]||""}\nそこから学んだのは、${a[2]||""}\nだから今、${a[3]||""}`},
+ {id:"s3",en:"OUR VISION",ja:"相手の話を聴き、共通点を見つける",out:"OUR VISION メモ",
+  lead:"伝える力と同じくらい大切なのが聴く力。相手の物語を要約し、違いも尊重します。",
+  qs:[
+   {q:"相手（仲間・家族・同僚）に聞いてみたい質問を3つ書いてください。",ex:"例：一番うれしかった仕事は？ 5年後どうなっていたい？"},
+   {q:"実際に聴いた相手の話を、2〜3文で要約してください。",ex:"相手の言葉をなるべくそのまま使う。"},
+   {q:"あなたと相手の共通点と違いは？",ex:"共通点：… ／ 違い：…"},
+  ],
+  compose:a=>`聴いた質問：${a[0]||"—"}\n\n相手の話の要約：${a[1]||"—"}\n\n共通点と違い：${a[2]||"—"}`},
+ {id:"s4",en:"VISION GAP",ja:"未来と現在地の距離を測る",out:"ビジョンギャップ",
+  lead:"理想と現在地を並べると、次にやるべきことが見えてきます。",
+  qs:[
+   {q:"3年後、どんな自分・どんな関係・どんな毎日でいたいですか？",ex:"仕事・お金・健康・家族・仲間・学び など。"},
+   {q:"今の現在地は？（事実で）",ex:"数字や具体的な状況で書くと差が見えやすい。"},
+   {q:"理想と現在地の一番大きな差は何ですか？",ex:"差を一言で表すと？"},
+  ],
+  compose:a=>`3年後の理想：${a[0]||"—"}\n\n現在地：${a[1]||"—"}\n\n一番大きな差：${a[2]||"—"}`},
+ {id:"s5",en:"FIND THE WAY",ja:"手段を比べて選ぶ",out:"選んだ手段と理由",
+  lead:"差を埋める方法は一つではありません。3案を比べ、自分で選んだ理由を残します。",
+  qs:[
+   {q:"差を埋める手段を3つ挙げてください。",ex:"案A／案B／案C"},
+   {q:"それぞれの良い点・難しい点は？",ex:"時間・お金・必要な人・続けやすさで比べる。"},
+   {q:"どの手段を選びますか？ その理由は？",ex:"「〜だから、私は案◯を選ぶ」"},
+  ],
+  compose:a=>`手段の候補：${a[0]||"—"}\n\n比較：${a[1]||"—"}\n\n選んだ手段と理由：${a[2]||"—"}`},
+ {id:"s6",en:"THE POWER OF ENVIRONMENT",ja:"環境と関係を育てる",out:"環境デザイン",
+  lead:"人は環境の影響を受けます。誰と、どこで、どんな時間を過ごすかを設計します。",
+  qs:[
+   {q:"今の環境（人・場所・習慣）は、あなたにどんな影響を与えていますか？",ex:"良い影響と、変えたい影響の両方。"},
+   {q:"理想に近づくために、どんな環境に身を置きたいですか？",ex:"例：週1回、目標を話せる仲間と会う。"},
+   {q:"これから関係を育てたい人は誰ですか？ そのために何をしますか？",ex:"名前（イニシャル可）と具体的な行動。"},
+  ],
+  compose:a=>`今の環境の影響：${a[0]||"—"}\n\n身を置きたい環境：${a[1]||"—"}\n\n関係を育てたい人と行動：${a[2]||"—"}`},
+ {id:"s7",en:"THE NEXT CHAPTER",ja:"90日の行動案をつくる",out:"90日行動案",
+  lead:"ここまでの気づきを、明日からの行動に変えます。最初の一歩は小さくて大丈夫。",
+  qs:[
+   {q:"最初の30日でやることは？",ex:"週に何回・何を、まで具体的に。"},
+   {q:"60日目・90日目にはどうなっていたいですか？",ex:"60日：… ／ 90日：…"},
+   {q:"明日やる最初の一歩と、この計画を伝える相手は？",ex:"一歩：… ／ 伝える相手：…"},
+  ],
+  compose:a=>`1〜30日：${a[0]||"—"}\n\n60日・90日の姿：${a[1]||"—"}\n\n最初の一歩と伝える相手：${a[2]||"—"}`},
+];
+const SCENES = [
+ {id:"p1",t:"友人への自己紹介",tip:"結論→エピソード→今の想い、の順で。60〜90秒を目安に。"},
+ {id:"p2",t:"家族への相談",tip:"「決めたこと」ではなく「考えていること」から共有し、相手の意見を最後まで聴く。"},
+ {id:"p3",t:"職場での報告",tip:"結論・事実・次の行動の3点で。感想は最後に一言。"},
+ {id:"p4",t:"顧客への説明",tip:"相手の困りごとを先に確認し、相手の言葉で言い換えてから提案する。"},
+ {id:"p5",t:"異なる意見の調整",tip:"相手の意見を要約して確認→共通の目的を言葉にする→違いを一つずつ扱う。"},
+];
+/* ============ コアメンバー 90日 ============ */
+const PHASES = [
+ {id:"ph1",d:"DAY 1–30",t:"現状診断・90日目標・個人KPI",items:["現状の数字を記録する","90日目標を1つ決める","目標につながる個人KPIを設定する"]},
+ {id:"ph2",d:"DAY 31–60",t:"課題仮説・演習・改善",items:["KPIが伸びない原因の仮説を立てる","ロープレ・現場で試す","結果とメンター修正を記録する"]},
+ {id:"ph3",d:"DAY 61–90",t:"再現性・模擬指導",items:["成果が出た条件を言語化する","他者に教えられる手順にまとめる","模擬指導を行い振り返る"]},
+];
+/* アクセスコード（試作用）。本番ではサーバー側の受講権限で判定すること。 */
+const CORE_CODE_DEFAULT = "CORE2026";
+
+/* ============ 状態・保存 ============ */
+const KEY = "lifestage2.v1";
+const blank = () => ({v:1,seenIntro:false,course:"all",tab:"home",view:null,
+  profile:{name:""},
+  all:{answers:{},step:{},drafts:{},approved:{},practice:{},daily:{}},
+  core:{unlocked:false,start:"",goal:"",kpis:[],logs:[],reviews:{},checks:{}},
+  chat:{all:[],core:[]}});
+let S;
+try{ S = Object.assign(blank(), JSON.parse(localStorage.getItem(KEY)||"null")||{}); }catch(e){ S = blank(); }
+// deep defaults
+(function fix(){const b=blank();for(const k of ["profile","all","core","chat"])S[k]=Object.assign(b[k],S[k]||{});})();
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+let saveT;
+function setSave(st){const el=$("#save");el.className="save "+(st==="ok"?"":st);
+  el.querySelector("span").textContent={ok:"保存済み",saving:"保存中…",error:"未保存・タップで再試行"}[st];}
+function save(now){ setSave("saving"); clearTimeout(saveT);
+  saveT=setTimeout(()=>{ try{ localStorage.setItem(KEY,JSON.stringify(S)); setSave("ok"); }catch(e){ setSave("error"); } }, now?0:600); }
+$("#save").addEventListener("click",()=>{ if($("#save").classList.contains("error")) save(true); });
+function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("show");clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove("show"),2200);}
+function getPath(p){return p.split(".").reduce((o,k)=>o==null?undefined:o[k],S);}
+function setPath(p,v){const ks=p.split(".");let o=S;ks.slice(0,-1).forEach(k=>{if(o[k]==null||typeof o[k]!=="object")o[k]={};o=o[k];});o[ks.at(-1)]=v;}
+const uid = () => Math.random().toString(36).slice(2,9)+Date.now().toString(36);
+const today = () => new Date().toISOString().slice(0,10);
+
+/* ============ 計算 ============ */
+const stageDone = id => !!S.all.approved[id];
+const doneCount = () => STAGES.filter(s=>stageDone(s.id)).length;
+const nextStage = () => STAGES.find(s=>!stageDone(s.id));
+function coreDay(){ if(!S.core.start) return 0; const d=Math.floor((new Date(today())-new Date(S.core.start))/864e5)+1; return Math.max(1,d); }
+function corePhase(){ const d=coreDay(); return d<=30?0:d<=60?1:2; }
+function kpiCalc(k){ const b=+k.base||0,t=+k.target,c=+k.cur||0; if(!isFinite(t)||t===b) return {rate:null,gap:null};
+  const rate=Math.round(((c-b)/(t-b))*100); return {rate:Math.max(0,Math.min(999,rate)),gap:+(t-c).toFixed(2)}; }
+
+/* ============ ルーティング ============ */
+function go(tab,view=null){ S.tab=tab; S.view=view; save(); render(); window.scrollTo({top:0}); $("#app").focus({preventScroll:true}); }
+document.querySelectorAll("nav.bottom button").forEach(b=>b.onclick=()=>go(b.dataset.tab));
+document.querySelectorAll(".course button").forEach(b=>b.onclick=()=>{ S.course=b.dataset.course; go(S.tab==="journey"&&S.view?"journey":S.tab); });
+
+function render(){
+  document.querySelectorAll(".course button").forEach(b=>b.setAttribute("aria-selected",b.dataset.course===S.course));
+  document.querySelectorAll("nav.bottom button").forEach(b=>{ if(b.dataset.tab===S.tab) b.setAttribute("aria-current","page"); else b.removeAttribute("aria-current"); });
+  let h;
+  if(S.course==="core" && !S.core.unlocked && S.tab!=="me") h=viewLock();
+  else h=({home:S.course==="all"?homeAll:homeCore, journey:S.course==="all"?journeyAll:journeyCore, ai:viewAI, book:viewBook, me:viewMe}[S.tab]||homeAll)();
+  $("#app").innerHTML=`<div class="view">${h}</div>`;
+  bindInputs();
+}
+function bindInputs(){
+  document.querySelectorAll("[data-bind]").forEach(el=>{
+    const p=el.dataset.bind; const v=getPath(p); if(el.type==="checkbox") el.checked=!!v; else el.value=v??"";
+    el.addEventListener("input",()=>{ setPath(p, el.type==="checkbox"?el.checked:el.value); save(); if(el.dataset.live) liveUpdate(el.dataset.live); });
+    if(el.dataset.rerender!=null) el.addEventListener("change",()=>render());
+  });
+}
+function liveUpdate(what){ if(what.startsWith("kpi:")){ const i=+what.slice(4), el=$("#kpi-"+i); if(el&&S.core.kpis[i]) el.innerHTML=kpiCells(S.core.kpis[i]); return; } if(what==="count"){ const ta=$("#draft"); const c=$("#cnt"); if(ta&&c) c.textContent=countLine(ta.value); } }
+function countLine(t){ const n=(t||"").replace(/\s/g,"").length; const sec=Math.round(n/5); return `${n}字 ・ 話すと約${sec}秒（目安：1秒あたり5字）`; }
+
+/* ============ 共通部品 ============ */
+const prog = (n,m) => `<div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="${m}" aria-valuenow="${n}"><i style="width:${m?Math.round(n/m*100):0}%"></i></div>`;
+function act(name,fn){ ACT[name]=fn; }
+const ACT = {};
+document.addEventListener("click",e=>{ const el=e.target.closest("[data-act]"); if(!el) return; e.preventDefault(); const f=ACT[el.dataset.act]; if(f) f(el.dataset.arg, el); });
+
+/* ============ 全メンバー：ホーム ============ */
+function homeAll(){
+  const n=doneCount(), nx=nextStage(), name=S.profile.name;
+  const dk=today(); const dailyDone=!!S.all.daily[dk];
+  return `
+  <p class="eyebrow">Express &amp; Connect</p>
+  <h1>${name?esc(name)+"さん、":""}今日の一歩から。</h1>
+  <p class="muted">人生の価値を相手に伝え、聴き、関係を育てる30日。</p>
+  <div class="card hero">
+    <div class="row"><span class="badge gold">次のステージ</span><span class="spacer"></span><span class="small muted">${n} / 7 完了</span></div>
+    ${nx?`<h2 style="margin-top:10px">${esc(nx.en)}</h2><p class="muted">${esc(nx.ja)}</p>
+      <button class="btn block" data-act="openStage" data-arg="${nx.id}">${S.all.step[nx.id]?"続きから再開":"このステージを始める"}</button>`
+      :`<h2 style="margin-top:10px">7ステージ完了</h2><p class="muted">ブックからOUR VISION BOOKを出力できます。対話練習は何度でも。</p>
+      <button class="btn block" data-act="tab" data-arg="book">ブックを開く</button>`}
+    <div style="margin-top:14px">${prog(n,7)}</div>
+  </div>
+  <div class="card">
+    <div class="row"><h3>3分でできる一歩</h3><span class="spacer"></span>${dailyDone?'<span class="badge ok">今日は実践済み</span>':""}</div>
+    <p class="small muted">今日、誰かに「伝えた」「聴いた」ことを1行で記録しましょう。</p>
+    <input type="text" data-bind="all.daily.${dk}" placeholder="例：同僚の話を最後まで遮らずに聴いた">
+  </div>
+  <div class="card">
+    <h3>対話練習シナリオ</h3>
+    <p class="small muted">日常の5つの場面で、伝え方・聴き方を練習します。</p>
+    <button class="btn ghost block sm" data-act="openPractice" data-arg="p1">練習を始める</button>
+  </div>`;
+}
+act("tab",t=>go(t));
+act("openStage",id=>go("journey","stage:"+id));
+act("openPractice",id=>go("journey","practice:"+id));
+
+/* ============ 全メンバー：ジャーニー ============ */
+function journeyAll(){
+  const v=S.view||"";
+  if(v.startsWith("stage:")) return stageView(v.slice(6));
+  if(v.startsWith("practice:")) return practiceView(v.slice(9));
+  return `
+  <p class="eyebrow">Journey · 7 Stages</p>
+  <h1>あなたの物語を、伝わる言葉に。</h1>
+  ${prog(doneCount(),7)}
+  <ul class="list" style="margin-top:8px">
+  ${STAGES.map((s,i)=>`<li><button class="item" data-act="openStage" data-arg="${s.id}">
+    <span class="num">${String(i+1).padStart(2,"0")}</span>
+    <span class="t"><b>${esc(s.en)}</b><span>${esc(s.ja)}</span></span>
+    ${stageDone(s.id)?'<span class="badge ok">承認済み</span>':S.all.step[s.id]?'<span class="badge gold">途中</span>':'<span class="badge">未着手</span>'}
+  </button></li>`).join("")}
+  </ul>
+  <hr class="s">
+  <p class="eyebrow">Practice</p>
+  <h2>対話練習シナリオ</h2>
+  <ul class="list">${SCENES.map(p=>`<li><button class="item" data-act="openPractice" data-arg="${p.id}">
+    <span class="t"><span>${esc(p.t)}</span></span>${(S.all.practice[p.id]||{}).next?'<span class="badge ok">記録あり</span>':''}</button></li>`).join("")}</ul>`;
+}
+function stageView(id){
+  const s=STAGES.find(x=>x.id===id); if(!s) return journeyAll();
+  const idx=STAGES.indexOf(s), N=s.qs.length; let step=S.all.step[id]||0; if(step>N) step=N;
+  const ans=S.all.answers[id]||{};
+  const head=`<button class="btn ghost sm noprint" data-act="tab" data-arg="journey">← ジャーニー</button>
+    <p class="eyebrow" style="margin-top:14px">Stage ${String(idx+1).padStart(2,"0")} · ${esc(s.en)}</p>
+    <h1>${esc(s.ja)}</h1>
+    <div class="steps">${Array.from({length:N+1},(_,i)=>`<i class="${i<=step?"on":""}"></i>`).join("")}</div>`;
+  if(step<N){
+    const q=s.qs[step];
+    return head+`${step===0?`<p class="muted">${esc(s.lead)}</p>`:""}
+    <div class="card">
+      <p class="small muted">質問 ${step+1} / ${N}</p>
+      <h2>${esc(q.q)}</h2>
+      <div class="hint">${esc(q.ex)}</div>
+      <textarea aria-label="${esc(q.q)}" data-bind="all.answers.${id}.${step}" placeholder="思いつくままに書いてOK。あとで直せます。"></textarea>
+      <div class="row" style="margin-top:12px">
+        <button class="btn ghost sm" data-act="stepPrev" data-arg="${id}" ${step===0?"disabled":""}>戻る</button>
+        <span class="spacer"></span>
+        <button class="btn ghost sm" data-act="askAI" data-arg="${id}:${step}">AIに相談</button>
+        <button class="btn sm" data-act="stepNext" data-arg="${id}">${step===N-1?"成果物を確認":"次へ"}</button>
+      </div>
+      <p class="small muted" style="margin:10px 0 0">空欄でも次に進めます（スキップ）。入力は自動保存されます。</p>
+    </div>`;
+  }
+  // 成果物確認
+  if(S.all.drafts[id]==null) S.all.drafts[id]=s.compose(s.qs.map((_,i)=>ans[i]||""));
+  const done=stageDone(id);
+  return head+`
+  <div class="card hero">
+    <div class="row"><span class="badge gold">${esc(s.out)}</span><span class="spacer"></span>${done?'<span class="badge ok">承認済み</span>':'<span class="badge">下書き</span>'}</div>
+    <p class="small muted" style="margin-top:10px">あなたの回答から下書きを作りました。自分の言葉に整えて、承認するとブックに収録されます。</p>
+    <textarea id="draft" style="min-height:220px" data-bind="all.drafts.${id}" data-live="count"></textarea>
+    <p class="small muted" id="cnt">${countLine(S.all.drafts[id])}</p>
+    <div class="row wrapx" style="margin-top:6px">
+      <button class="btn ghost sm" data-act="stepPrev" data-arg="${id}">回答に戻る</button>
+      <button class="btn ghost sm" data-act="recompose" data-arg="${id}">回答から作り直す</button>
+      <span class="spacer"></span>
+      ${done?`<button class="btn ghost sm" data-act="unapprove" data-arg="${id}">承認を取り消す</button>`:`<button class="btn sm" data-act="approve" data-arg="${id}">承認してブックへ</button>`}
+    </div>
+  </div>
+  ${done&&STAGES[idx+1]?`<button class="btn block" data-act="openStage" data-arg="${STAGES[idx+1].id}">次のステージ：${esc(STAGES[idx+1].en)}</button>`:""}
+  <p class="small muted" style="margin-top:12px">※ 承認した内容は自動で共同ルームや他メンバーに投稿されません。</p>`;
+}
+act("stepNext",id=>{S.all.step[id]=(S.all.step[id]||0)+1; save(); render(); window.scrollTo({top:0});});
+act("stepPrev",id=>{S.all.step[id]=Math.max(0,Math.min((S.all.step[id]||0)-1, STAGES.find(s=>s.id===id).qs.length-1)); save(); render();});
+act("recompose",id=>{ if(!confirm("回答から下書きを作り直します。編集中の下書きは上書きされます。")) return; delete S.all.drafts[id]; save(); render(); });
+act("approve",id=>{ if(!(S.all.drafts[id]||"").trim()){toast("下書きが空です");return;} S.all.approved[id]={at:new Date().toISOString()}; save(true); render();
+  toast(doneCount()===7?"7ステージ完了。おめでとうございます！":"承認しました。ブックに収録されました"); });
+act("unapprove",id=>{ delete S.all.approved[id]; save(); render(); });
+
+function practiceView(id){
+  const p=SCENES.find(x=>x.id===id)||SCENES[0]; const b=`all.practice.${p.id}`;
+  return `<button class="btn ghost sm" data-act="tab" data-arg="journey">← ジャーニー</button>
+  <p class="eyebrow" style="margin-top:14px">Dialogue Practice</p>
+  <h1>${esc(p.t)}</h1>
+  <div class="tabs" role="tablist">${SCENES.map(x=>`<button role="tab" aria-selected="${x.id===p.id}" data-act="openPractice" data-arg="${x.id}">${esc(x.t)}</button>`).join("")}</div>
+  <div class="hint">${esc(p.tip)}</div>
+  <div class="card">
+    <label class="f">相手と場面</label><input type="text" data-bind="${b}.who" placeholder="例：学生時代の友人、カフェで">
+    <label class="f">一番伝えたいこと（1文）</label><input type="text" data-bind="${b}.core">
+    <label class="f">実際に話す言葉</label><textarea data-bind="${b}.words"></textarea>
+    <label class="f">相手の反応・返ってきた言葉</label><textarea style="min-height:90px" data-bind="${b}.reaction"></textarea>
+    <label class="f">次に改善すること</label><input type="text" data-bind="${b}.next">
+    <div class="row" style="margin-top:12px"><span class="spacer"></span><button class="btn ghost sm" data-act="askAIPractice" data-arg="${p.id}">AIにフィードバックを依頼</button></div>
+  </div>`;
+}
+
+/* ============ コアメンバー ============ */
+function viewLock(){
+  return `<div class="card hero lock">
+    <svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg>
+    <p class="eyebrow">Core Members Only</p>
+    <h1>コアメンバー向けワーク</h1>
+    <p class="muted">原理原則を実践し、個人成果を再現し、人を育てる90日プログラム。<br>運営から配布されたアクセスコードを入力してください。</p>
+    <div style="width:100%;max-width:320px;margin-top:8px">
+      <input type="password" id="code" autocomplete="off" aria-label="アクセスコード" placeholder="アクセスコード">
+      <button class="btn block" style="margin-top:10px" data-act="unlock">開く</button>
+      <p class="small" id="codeErr" style="color:var(--err);min-height:1.5em;margin-top:8px"></p>
+    </div>
+    <button class="btn ghost sm" data-act="toAll">全メンバー向けに戻る</button>
+  </div>`;
+}
+async function sha256(t){ const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(t)); return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join(""); }
+let CODE_HASH=null;
+act("unlock",async()=>{ const v=($("#code").value||"").trim().toUpperCase(); if(!v) return;
+  if(!CODE_HASH) CODE_HASH=await sha256(CORE_CODE_DEFAULT);
+  if(await sha256(v)===CODE_HASH){ S.core.unlocked=true; if(!S.core.start) S.core.start=today(); save(true); toast("コアメンバー向けワークを開きました"); go("home"); }
+  else $("#codeErr").textContent="コードが一致しません。運営にご確認ください。"; });
+act("toAll",()=>{S.course="all";go("home");});
+document.addEventListener("keydown",e=>{ if(e.key==="Enter"&&e.target.id==="code") ACT.unlock(); });
+
+function homeCore(){
+  const d=coreDay(), ph=PHASES[corePhase()], k=S.core.kpis[0], kc=k?kpiCalc(k):null;
+  const checks=S.core.checks[ph.id]||{};
+  return `
+  <p class="eyebrow">Core · 90 Days</p>
+  <h1>DAY ${Math.min(d,90)} <span class="muted" style="font-size:16px">/ 90</span></h1>
+  ${prog(Math.min(d,90),90)}
+  <div class="card hero">
+    <span class="badge gold">${esc(ph.d)}</span>
+    <h2 style="margin-top:10px">${esc(ph.t)}</h2>
+    <ul class="list">${ph.items.map((t,i)=>`<li><label class="row" style="min-height:44px;cursor:pointer"><input type="checkbox" style="width:20px;height:20px;accent-color:var(--gold)" data-bind="core.checks.${ph.id}.${i}"> <span>${esc(t)}</span></label></li>`).join("")}</ul>
+  </div>
+  <div class="card">
+    <div class="row"><h3>90日目標</h3><span class="spacer"></span><button class="btn ghost sm" data-act="coreTab" data-arg="goal">編集</button></div>
+    <p class="${S.core.goal?"":"muted"}">${S.core.goal?esc(S.core.goal):"まだ設定されていません。"}</p>
+    ${k?`<hr class="s"><h3>${esc(k.name||"KPI")}</h3>
+      <div class="kpi"><div><b>${esc(k.cur||0)}</b><span>現在（${esc(k.unit||"")}）</span></div><div><b>${esc(k.target||"—")}</b><span>目標</span></div><div><b>${kc.rate==null?"—":kc.rate+"%"}</b><span>進捗率</span></div></div>`:""}
+  </div>
+  <div class="grid two">
+    <button class="btn ghost" data-act="coreTab" data-arg="log">実践を記録</button>
+    <button class="btn ghost" data-act="coreTab" data-arg="review">レビューを書く</button>
+  </div>`;
+}
+act("coreTab",t=>go("journey","core:"+t));
+function journeyCore(){
+  const t=(S.view||"core:program").replace("core:","");
+  const tabs=[["program","プログラム"],["goal","目標・KPI"],["log","実践ログ"],["review","レビュー"]];
+  const body={program:coreProgram,goal:coreGoal,log:coreLog,review:coreReview}[t]||coreProgram;
+  return `<p class="eyebrow">Core · Journey</p><h1>個人成果を、再現できる力に。</h1>
+  <div class="tabs" role="tablist">${tabs.map(([k,l])=>`<button role="tab" aria-selected="${k===t}" data-act="coreTab" data-arg="${k}">${l}</button>`).join("")}</div>${body()}`;
+}
+function coreProgram(){
+  const cur=corePhase();
+  return `<div class="card"><label class="f" style="margin-top:0">プログラム開始日</label><input type="date" data-bind="core.start" data-rerender>
+    <p class="small muted" style="margin:6px 0 0">開始日を変えると現在のDAYが再計算されます。</p></div>
+  ${PHASES.map((p,i)=>{const c=S.core.checks[p.id]||{};const n=p.items.filter((_,j)=>c[j]).length;
+    return `<div class="card ${i===cur?"hero":""}"><div class="row"><span class="badge ${i===cur?"gold":""}">${esc(p.d)}</span><span class="spacer"></span><span class="small muted">${n}/${p.items.length}</span></div>
+    <h2 style="margin-top:8px">${esc(p.t)}</h2>${p.items.map((t,j)=>`<label class="row" style="min-height:40px;cursor:pointer"><input type="checkbox" style="width:20px;height:20px;accent-color:var(--gold)" data-bind="core.checks.${p.id}.${j}"><span>${esc(t)}</span></label>`).join("")}</div>`}).join("")}
+  <p class="small muted">案件配分・組織損益・報酬精算は本アプリの対象外です。</p>`;
+}
+function coreGoal(){
+  return `<div class="card"><label class="f" style="margin-top:0">90日目標</label>
+    <textarea style="min-height:90px" data-bind="core.goal" placeholder="例：90日で新規面談を月20件に増やし、成約率を安定させる"></textarea></div>
+  ${S.core.kpis.map((k,i)=>{const c=kpiCalc(k);return `<div class="card">
+    <div class="row"><span class="badge gold">KPI ${i+1}</span><span class="spacer"></span><button class="btn ghost sm" data-act="delKpi" data-arg="${k.id}">削除</button></div>
+    <label class="f">指標名</label><input type="text" data-bind="core.kpis.${i}.name" data-live="kpi:${i}" placeholder="例：新規面談数（月）">
+    <div class="grid two"><div><label class="f">単位</label><input type="text" data-bind="core.kpis.${i}.unit" data-live="kpi:${i}" placeholder="件"></div>
+    <div><label class="f">開始時の値</label><input type="number" inputmode="decimal" data-bind="core.kpis.${i}.base" data-live="kpi:${i}"></div>
+    <div><label class="f">目標値</label><input type="number" inputmode="decimal" data-bind="core.kpis.${i}.target" data-live="kpi:${i}"></div>
+    <div><label class="f">現在値</label><input type="number" inputmode="decimal" data-bind="core.kpis.${i}.cur" data-live="kpi:${i}"></div></div>
+    <div class="kpi" id="kpi-${i}">${kpiCells(k)}</div>
+    <p class="small muted" style="margin:8px 0 0">差・進捗率は入力値からプログラムで計算します（AIは数値を作りません）。</p>
+  </div>`}).join("")}
+  <button class="btn ghost block" data-act="addKpi">＋ KPIを追加</button>`;
+}
+function kpiCells(k){const c=kpiCalc(k);return `<div><b>${c.gap==null?"—":esc(c.gap)}</b><span>目標までの差</span></div><div><b>${c.rate==null?"—":c.rate+"%"}</b><span>進捗率</span></div><div><b>${paceText(k)}</b><span>残り1日あたり</span></div>`;}
+function paceText(k){ const c=kpiCalc(k); if(c.gap==null||!S.core.start) return "—"; const left=Math.max(1,90-coreDay()+1); return c.gap<=0?"達成":(+(c.gap/left).toFixed(2)).toString(); }
+act("addKpi",()=>{S.core.kpis.push({id:uid(),name:"",unit:"",base:"",target:"",cur:""});save();render();});
+act("delKpi",id=>{ if(!confirm("このKPIを削除しますか？")) return; S.core.kpis=S.core.kpis.filter(k=>k.id!==id);save();render();});
+let draftLog={};
+function coreLog(){
+  const opts=S.core.kpis.map(k=>`<option value="${esc(k.id)}">${esc(k.name||"(名称未設定)")}</option>`).join("");
+  return `<div class="card"><h2>新しい実践を記録</h2>
+    <p class="small muted">KPI → 原因仮説 → 演習・実践 → 結果 → メンター修正 → 次の行動</p>
+    <label class="f">日付</label><input type="date" id="lg-date" value="${today()}">
+    <label class="f">対象KPI</label><select id="lg-kpi"><option value="">（なし）</option>${opts}</select>
+    <label class="f">原因の仮説</label><textarea style="min-height:80px" id="lg-hyp"></textarea>
+    <label class="f">演習・現場での実践</label><textarea style="min-height:80px" id="lg-act"></textarea>
+    <label class="f">結果（事実・数字）</label><textarea style="min-height:80px" id="lg-res"></textarea>
+    <label class="f">メンターの見解</label>
+    <div class="seg" id="lg-mt">${["同意","一部修正","異議"].map(x=>`<button type="button" aria-pressed="false" data-act="mt" data-arg="${x}">${x}</button>`).join("")}</div>
+    <textarea style="min-height:70px;margin-top:8px" id="lg-men" placeholder="理由・根拠（面談後に記入）"></textarea>
+    <label class="f">次の行動</label><input type="text" id="lg-next">
+    <button class="btn block" style="margin-top:14px" data-act="addLog">記録する</button></div>
+  ${S.core.logs.length?S.core.logs.slice().reverse().map(l=>{const k=S.core.kpis.find(x=>x.id===l.kpi);return `<div class="log">
+    <div class="row"><b>${esc(l.date)}</b>${k?`<span class="badge gold">${esc(k.name)}</span>`:""}${l.mt?`<span class="badge">${esc(l.mt)}</span>`:""}<span class="spacer"></span><button class="btn ghost sm" data-act="delLog" data-arg="${l.id}">削除</button></div>
+    <dl>${[["仮説",l.hyp],["実践",l.act],["結果",l.res],["メンター",l.men],["次の行動",l.next]].filter(x=>x[1]).map(([a,b])=>`<dt>${a}</dt><dd>${esc(b)}</dd>`).join("")}</dl></div>`}).join(""):'<p class="empty">まだ記録がありません。</p>'}`;
+}
+act("mt",(v,el)=>{ document.querySelectorAll("#lg-mt button").forEach(b=>b.setAttribute("aria-pressed",b===el&&b.getAttribute("aria-pressed")!=="true")); });
+act("addLog",()=>{ const g=id=>($("#"+id).value||"").trim(); const mt=document.querySelector('#lg-mt [aria-pressed="true"]');
+  const l={id:uid(),date:g("lg-date")||today(),kpi:g("lg-kpi"),hyp:g("lg-hyp"),act:g("lg-act"),res:g("lg-res"),mt:mt?mt.dataset.arg:"",men:g("lg-men"),next:g("lg-next")};
+  if(!l.hyp&&!l.act&&!l.res){toast("仮説・実践・結果のいずれかを入力してください");return;}
+  S.core.logs.push(l); save(true); render(); toast("記録しました"); });
+act("delLog",id=>{ if(!confirm("この記録を削除しますか？")) return; S.core.logs=S.core.logs.filter(l=>l.id!==id); save(); render(); });
+function coreReview(){
+  return PHASES.map(p=>`<div class="card"><span class="badge gold">${esc(p.d)}</span><h2 style="margin-top:8px">${esc(p.t)} のレビュー</h2>
+    <label class="f">できたこと・成果</label><textarea style="min-height:80px" data-bind="core.reviews.${p.id}.good"></textarea>
+    <label class="f">成果が出た条件（再現性）</label><textarea style="min-height:80px" data-bind="core.reviews.${p.id}.cond"></textarea>
+    <label class="f">次のフェーズで変えること</label><textarea style="min-height:80px" data-bind="core.reviews.${p.id}.change"></textarea>
+    ${p.id==="ph3"?`<label class="f">模擬指導の振り返り（教えた相手の反応・改善点）</label><textarea style="min-height:80px" data-bind="core.reviews.ph3.teach"></textarea>`:""}
+  </div>`).join("");
+}
+
+/* ============ AI（試作：ルールベース） ============ */
+function viewAI(){
+  const mode=S.course; const log=S.chat[mode];
+  return `<p class="eyebrow">AI Assist · ${mode==="all"?"伝え方コーチ":"KPIコーチ"}</p>
+  <h1>${mode==="all"?"伝わる言葉を一緒に磨く":"数字から次の一手を考える"}</h1>
+  <p class="small muted">試作版：端末内のルールで助言します。AIの提案は「事実／仮説／未確認／次の行動」に分け、採用するかはあなたが決めます。</p>
+  <div class="card"><div class="chat" id="chat">${log.length?log.map(m=>`<div class="msg ${m.r}">${esc(m.t)}</div>`).join(""):`<p class="empty">下の欄に相談したい文章や状況を書いてください。${mode==="all"?"ストーリーの下書きを貼ると、長さと構成を確認します。":"KPIの状況を書くと、登録済みKPIの数字と合わせて考えます。"}</p>`}</div></div>
+  <textarea id="aiIn" style="min-height:100px" placeholder="${mode==="all"?"例：90秒ストーリーの下書き":"例：面談数は増えたが成約に繋がらない"}"></textarea>
+  <div class="row" style="margin-top:10px"><button class="btn ghost sm" data-act="aiClear">履歴を消す</button><span class="spacer"></span><button class="btn sm" data-act="aiSend">送信</button></div>`;
+}
+act("aiSend",()=>{ const t=($("#aiIn").value||"").trim(); if(!t) return; aiReply(t); });
+act("aiClear",()=>{ S.chat[S.course]=[]; save(); render(); });
+function aiReply(t,ctx){
+  const mode=S.course; S.chat[mode].push({r:"me",t}); S.chat[mode].push({r:"ai",t:(mode==="all"?coachAll:coachCore)(t,ctx)}); save(); go("ai");
+  setTimeout(()=>{const c=$("#chat"); if(c) c.lastElementChild?.scrollIntoView({block:"end"});},50);
+}
+function coachAll(t){
+  const n=t.replace(/\s/g,"").length, sec=Math.round(n/5);
+  const has={feel:/感じ|嬉し|うれし|悔し|くやし|怖|不安|楽し|悲し|驚/.test(t),learn:/学|気づ|わかっ|分かっ|教わ/.test(t),now:/今|これから|未来|だから|目指/.test(t),fact:/年|歳|時|日|月|会社|学校|家族|[0-9０-９]/.test(t)};
+  const miss=[]; if(!has.fact) miss.push("いつ・どこで等の具体的な事実"); if(!has.feel) miss.push("その時の感情"); if(!has.learn) miss.push("そこからの学び"); if(!has.now) miss.push("今・未来とのつながり");
+  return `【事実】${n}字。話すと約${sec}秒です。${sec>100?"90秒を超えるので、エピソードを1つに絞りましょう。":sec<45?"少し短めです。情景を1文足すと伝わりやすくなります。":"90秒ストーリーとしてちょうど良い長さです。"}\n`+
+   `【仮説】${miss.length?"次の要素を足すと、相手の心に残りやすくなりそうです：\n・"+miss.join("\n・"):"事実・感情・学び・未来がそろっています。"}\n`+
+   `【未確認】聞き手が誰か（友人・家族・職場・顧客）で、強調する点は変わります。\n`+
+   `【次の行動】身近な1人に話し、「一番印象に残った言葉は？」と聞いてみましょう。`;
+}
+function coachCore(t){
+  const ks=S.core.kpis.filter(k=>k.name);
+  const lines=ks.map(k=>{const c=kpiCalc(k);return `・${k.name}：現在${k.cur||0}${k.unit||""}／目標${k.target||"未設定"}${k.unit||""}${c.rate!=null?`（進捗${c.rate}%・残り差${c.gap}）`:""}`;});
+  const d=S.core.start?coreDay():null;
+  return `【事実】${d?`DAY ${Math.min(d,90)}／90。`:""}${lines.length?"\n"+lines.join("\n"):"KPIが未登録です。目標・KPIタブで登録すると数字で比較できます。"}\n`+
+   `【仮説】${/成約|契約|決ま/.test(t)?"量は出ているなら、ヒアリングで相手の課題を言語化できているかが分岐点かもしれません。":/時間|忙し/.test(t)?"行動量の不足は、時間の確保ではなく優先順位の問題である可能性があります。":"結果が出た回と出なかった回の『違い』を1つ特定すると、原因の仮説が立てやすくなります。"}\n`+
+   `【未確認】上の仮説は入力内容からの推測です。実際の記録（実践ログ）で確かめてください。\n`+
+   `【次の行動】仮説を1つ選び、次の3回の実践で試す→結果を実践ログへ。面談でメンターの見解をもらいましょう。`;
+}
+act("askAI",arg=>{ const [id,st]=arg.split(":"); const a=(S.all.answers[id]||{})[st]||""; if(!a.trim()){toast("先に回答を書いてみましょう");return;} S.course="all"; aiReply(a); });
+act("askAIPractice",id=>{ const p=S.all.practice[id]||{}; const t=[p.core,p.words].filter(Boolean).join("\n"); if(!t){toast("伝えたいこと・話す言葉を書いてください");return;} aiReply(t); });
+
+/* ============ ブック ============ */
+function viewBook(){
+  const name=S.profile.name||"あなた";
+  if(S.course==="core"){
+    const ks=S.core.kpis;
+    return `<p class="eyebrow">Book · Core Review</p><h1>90日の成長記録</h1>
+    <div class="row noprint"><span class="spacer"></span><button class="btn sm" data-act="print">PDFで保存・印刷</button></div>
+    <div class="book-page"><p class="eyebrow">90 Days Goal</p><h2>${esc(name)}の90日目標</h2><p>${esc(S.core.goal||"未設定")}</p>
+    ${ks.map(k=>{const c=kpiCalc(k);return `<p><b>${esc(k.name)}</b>：開始 ${esc(k.base||0)} → 現在 ${esc(k.cur||0)} / 目標 ${esc(k.target||"—")} ${esc(k.unit||"")}${c.rate!=null?`（進捗 ${c.rate}%）`:""}</p>`}).join("")}</div>
+    ${PHASES.map(p=>{const r=S.core.reviews[p.id]||{};if(!r.good&&!r.cond&&!r.change&&!r.teach) return "";
+      return `<div class="book-page"><p class="eyebrow">${esc(p.d)}</p><h2>${esc(p.t)}</h2>${r.good?`<p><b>成果</b>\n${esc(r.good)}</p>`:""}${r.cond?`<p><b>再現条件</b>\n${esc(r.cond)}</p>`:""}${r.change?`<p><b>次に変えること</b>\n${esc(r.change)}</p>`:""}${r.teach?`<p><b>模擬指導</b>\n${esc(r.teach)}</p>`:""}</div>`}).join("")}
+    <p class="small muted noprint">実践ログ ${S.core.logs.length} 件はジャーニー › 実践ログで確認できます。</p>`;
+  }
+  const ap=STAGES.filter(s=>stageDone(s.id));
+  return `<p class="eyebrow">Book · Our Vision Book</p><h1>${esc(name)}の MY LIFE STORY</h1>
+  <p class="muted small">承認したステージの成果物が、ここに一冊として積み上がります。</p>
+  ${prog(ap.length,7)}
+  <div class="row noprint" style="margin-top:12px"><span class="small muted">${ap.length} / 7 章</span><span class="spacer"></span><button class="btn sm" data-act="print" ${ap.length?"":"disabled"}>PDFで保存・印刷</button></div>
+  ${ap.length?ap.map(s=>`<div class="book-page"><p class="eyebrow">Chapter ${STAGES.indexOf(s)+1} · ${esc(s.en)}</p><h2>${esc(s.out)}</h2><p>${esc(S.all.drafts[s.id])}</p></div>`).join("")
+    :`<div class="card empty">まだ章がありません。<br>ジャーニーでステージを進め、成果物を承認してください。<br><br><button class="btn sm" data-act="tab" data-arg="journey">ジャーニーへ</button></div>`}
+  ${ap.length===7?`<div class="card hero"><p class="eyebrow">Final</p><h2>7つの章がそろいました。</h2><p class="muted">あなたの物語は、伝えた相手の中でも続いていきます。発表や共有は任意です。</p></div>`:""}`;
+}
+act("print",()=>window.print());
+
+/* ============ マイページ ============ */
+function viewMe(){
+  return `<p class="eyebrow">My Page</p><h1>マイページ</h1>
+  <div class="card"><label class="f" style="margin-top:0">表示名</label><input type="text" data-bind="profile.name" placeholder="例：山田 花子"></div>
+  <div class="card"><h3>コアメンバー向けワーク</h3>
+    ${S.core.unlocked?`<p class="small muted">利用中（開始日 ${esc(S.core.start||"未設定")}）</p><button class="btn ghost sm" data-act="lockCore">この端末で閉じる</button>`
+      :`<p class="small muted">アクセスコードをお持ちの方は、上部の「コアメンバー」タブから開けます。</p><button class="btn ghost sm" data-act="toCore">コアメンバータブへ</button>`}</div>
+  <div class="card"><h3>データ</h3>
+    <p class="small muted">試作版では記録はこの端末のブラウザ内にのみ保存されます。機種変更前に書き出してください。</p>
+    <div class="row wrapx"><button class="btn ghost sm" data-act="export">書き出し（JSON）</button>
+    <label class="btn ghost sm" style="cursor:pointer">読み込み<input type="file" accept="application/json" id="imp" hidden></label>
+    <button class="btn ghost sm" data-act="replayIntro">オープニングを再生</button></div>
+    <hr class="s"><button class="btn ghost sm" style="color:var(--err);border-color:rgba(229,140,140,.4)" data-act="wipe">この端末の全データを削除</button></div>
+  <p class="small muted">LIFE STAGE 2.0 ワーク ・ 試作版 v0.1</p>`;
+}
+act("toCore",()=>{S.course="core";go("home");});
+act("lockCore",()=>{S.core.unlocked=false;S.course="all";save(true);go("home");});
+act("export",()=>{ const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([JSON.stringify(S,null,2)],{type:"application/json"})); a.download=`lifestage2-${today()}.json`; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),1000); });
+act("wipe",()=>{ if(!confirm("この端末の全データを削除します。元に戻せません。よろしいですか？")) return; localStorage.removeItem(KEY); S=blank(); S.seenIntro=true; save(true); go("home"); toast("削除しました"); });
+act("replayIntro",()=>showIntro());
+document.addEventListener("change",e=>{ if(e.target.id!=="imp") return; const f=e.target.files[0]; if(!f) return;
+  f.text().then(t=>{ const d=JSON.parse(t); if(d.v!==1||!d.all) throw 0; if(!confirm("現在のデータを読み込んだ内容で置き換えます。よろしいですか？")) return; S=Object.assign(blank(),d); save(true); go("home"); toast("読み込みました"); }).catch(()=>toast("読み込めないファイルです")); });
+
+/* ============ オープニング ============ */
+function showIntro(){
+  const d=document.createElement("div"); d.className="intro"; d.setAttribute("role","dialog"); d.setAttribute("aria-label","オープニング");
+  d.innerHTML=`<div class="glow"></div><button class="skip">スキップ</button><div class="in">
+    <div class="logo">LIFE STAGE</div><p class="eyebrow" style="margin-bottom:22px">Stage 2.0 · Express &amp; Connect</p>
+    <h1 style="font-size:22px">あなたの人生には、<br>誰かに伝える価値がある。</h1>
+    <p class="muted">伝える。聴く。関係を育てる。<br>30日・7つのステージへ。</p>
+    <button class="btn" style="margin-top:18px;min-width:200px">はじめる</button></div>`;
+  const close=()=>{ d.remove(); S.seenIntro=true; save(); $("#app").focus(); };
+  d.querySelector(".skip").onclick=close; d.querySelector(".in .btn").onclick=close;
+  document.body.appendChild(d); d.querySelector(".in .btn").focus();
+}
+
+render(); setSave("ok");
+if(!S.seenIntro) showIntro();
+if("serviceWorker" in navigator && location.protocol==="https:") navigator.serviceWorker.register("sw.js").catch(()=>{});
+</script>
+</body>
+</html>
