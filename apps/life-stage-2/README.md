@@ -22,6 +22,8 @@ RLSの検証：`npm i @electric-sql/pglite && node tests/rls.test.mjs`（14項�
 2. **システムAI（任意）** — Edge Function `ls-ai` が Anthropic API に接続。ログイン必須・コアの依頼はコアのみ・1日上限（既定20回）・APIキーはサーバー側のみ。`config.js` の `aiEnabled: true` でボタン表示。
 
 ## 公開までの手順（初回のみ）
+
+クリック単位の詳しい手順は [SETUP.md](SETUP.md) を参照。
 1. https://supabase.com で新規プロジェクト作成（東京リージョン推奨）
 2. SQL Editor で `supabase/migrations/0001_life_stage.sql` を実行
 3. Authentication → URL Configuration：Site URL と Redirect URLs に公開URL（例 `https://yuuta-suwa.github.io/ticket-AI/`）を設定
