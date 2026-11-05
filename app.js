@@ -184,23 +184,44 @@ function start(){
   render(); setSave("ok");
   if(!UI.seenIntro) showIntro();
 }
+let LOGIN_MODE = "password";
+const inputStyle = 'style="width:100%;background:#0E1728;border:1px solid var(--line);border-radius:12px;padding:12px 14px;min-height:48px;font-size:16px"';
 function renderLogin(sent){
   $("#nav").hidden = true; $("#courseBar").hidden = true;
+  const pw = LOGIN_MODE === "password";
   $("#app").innerHTML = `<div class="view auth">
     <div class="logo">LIFE STAGE</div><p class="eyebrow" style="margin-bottom:24px">Stage 2.0 · Members</p>
-    ${sent ? `<div class="card"><h2>メールを送信しました</h2><p class="muted">${esc(sent)} に届いたリンクを、この端末で開くとログインできます。</p><button class="btn ghost sm" data-act="relogin">メールアドレスを入力し直す</button></div>`
-    : `<div class="card" style="text-align:left"><h2>ログイン</h2><p class="small muted">登録済みのメールアドレスに、ログイン用リンクを送ります（パスワード不要）。</p>
-      <label class="f" for="email">メールアドレス</label><input type="email" id="email" autocomplete="email" inputmode="email" placeholder="you@example.com" style="width:100%;background:#0E1728;border:1px solid var(--line);border-radius:12px;padding:12px 14px;min-height:48px;font-size:16px">
-      <button class="btn block" style="margin-top:14px" data-act="login">ログインリンクを送る</button>
-      <p class="small" id="loginErr" style="color:var(--err);min-height:1.5em;margin:8px 0 0"></p></div>`}
+    ${sent ? `<div class="card"><h2>メールを送信しました</h2><p class="muted">${esc(sent)} に届いたリンクを、この端末・このブラウザで開いてください。</p><button class="btn ghost sm" data-act="relogin">戻る</button></div>`
+    : `<div class="card" style="text-align:left"><h2>ログイン</h2>
+      <div class="seg" style="margin:10px 0 4px"><button aria-pressed="${pw}" data-act="loginMode" data-arg="password">パスワード</button><button aria-pressed="${!pw}" data-act="loginMode" data-arg="link">メールリンク</button></div>
+      <p class="small muted" style="margin-top:8px">${pw ? "運営から届いたメールアドレスとパスワードでログインします。" : "メールアドレスにログイン用リンクを送ります（パスワード不要）。"}</p>
+      <label class="f" for="email">メールアドレス</label><input type="email" id="email" autocomplete="email" inputmode="email" placeholder="you@example.com" ${inputStyle}>
+      ${pw ? `<label class="f" for="pass">パスワード</label><input type="password" id="pass" autocomplete="current-password" ${inputStyle}>` : ""}
+      <button class="btn block" style="margin-top:14px" data-act="login">${pw ? "ログイン" : "ログインリンクを送る"}</button>
+      <p class="small" id="loginErr" style="color:var(--err);min-height:1.5em;margin:8px 0 0"></p>
+      ${pw ? `<button class="btn ghost sm" data-act="forgot">パスワードを忘れた・初めて設定する</button>` : ""}</div>`}
     <p class="small muted">コアメンバー向けワークは、運営がコアメンバーとして登録したアカウントにだけ表示されます。</p></div>`;
 }
+act("loginMode", m => { LOGIN_MODE = m; renderLogin(); });
+const mailErr = error => error.status === 429 || /rate limit/i.test(error.message) ? "メール送信の上限に達しました。しばらく待つか、パスワードでログインしてください" : "送信できませんでした：" + error.message;
 act("login", async () => {
-  const email = ($("#email").value || "").trim();
-  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ $("#loginErr").textContent = "メールアドレスの形式を確認してください"; return; }
-  const btn = document.querySelector('[data-act="login"]'); btn.disabled = true; btn.textContent = "送信中…";
+  const email = ($("#email").value || "").trim(), err = $("#loginErr");
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ err.textContent = "メールアドレスの形式を確認してください"; return; }
+  const btn = document.querySelector('[data-act="login"]'), label = btn.textContent; btn.disabled = true; btn.textContent = "処理中…";
+  if(LOGIN_MODE === "password"){
+    const { error } = await sb.auth.signInWithPassword({ email, password: $("#pass").value });
+    if(error){ btn.disabled = false; btn.textContent = label; err.textContent = /invalid/i.test(error.message) ? "メールアドレスまたはパスワードが違います" : "ログインできませんでした：" + error.message; return; }
+    return boot();
+  }
   const { error } = await sb.auth.signInWithOtp({ email, options: { emailRedirectTo: location.origin + location.pathname, shouldCreateUser: CFG.allowSignup !== false } });
-  if(error){ btn.disabled = false; btn.textContent = "ログインリンクを送る"; $("#loginErr").textContent = error.status === 429 ? "送信回数の上限です。しばらく待って再度お試しください" : "送信できませんでした：" + error.message; return; }
+  if(error){ btn.disabled = false; btn.textContent = label; err.textContent = mailErr(error); return; }
+  renderLogin(email);
+});
+act("forgot", async () => {
+  const email = ($("#email").value || "").trim(), err = $("#loginErr");
+  if(!email){ err.textContent = "先にメールアドレスを入力してください"; return; }
+  const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname });
+  if(error){ err.textContent = mailErr(error); return; }
   renderLogin(email);
 });
 act("relogin", () => renderLogin());
@@ -210,7 +231,8 @@ act("logout", async () => {
   try{ localStorage.removeItem(cacheKey()); }catch(e){}
   await sb.auth.signOut(); location.reload();
 });
-if(sb) sb.auth.onAuthStateChange((ev) => { if(ev === "SIGNED_IN" && !USER) boot(); if(ev === "SIGNED_OUT" && USER) location.reload(); });
+let NEED_PW = false;
+if(sb) sb.auth.onAuthStateChange((ev) => { if(ev === "PASSWORD_RECOVERY"){ NEED_PW = true; UI.tab = "me"; if(USER) render(); } if(ev === "SIGNED_IN" && !USER) boot(); if(ev === "SIGNED_OUT" && USER) location.reload(); });
 
 /* ============ 計算 ============ */
 const stageDone = id => !!S.all.approved[id];
@@ -229,7 +251,7 @@ function countLine(t){ const n = (t || "").replace(/\s/g, "").length; return `${
 
 /* ============ ルーティング・描画 ============ */
 document.addEventListener("click", e => { const el = e.target.closest("[data-act]"); if(!el || el.disabled) return; e.preventDefault(); const f = ACT[el.dataset.act]; if(f) f(el.dataset.arg, el); });
-document.addEventListener("keydown", e => { if(e.key === "Enter" && e.target.id === "email") ACT.login(); });
+document.addEventListener("keydown", e => { if(e.key === "Enter" && (e.target.id === "email" || e.target.id === "pass")) ACT.login(); });
 function go(tab, view = null){ UI.tab = tab; UI.view = view; saveUI(); render(); window.scrollTo({top:0}); $("#app").focus({preventScroll:true}); }
 document.querySelectorAll("nav.bottom button").forEach(b => b.onclick = () => go(b.dataset.tab));
 document.querySelectorAll(".course button").forEach(b => b.onclick = () => { if(b.dataset.course === "core" && !isCore()) return; UI.course = b.dataset.course; AIS.prompt = null; AIS.result = ""; go(UI.tab); });
@@ -552,7 +574,11 @@ function viewMe(){
   <div class="card"><label class="f" style="margin-top:0">表示名</label><input type="text" data-bind="profile.name" placeholder="例：山田 花子">
     ${ONLINE ? `<p class="small muted" style="margin:10px 0 0">${esc(EMAIL)} ・ <span class="badge gold">${ROLE_JA[ROLE] || ROLE}</span></p>` : ""}</div>
   ${ONLINE ? `<div class="card"><h3>アカウント</h3><p class="small muted">記録はアカウントに保存され、別の端末でも同じメールアドレスでログインすると続きから使えます。</p>
-    <button class="btn ghost sm" data-act="logout">ログアウト</button></div>`
+    <button class="btn ghost sm" data-act="logout">ログアウト</button></div>
+    <div class="card" ${NEED_PW ? 'style="border-color:var(--gold)"' : ""}><h3>パスワード${NEED_PW ? "を設定してください" : "の設定・変更"}</h3>
+    <p class="small muted">設定すると、次回からメールを待たずにパスワードでログインできます（8文字以上）。</p>
+    <input type="password" id="newPass" autocomplete="new-password" placeholder="新しいパスワード">
+    <button class="btn sm" style="margin-top:8px" data-act="setPass">パスワードを保存</button></div>`
   : `<div class="card"><h3>ローカル試用モード</h3><p class="small muted">ログインが未設定のため、記録はこの端末のブラウザ内にのみ保存されます。コアメンバー向けワークはログイン設定後に利用できます。</p></div>`}
   ${ROLE === "admin" ? `<div class="card"><h3>管理：メンバーのロール</h3>
     <p class="small muted">メンバーが一度ログインした後、メールアドレスでロールを変更できます。コアメンバーにするとコアタブが表示されます。</p>
@@ -567,6 +593,12 @@ function viewMe(){
     ${ONLINE ? `<p class="small muted" style="margin:10px 0 0">退会・データ削除は運営窓口へご依頼ください。</p>` : `<hr class="s"><button class="btn ghost sm" style="color:var(--err);border-color:rgba(229,140,140,.4)" data-act="wipe">この端末の全データを削除</button>`}</div>
   <p class="small muted">LIFE STAGE 2.0 ワーク v1.0</p>`;
 }
+act("setPass", async () => {
+  const v = $("#newPass").value || ""; if(v.length < 8){ toast("8文字以上にしてください"); return; }
+  const { error } = await sb.auth.updateUser({ password: v });
+  if(error){ toast("保存できませんでした：" + error.message); return; }
+  NEED_PW = false; $("#newPass").value = ""; toast("パスワードを保存しました"); render();
+});
 async function loadAdmin(){
   const box = $("#adminList"); if(!box) return;
   const { data, error } = await sb.from("ls_profiles").select("email,display_name,role,created_at").order("created_at");
