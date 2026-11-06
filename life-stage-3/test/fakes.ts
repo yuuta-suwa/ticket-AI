@@ -13,7 +13,19 @@ export function fakeD1(): D1Database {
     all: async <T>() => ({ results: db.prepare(sql).all(...(params as never[])) as T[] }),
     run: async () => db.prepare(sql).run(...(params as never[])),
   });
-  return { prepare: (sql: string) => stmt(sql, []) };
+  return {
+    prepare: (sql: string) => stmt(sql, []),
+    // D1 の batch と同じく、全文を1トランザクションで実行（失敗時は全部取り消し）
+    batch: async (stmts: D1PreparedStatement[]) => {
+      db.exec('BEGIN');
+      try {
+        const out = [];
+        for (const st of stmts) out.push(await st.run());
+        db.exec('COMMIT');
+        return out;
+      } catch (e) { db.exec('ROLLBACK'); throw e; }
+    },
+  };
 }
 
 export function fakeR2(): R2Bucket & { keys(): string[] } {
@@ -30,8 +42,8 @@ export function fakeR2(): R2Bucket & { keys(): string[] } {
 }
 
 export function fakeEnv(extra: Partial<Env> = {}) {
-  const BUCKET = fakeR2();
-  return { env: { DB: fakeD1(), BUCKET, ADMIN_EMAILS: 'Admin@Example.com', ...extra } as Env, bucket: BUCKET };
+  const FILES = fakeR2();
+  return { env: { DB: fakeD1(), FILES, ADMIN_EMAILS: 'Admin@Example.com', ...extra } as Env, bucket: FILES };
 }
 
 export const PNG = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 0x0d, 1, 2, 3]);

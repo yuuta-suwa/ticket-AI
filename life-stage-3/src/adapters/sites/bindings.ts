@@ -7,7 +7,11 @@ export interface D1PreparedStatement {
   all<T = Record<string, unknown>>(): Promise<D1Result<T>>;
   run(): Promise<unknown>;
 }
-export interface D1Database { prepare(sql: string): D1PreparedStatement }
+export interface D1Database {
+  prepare(sql: string): D1PreparedStatement;
+  /** D1標準API。渡した文をまとめて1トランザクションで実行する */
+  batch(statements: D1PreparedStatement[]): Promise<unknown[]>;
+}
 
 export interface R2ObjectBody {
   arrayBuffer(): Promise<ArrayBuffer>;
@@ -19,11 +23,11 @@ export interface R2Bucket {
   delete(key: string): Promise<void>;
 }
 
-/** 接続名は .openai/hosting.json（d1: "DB", r2: "BUCKET"）と一致させる */
+/** 接続名は .openai/hosting.json（d1: "DB", r2: "FILES"）と一致させる */
 export interface Env {
   DB: D1Database;
-  BUCKET: R2Bucket;
-  /** カンマ区切り。初期管理者のメール（秘密情報ではない設定値） */
+  FILES: R2Bucket;
+  /** カンマ区切り。初代管理者の候補メール（管理者が0人の時だけ有効。秘密情報ではない設定値） */
   ADMIN_EMAILS?: string;
   /** ローカル開発専用。本番では未設定にすること */
   DEV_AUTH?: string;

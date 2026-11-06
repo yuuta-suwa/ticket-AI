@@ -6,6 +6,7 @@ export interface StoredFile {
   objectKey: string;
   contentType: string;
   size: number;
+  sha256: string;
   createdAt: string;
 }
 
@@ -18,8 +19,7 @@ export function validateImage(contentType: string, size: number): void {
 }
 
 /** 署名バイトが宣言Content-Typeと一致するか（偽装防止）。 */
-export function sniffMatches(contentType: string, head: Uint8Array): boolean {
-  const b = head;
+export function sniffMatches(contentType: string, b: Uint8Array): boolean {
   if (contentType === 'image/png') return b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4e && b[3] === 0x47;
   if (contentType === 'image/jpeg') return b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff;
   if (contentType === 'image/webp')
@@ -29,4 +29,10 @@ export function sniffMatches(contentType: string, head: Uint8Array): boolean {
 
 export function objectKeyFor(ownerId: string, fileId: string): string {
   return `members/${ownerId}/test-images/${fileId}`;
+}
+
+/** 標準Web Crypto（Workers/Node共通）でSHA-256を16進文字列に */
+export async function sha256Hex(body: Uint8Array): Promise<string> {
+  const d = new Uint8Array(await crypto.subtle.digest('SHA-256', body as unknown as ArrayBuffer));
+  return Array.from(d, (x) => x.toString(16).padStart(2, '0')).join('');
 }

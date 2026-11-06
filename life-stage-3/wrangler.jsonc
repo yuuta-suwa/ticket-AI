@@ -7,5 +7,5 @@
   "d1_databases": [
     { "binding": "DB", "database_name": "life-stage-3", "database_id": "local-only", "migrations_dir": "migrations" }
   ],
-  "r2_buckets": [{ "binding": "BUCKET", "bucket_name": "life-stage-3-local" }]
+  "r2_buckets": [{ "binding": "FILES", "bucket_name": "life-stage-3-local" }]
 }

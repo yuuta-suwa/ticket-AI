@@ -114,9 +114,9 @@ async function loadAdmin(){
     const div=document.createElement('div');div.className='pending-item';
     const p=document.createElement('div');p.textContent=(m.displayName?m.displayName+' / ':'')+m.email;div.appendChild(p);
     const row=document.createElement('div');row.className='row';
-    for(const [d,label,cls] of [['approved','承認',''],['rejected','否認','ghost']]){
+    for(const [d,label,cls] of [['active','承認',''],['cancelled','否認','ghost']]){
       const b=document.createElement('button');b.type='button';b.textContent=label;if(cls)b.className=cls;
-      b.onclick=async()=>{b.disabled=true;try{await api('/api/admin/members/'+encodeURIComponent(m.id)+'/decision',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({decision:d})});await loadAdmin()}catch(e){alert(msg(e));b.disabled=false}};
+      b.onclick=async()=>{b.disabled=true;try{await api('/api/admin/members/'+encodeURIComponent(m.id)+'/status',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({status:d})});await loadAdmin()}catch(e){alert(msg(e));b.disabled=false}};
       row.appendChild(b)}
     div.appendChild(row);box.appendChild(div)}
 }
@@ -136,7 +136,7 @@ $('restore-file').addEventListener('change',async(ev)=>{
   const f=ev.target.files&&ev.target.files[0];$('restore-msg').textContent='';if(!f)return;
   if(!confirm('このサイトにバックアップを復元します。よろしいですか？'))return;
   try{const r=await api('/api/admin/restore',{method:'POST',headers:{'content-type':'application/json'},body:await f.text()});
-    $('restore-msg').textContent='復元しました（会員'+r.restored.members+'件・目標'+r.restored.goals+'件・画像'+r.restored.files+'件）。再読み込みしてください。'}
+    $('restore-msg').textContent='復元しました（会員'+r.restored.users+'件・目標'+r.restored.goals+'件・画像'+r.restored.files+'件）。再読み込みしてください。'}
   catch(e){$('restore-msg').textContent=e.code==='forbidden'?'データが入っているサイトには復元できません。':msg(e)}finally{ev.target.value=''}
 });
 async function boot(){
@@ -145,11 +145,11 @@ async function boot(){
     if(!me.signedIn){show('v-signin',true);return}
     show('signout',true);const m=me.member;
     if(m.status==='pending'){$('pending-email').textContent=m.email;show('v-pending',true);return}
-    if(m.status!=='approved'){show('v-rejected',true);return}
+    if(m.status!=='active'){show('v-rejected',true);return}
     $('greet').textContent=(m.displayName||m.email)+' さん';show('v-home',true);
     const {goal}=await api('/api/goal');renderGoal(goal);
     await loadImages();
-    if(m.role==='admin'){show('v-admin',true);show('v-backup',true);await loadAdmin()}
+    if(m.isAdmin){show('v-admin',true);show('v-backup',true);await loadAdmin()}
   }catch(e){$('loading').textContent=msg(e);show('loading',true)}
 }
 boot();

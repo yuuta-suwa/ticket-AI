@@ -21,7 +21,7 @@ async function populated() {
   await call(env, '/api/me', 'p@x.com'); // 承認待ちのまま
   const pend = await call(env, '/api/admin/pending', ADMIN);
   const a = pend.body.members.find((m: any) => m.email === 'a@x.com');
-  await call(env, `/api/admin/members/${a.id}/decision`, ADMIN, J('POST', { decision: 'approved' }));
+  await call(env, `/api/admin/members/${a.id}/status`, ADMIN, J('POST', { status: 'active' }));
   await call(env, '/api/goal', 'a@x.com', J('PUT', { title: 'Aの目標', detail: '詳細' }));
   const up = await call(env, '/api/images', 'a@x.com', { method: 'POST', headers: { 'content-type': 'image/png' }, body: PNG });
   return { env, bucket, imageId: up.body.image.id as string };
@@ -32,20 +32,21 @@ test('バックアップ→空のサイトへ復元で、目標・画像・承�
   const exp = await call(src.env, '/api/admin/backup', ADMIN);
   assert.equal(exp.status, 200);
   assert.match(exp.res.headers.get('content-disposition') ?? '', /attachment; filename="life-stage-.*\.lsbackup\.json"/);
-  assert.equal(exp.body.members.length, 3);
+  assert.equal(exp.body.users.length, 3);
+  assert.ok(exp.body.auditLogs.length >= 2); // 初代管理者 + 承認の監査
 
   const dst = fakeEnv();
   await call(dst.env, '/api/me', ADMIN); // 新サイトで管理者が初回サインイン
   const r = await call(dst.env, '/api/admin/restore', ADMIN, J('POST', exp.body));
   assert.equal(r.status, 200);
-  assert.deepEqual(r.body.restored, { members: 3, goals: 1, files: 1 });
+  assert.deepEqual(r.body.restored, { users: 3, goals: 1, files: 1 });
 
   assert.equal((await call(dst.env, '/api/goal', 'a@x.com')).body.goal.title, 'Aの目標');
   const img = await call(dst.env, `/api/images/${src.imageId}`, 'a@x.com');
   assert.deepEqual(img.body, PNG);
   assert.equal((await call(dst.env, '/api/me', 'p@x.com')).body.member.status, 'pending');
   assert.equal((await call(dst.env, `/api/images/${src.imageId}`, 'p@x.com')).status, 403);
-  assert.equal((await call(dst.env, '/api/me', ADMIN)).body.member.role, 'admin');
+  assert.equal((await call(dst.env, '/api/me', ADMIN)).body.member.isAdmin, true);
 });
 
 test('データが入っているサイトには復元できない（上書き事故防止）', async () => {

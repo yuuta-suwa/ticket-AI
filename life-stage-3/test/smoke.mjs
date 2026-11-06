@@ -13,14 +13,16 @@ const call = async (who, path, init = {}) => {
 const J = (method, data) => ({ method, headers: { 'content-type': 'application/json' }, body: JSON.stringify(data) });
 const check = (name, ok) => { console.log(`${ok ? 'PASS' : 'FAIL'} ${name}`); if (!ok) process.exitCode = 1; };
 
+const health = await fetch(BASE + '/health');
+check('GET /health', health.status === 200 && (await health.json()).ok === true);
 const home = await fetch(BASE + '/');
 check('HOME 200', home.status === 200 && (await home.text()).includes('viewport'));
 check('A 初回は pending', (await call('a', '/api/me')).body.member.status === 'pending');
 await call('b', '/api/me');
 check('承認前は保存不可', (await call('a', '/api/goal', J('PUT', { title: 'x' }))).status === 403);
 const pend = (await call('admin', '/api/admin/pending')).body.members.filter((m) => m.email.endsWith(`${tag}@x.com`));
-for (const m of pend) await call('admin', `/api/admin/members/${m.id}/decision`, J('POST', { decision: 'approved' }));
-check('管理者が承認', (await call('a', '/api/me')).body.member.status === 'approved');
+for (const m of pend) await call('admin', `/api/admin/members/${m.id}/status`, J('POST', { status: 'active' }));
+check('管理者が承認', (await call('a', '/api/me')).body.member.status === 'active');
 check('目標をD1保存', (await call('a', '/api/goal', J('PUT', { title: `目標${tag}` }))).status === 200);
 check('再ログインで復元', (await call('a', '/api/goal')).body.goal?.title === `目標${tag}`);
 check('他会員から見えない', (await call('b', '/api/goal')).body.goal === null);

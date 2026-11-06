@@ -13,7 +13,7 @@ export function buildDeps(env: Env): Deps {
     members: new D1MemberRepository(env.DB),
     goals: new D1GoalRepository(env.DB),
     files: new D1FileRepository(env.DB),
-    objects: new R2ObjectStore(env.BUCKET),
+    objects: new R2ObjectStore(env.FILES),
     clock: { now: () => new Date().toISOString() },
     ids: { next: () => crypto.randomUUID() },
     backup: new D1BackupStore(env.DB),

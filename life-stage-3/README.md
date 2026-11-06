@@ -11,7 +11,7 @@ src/adapters/sites/ Sites固有: Worker入口・D1・R2・本人情報ヘッダ�
 src/adapters/dev/  ローカル専用の疑似サインイン（DEV_AUTH=1 かつ localhost のみ）
 src/web/           全会員共通のHOME画面（スマホ優先・ビルド不要）
 migrations/        D1スキーマ
-.openai/hosting.json  Sitesの接続名（d1: DB / r2: BUCKET）
+.openai/hosting.json  Sitesの接続名（d1: DB / r2: FILES）。project_id は Sites が付与するので手で書かない
 ```
 
 ## 確認できた公式仕様（learn.chatgpt.com/docs/sites/*、2026-11-06に確認）
@@ -31,7 +31,15 @@ npm run smoke       # 起動中の環境に対してE2Eスモークテストを�
 ```
 
 ## 設定値（Sitesの設定画面で入力する。Gitには入れない）
-- `ADMIN_EMAILS`：初期管理者のメール（カンマ区切り）。このメールで初回サインインすると、承認済みの管理者になる
+- `ADMIN_EMAILS`：初代管理者の候補メール（カンマ区切り）。**有効な管理者が1人もいない時だけ**、このメールで初回サインインした人が管理者になる。2人目以降は自動では管理者にならない
 - `DEV_AUTH`：本番では絶対に設定しない
 
-詳しい検証記録と未検証の事項は [docs/GATE0.md](docs/GATE0.md) を参照。
+## API（Gate-0）
+- `GET /health`（認証不要・会員情報なし）
+- `GET /api/me`、`GET/PUT /api/goal`、`GET/POST /api/images`、`GET/DELETE /api/images/:id`
+- 管理者のみ：`GET /api/admin/pending`、`POST /api/admin/members/:id/status`（pending/active/suspended/cancelled）、`GET /api/admin/backup`、`POST /api/admin/restore`
+
+## D1テーブル
+`users` / `member_eligibility` / `role_grants` / `life_goals` / `file_objects` / `audit_logs`（spec/03 の論理設計に準拠）
+
+詳しい検証記録と未検証の事項は [docs/GATE0.md](docs/GATE0.md)、判断の記録は [DECISIONS.md](DECISIONS.md) を参照。

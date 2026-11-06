@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { newMember, decide } from '../src/domain/member.ts';
+import { newMember, changeStatus, shouldBootstrapAdmin, type Member } from '../src/domain/member.ts';
 import { parseGoalInput } from '../src/domain/goal.ts';
 import { sniffMatches, validateImage } from '../src/domain/file.ts';
 import { DomainError } from '../src/domain/errors.ts';
@@ -8,18 +8,26 @@ import { DomainError } from '../src/domain/errors.ts';
 const admins = new Set(['admin@example.com']);
 const now = '2026-11-06T00:00:00.000Z';
 
-test('新規会員は pending/member、管理者メールは approved/admin', () => {
-  assert.equal(newMember('1', { email: 'A@x.com', fullName: null }, admins, now).status, 'pending');
-  const a = newMember('2', { email: ' Admin@Example.com ', fullName: 'Ad' }, admins, now);
-  assert.deepEqual([a.status, a.role, a.email], ['approved', 'admin', 'admin@example.com']);
+test('新規会員は必ず pending・ロールなし', () => {
+  const m = newMember('1', { email: ' A@X.com ', fullName: null }, now);
+  assert.deepEqual([m.status, m.roles, m.email], ['pending', [], 'a@x.com']);
 });
 
-test('承認は管理者のみ・自分自身は不可', () => {
-  const a = newMember('a', { email: 'admin@example.com', fullName: null }, admins, now);
-  const m = newMember('m', { email: 'm@x.com', fullName: null }, admins, now);
-  assert.equal(decide(m, 'approved', a, now).status, 'approved');
-  assert.throws(() => decide(a, 'approved', m, now), (e: DomainError) => e.code === 'not_approved');
-  assert.throws(() => decide(a, 'rejected', a, now), (e: DomainError) => e.code === 'forbidden');
+test('初代管理者は ADMIN_EMAILS に載っていて管理者0人の時だけ', () => {
+  assert.equal(shouldBootstrapAdmin('Admin@Example.com', admins, false), true);
+  assert.equal(shouldBootstrapAdmin('admin@example.com', admins, true), false);
+  assert.equal(shouldBootstrapAdmin('x@example.com', admins, false), false);
+});
+
+test('状態遷移は管理者のみ・自分自身は不可・許可された遷移だけ', () => {
+  const a: Member = { ...newMember('a', { email: 'admin@example.com', fullName: null }, now), status: 'active', roles: ['admin'] };
+  const m = newMember('m', { email: 'm@x.com', fullName: null }, now);
+  assert.equal(changeStatus(m, 'active', a, now).status, 'active');
+  assert.throws(() => changeStatus(a, 'suspended', m, now), (e: DomainError) => e.code === 'not_approved');
+  assert.throws(() => changeStatus(a, 'suspended', a, now), (e: DomainError) => e.code === 'forbidden');
+  assert.throws(() => changeStatus(m, 'suspended', a, now), (e: DomainError) => e.code === 'invalid_input'); // pending→suspendedは不可
+  const c = changeStatus(m, 'cancelled', a, now);
+  assert.throws(() => changeStatus(c, 'active', a, now), (e: DomainError) => e.code === 'invalid_input'); // cancelledは終端
 });
 
 test('目標入力の検証', () => {
