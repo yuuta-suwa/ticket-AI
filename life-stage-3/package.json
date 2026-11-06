@@ -1,0 +1,19 @@
+{
+  "name": "life-stage-3",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22.18.0" },
+  "scripts": {
+    "test": "node --no-warnings --test test/*.test.ts",
+    "typecheck": "tsc --noEmit",
+    "dev": "wrangler dev --local",
+    "db:migrate:local": "wrangler d1 migrations apply life-stage-3 --local",
+    "smoke": "node --no-warnings test/smoke.mjs"
+  },
+  "devDependencies": {
+    "@types/node": "22.19.1",
+    "typescript": "5.9.3",
+    "wrangler": "4.156.1"
+  }
+}

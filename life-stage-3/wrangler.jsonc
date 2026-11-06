@@ -1,0 +1,11 @@
+// ローカル検証専用（wrangler dev / miniflare）。Sites本番の構成ファイルではない。
+// 接続名(DB/BUCKET)は .openai/hosting.json と一致させる。
+{
+  "name": "life-stage-3",
+  "main": "src/adapters/sites/worker.ts",
+  "compatibility_date": "2026-10-01",
+  "d1_databases": [
+    { "binding": "DB", "database_name": "life-stage-3", "database_id": "local-only", "migrations_dir": "migrations" }
+  ],
+  "r2_buckets": [{ "binding": "BUCKET", "bucket_name": "life-stage-3-local" }]
+}

@@ -1,0 +1,3 @@
+# ローカル開発専用。本番(Sites)では絶対に設定しない。
+DEV_AUTH=1
+ADMIN_EMAILS=admin@example.com
