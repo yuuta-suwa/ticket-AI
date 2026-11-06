@@ -1,6 +1,11 @@
 # LIFE STAGE 2.0｜ログイン不要・2アプリ化 完了報告（2026-11-06）
 
-## 1. 確認URL（プレビュー）
+## 0. 状況（2026-11-06 更新）
+- 決定事項：①AとBは origin を完全に分ける ②旧版は当面 `/legacy/` に残す ③どちらのURLを誰に送るかは運営が判断する
+- **本番を切り替えました**（`gh-pages` コミット `7c843c4`）。A：`https://yuuta-suwa.github.io/ticket-AI/`、旧ログイン版：`https://yuuta-suwa.github.io/ticket-AI/legacy/`
+- B は**別 origin の配信先を準備中**です。準備ができたらそこに配置し、A と同じ origin に置いている `preview/members/` を削除します。それまでは `preview/members/` で確認できます。
+
+## 1. 確認URL（切替前のプレビュー・参考）
 | アプリ | URL |
 |---|---|
 | A：統合版（全メンバー＋コア） | https://yuuta-suwa.github.io/ticket-AI/preview/integrated/ |
