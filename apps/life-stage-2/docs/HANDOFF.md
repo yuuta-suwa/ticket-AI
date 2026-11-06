@@ -3,7 +3,8 @@
 ## 0. 状況（2026-11-06 更新）
 - 決定事項：①AとBは origin を完全に分ける ②旧版は当面 `/legacy/` に残す ③どちらのURLを誰に送るかは運営が判断する
 - **本番を切り替えました**（`gh-pages` コミット `7c843c4`）。A：`https://yuuta-suwa.github.io/ticket-AI/`、旧ログイン版：`https://yuuta-suwa.github.io/ticket-AI/legacy/`
-- B は**別 origin の配信先を準備中**です。準備ができたらそこに配置し、A と同じ origin に置いている `preview/members/` を削除します。それまでは `preview/members/` で確認できます。
+- **B は別 origin に配置しました**：`https://life-stage-2-0all.github.io/`（リポジトリ `life-stage-2-0ALL/life-stage-2-0ALL.github.io` の `main` 直下、コミット `e10b684`）。A 側の `preview/members/` は「移動しました」の案内ページにし、残っていた Service Worker を自分で登録解除するようにしました（`gh-pages` コミット `5ff836f`）。
+- B の更新手順：`node apps/life-stage-2/build.mjs` を実行し、`dist/members/` の中身を上記リポジトリの直下にコピーして push します（`.nojekyll` と `README.md` は残す）。
 
 ## 1. 確認URL（切替前のプレビュー・参考）
 | アプリ | URL |
