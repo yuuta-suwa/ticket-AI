@@ -1,0 +1,19 @@
+{
+  "id": "life-stage2-members",
+  "name": "LIFE STAGE 2.0 全メンバー版",
+  "short_name": "LIFE STAGE 全",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#101A2E",
+  "theme_color": "#101A2E",
+  "lang": "ja",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
