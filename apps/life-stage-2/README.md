@@ -1,50 +1,36 @@
-# LIFE STAGE 2.0 ワーク v1.0
+# LIFE STAGE 2.0 ワーク（ログイン不要・2アプリ）
 
-1つのアプリで「全メンバー向け」を基本とし、**サーバーに登録されたロールが「コアメンバー」のアカウントにだけ**コアメンバー向けタブが表示されます。
+共通ソース `src/` から、2つの独立したアプリを作ります。
 
-- 静的Web/PWA（ビルド不要）：`index.html` / `app.js` / `config.js` / `vendor/supabase.js`
-- バックエンド：Supabase（認証・DB・RLS・Edge Function）
+| アプリ | 内容 | 保存キー（端末内） |
+|---|---|---|
+| A：統合版 `dist/integrated/` | 全メンバー向け＋コアメンバー向け | `life-stage2:integrated:v1` |
+| B：全メンバー版 `dist/members/` | 全メンバー向けのみ（コアのコード・教材・画面はビルド時に削除） | `life-stage2:members:v1` |
 
-## コアメンバー限定の仕組み
-| 層 | 内容 |
-|---|---|
-| ログイン | メールのログインリンク（パスワード不要・Supabase Auth） |
-| ロール | `ls_profiles.role` = member / core / admin。新規登録は必ず member。本人はロールを変更できない（列権限＋RLS） |
-| 表示 | ログイン後サーバーから取得したロールが core/admin の時だけ、コース切替タブとコア画面を描画 |
-| データ | `ls_work` の `program='core'` 行はRLSで core/admin 本人のみ読み書き可。画面を改造してもデータは取得できない |
-| 付与 | 管理者がマイページ「管理：メンバーのロール」でメールアドレスを指定して変更（`ls_set_role`） |
-| 管理者でも | 他人のワーク本文は読めない（プロフィール一覧のみ） |
+- ログイン・メール認証・会員判定はありません。URLを開けばすぐ使えます。
+- 記録はその端末・ブラウザの中だけに保存されます（サーバーには送りません）。端末間の同期はありません。バックアップ（JSON）と復元で移せます。
+- **A はURLを知っている人なら誰でもコア向けワークを使えます。** コア教材を特定の人だけに見せる仕組みはありません。
+- AI は、依頼文を作ってコピーし、各自のAIに貼り付ける方式だけです（アプリからの外部送信はありません）。
 
-RLSの検証：`npm i @electric-sql/pglite && node tests/rls.test.mjs`（14項目PASS確認済み）
+## コマンド
+```
+node apps/life-stage-2/build.mjs                  # dist/integrated と dist/members を作る（コアが残っていれば失敗する）
+node apps/life-stage-2/tests/variants.test.mjs    # 2アプリの受入テスト（Playwright + Chromium が必要）
+cd apps/life-stage-2/dist && python3 -m http.server 8080
+#   → http://localhost:8080/integrated/  と  http://localhost:8080/members/
+```
 
-## AI分析
-1. **基本：コピペ方式** — AIタブで記録から依頼文を自動作成 →「依頼文をコピー」→ 各自のAI（ChatGPT/Claude/Gemini等）に貼り付け → 回答を貼り戻して「メモとして保存」。
-2. **システムAI（任意）** — Edge Function `ls-ai` が Anthropic API に接続。ログイン必須・コアの依頼はコアのみ・1日上限（既定20回）・APIキーはサーバー側のみ。`config.js` の `aiEnabled: true` でボタン表示。
+## ソースの書き方
+- コア専用のコードは `src/app.js` の `//@core-begin` 〜 `//@core-end` の中に書きます。HTML 側は `<!--@core-begin-->` 〜 `<!--@core-end-->` です。
+- 全メンバー版のビルドではこの範囲を削除します。そのあと `build.mjs` の `CORE_MARKERS`（コア教材の目印になる文字列）が配信物に残っていないかを検査します。
+- アプリの種類（`__VARIANT__`）はビルド時に固定されます。URLや端末内の設定では切り替えられません。
 
-## 公開までの手順（初回のみ）
-
-クリック単位の詳しい手順は [SETUP.md](SETUP.md) を参照。
-1. https://supabase.com で新規プロジェクト作成（東京リージョン推奨）
-2. SQL Editor で `supabase/migrations/0001_life_stage.sql` を実行
-3. Authentication → URL Configuration：Site URL と Redirect URLs に公開URL（例 `https://yuuta-suwa.github.io/ticket-AI/`）を設定
-   - 招待制にする場合：Providers → Email で新規サインアップをOFF、Users → Invite user で招待
-4. Project Settings → API の **Project URL** と **anon public key** を `config.js` に記入（公開してよい値。service_role キーは絶対に書かない）
-5. 自分で1度ログイン → SQL Editor で管理者化：`update public.ls_profiles set role='admin' where email='あなたのメール';`
-6. 以降はアプリのマイページからメンバーをコアメンバーに変更
-7. システムAIを使う場合：
-   ```
-   supabase functions deploy ls-ai --project-ref <ref>
-   supabase secrets set ANTHROPIC_API_KEY=... LS_ALLOWED_ORIGIN=https://yuuta-suwa.github.io --project-ref <ref>
-   ```
-   その後 `config.js` の `aiEnabled` を `true` に。
-8. 静的ファイル（index.html, app.js, config.js, sw.js, manifest.webmanifest, icon.svg, vendor/）をGitHub Pages等に配置
-
-`config.js` が空の間は「ローカル試用モード」（ログインなし・端末内保存・コアタブ非表示）で動作します。
-
-## ローカル確認
-`cd apps/life-stage-2 && python3 -m http.server 8080` → http://localhost:8080
-
-## 残っている確認事項
-- 教材本文は仕様書の構造から作成した暫定文（教材責任者の確認が必要）
-- PDFはブラウザ印刷による保存／実機（iOS/Android）表示確認
-- 退会・データ削除は運営対応（Supabaseでユーザー削除するとデータも連鎖削除）
+## フォルダ
+- `src/`：2アプリ共通のソース
+- `build.mjs`：ビルドと検査
+- `tests/variants.test.mjs`：受入テスト
+- `legacy/`：旧ログイン版（変更前の本番）の配信ファイル。ロールバックと記録の移行に使います
+- `supabase/`、`tests/rls.test.mjs`：旧ログイン版のDB定義とテスト。旧DBはそのまま保持します
+- `docs/current-state.md`：変更前の調査
+- `docs/HANDOFF.md`：完了報告、配備・切替・ロールバックの手順
+- `docs/life-stage2-change/`：今回の仕様書
