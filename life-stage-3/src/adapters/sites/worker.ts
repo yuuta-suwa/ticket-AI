@@ -1,7 +1,7 @@
 // Sites（Workers互換ランタイム）用のエントリ。ここだけがプラットフォーム依存。
 import type { Env } from './bindings.ts';
 import type { Deps } from '../../application/ports.ts';
-import { D1FileRepository, D1GoalRepository, D1MemberRepository } from './d1-repositories.ts';
+import { D1BackupStore, D1FileRepository, D1GoalRepository, D1MemberRepository } from './d1-repositories.ts';
 import { R2ObjectStore } from './r2-object-store.ts';
 import { SITES_SIGNIN_PATH, SITES_SIGNOUT_PATH, sitesIdentity } from './identity.ts';
 import { devAuthEnabled, devIdentity, devSignInResponse, devSignOutResponse } from '../dev/dev-identity.ts';
@@ -16,6 +16,7 @@ export function buildDeps(env: Env): Deps {
     objects: new R2ObjectStore(env.BUCKET),
     clock: { now: () => new Date().toISOString() },
     ids: { next: () => crypto.randomUUID() },
+    backup: new D1BackupStore(env.DB),
     adminEmails: new Set((env.ADMIN_EMAILS ?? '').split(',').map(normalizeEmail).filter(Boolean)),
   };
 }

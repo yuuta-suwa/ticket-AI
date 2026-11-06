@@ -94,3 +94,36 @@ export class D1FileRepository implements FileRepository {
     await this.db.prepare('DELETE FROM files WHERE id = ? AND owner_id = ?').bind(id, ownerId).run();
   }
 }
+
+import type { BackupStore } from '../../application/ports.ts';
+
+export class D1BackupStore implements BackupStore {
+  private db: D1Database;
+  constructor(db: D1Database) { this.db = db; }
+  async dumpAll() {
+    const m = await this.db.prepare('SELECT * FROM members ORDER BY created_at').all<MemberRow>();
+    const g = await this.db.prepare('SELECT * FROM goals ORDER BY updated_at').all<GoalRow>();
+    const f = await this.db.prepare('SELECT * FROM files ORDER BY created_at').all<FileRow>();
+    return { members: m.results.map(toMember), goals: g.results.map(toGoal), files: f.results.map(toFile) };
+  }
+  async countData() {
+    const n = async (t: string) => Number((await this.db.prepare(`SELECT COUNT(*) AS n FROM ${t}`).first<{ n: number }>())?.n ?? 0);
+    return { members: await n('members'), goals: await n('goals'), files: await n('files') };
+  }
+  async restoreRows(rows: { members: Member[]; goals: Goal[]; files: StoredFile[] }) {
+    // 復元を実行した管理者の仮登録を消してからバックアップの会員を入れる（同じメールの重複を避ける）
+    await this.db.prepare('DELETE FROM members').run();
+    for (const m of rows.members) {
+      await this.db.prepare('INSERT INTO members (id,email,display_name,status,role,created_at,approved_at,approved_by) VALUES (?,?,?,?,?,?,?,?)')
+        .bind(m.id, m.email, m.displayName, m.status, m.role, m.createdAt, m.approvedAt, m.approvedBy).run();
+    }
+    for (const g of rows.goals) {
+      await this.db.prepare('INSERT INTO goals (id,owner_id,title,detail,updated_at) VALUES (?,?,?,?,?)')
+        .bind(g.id, g.ownerId, g.title, g.detail, g.updatedAt).run();
+    }
+    for (const f of rows.files) {
+      await this.db.prepare('INSERT INTO files (id,owner_id,object_key,content_type,size,created_at) VALUES (?,?,?,?,?,?)')
+        .bind(f.id, f.ownerId, f.objectKey, f.contentType, f.size, f.createdAt).run();
+    }
+  }
+}

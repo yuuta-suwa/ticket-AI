@@ -42,4 +42,15 @@ export interface Deps {
   clock: Clock;
   ids: IdGen;
   adminEmails: ReadonlySet<string>;
+  backup: BackupStore;
+}
+
+/**
+ * バックアップ専用。全会員のデータを扱うため通常のリポジトリとは分け、
+ * 管理者のユースケース(backup.ts)からだけ使う。
+ */
+export interface BackupStore {
+  dumpAll(): Promise<{ members: Member[]; goals: Goal[]; files: StoredFile[] }>;
+  countData(): Promise<{ members: number; goals: number; files: number }>;
+  restoreRows(rows: { members: Member[]; goals: Goal[]; files: StoredFile[] }): Promise<void>;
 }

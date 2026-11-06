@@ -9,7 +9,7 @@ src/application/   ユースケースと差し替え用インターフェース(
 src/adapters/http/ 標準 Request/Response のAPIとHTML配信（実行環境に依存しない）
 src/adapters/sites/ Sites固有: Worker入口・D1・R2・本人情報ヘッダー  ← 移植時はここだけ差し替える
 src/adapters/dev/  ローカル専用の疑似サインイン（DEV_AUTH=1 かつ localhost のみ）
-src/ui/            全会員共通のHOME画面（スマホ優先・ビルド不要）
+src/web/           全会員共通のHOME画面（スマホ優先・ビルド不要）
 migrations/        D1スキーマ
 .openai/hosting.json  Sitesの接続名（d1: DB / r2: BUCKET）
 ```

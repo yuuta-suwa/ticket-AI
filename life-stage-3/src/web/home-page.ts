@@ -72,6 +72,14 @@ button.ghost{background:transparent;color:var(--acc);border:1px solid var(--line
       <div id="pending-list"></div>
       <p id="admin-empty" class="muted" hidden>承認待ちはありません。</p>
     </section>
+    <section id="v-backup" class="card" hidden>
+      <h2>管理：バックアップ</h2>
+      <p class="muted">全会員のデータを含みます。暗号化した保管場所に保存し、Gitやチャットには貼らないでください。</p>
+      <div class="row"><a class="btn" href="/api/admin/backup" download>バックアップをダウンロード</a></div>
+      <label for="restore-file">復元（データが空のサイトでのみ実行できます）</label>
+      <input id="restore-file" type="file" accept="application/json,.json">
+      <p id="restore-msg" class="err"></p>
+    </section>
   </div>
 </main>
 <script>
@@ -124,6 +132,13 @@ $('img-file').addEventListener('change',async(ev)=>{
   try{await api('/api/images',{method:'POST',headers:{'content-type':f.type},body:f});await loadImages()}
   catch(e){$('img-err').textContent=msg(e)}finally{ev.target.value=''}
 });
+$('restore-file').addEventListener('change',async(ev)=>{
+  const f=ev.target.files&&ev.target.files[0];$('restore-msg').textContent='';if(!f)return;
+  if(!confirm('このサイトにバックアップを復元します。よろしいですか？'))return;
+  try{const r=await api('/api/admin/restore',{method:'POST',headers:{'content-type':'application/json'},body:await f.text()});
+    $('restore-msg').textContent='復元しました（会員'+r.restored.members+'件・目標'+r.restored.goals+'件・画像'+r.restored.files+'件）。再読み込みしてください。'}
+  catch(e){$('restore-msg').textContent=e.code==='forbidden'?'データが入っているサイトには復元できません。':msg(e)}finally{ev.target.value=''}
+});
 async function boot(){
   try{
     const me=await api('/api/me');show('loading',false);
@@ -134,7 +149,7 @@ async function boot(){
     $('greet').textContent=(m.displayName||m.email)+' さん';show('v-home',true);
     const {goal}=await api('/api/goal');renderGoal(goal);
     await loadImages();
-    if(m.role==='admin'){show('v-admin',true);await loadAdmin()}
+    if(m.role==='admin'){show('v-admin',true);show('v-backup',true);await loadAdmin()}
   }catch(e){$('loading').textContent=msg(e);show('loading',true)}
 }
 boot();

@@ -5,7 +5,8 @@ import { toGoalView } from '../../domain/goal.ts';
 import { TEST_IMAGE_MAX_BYTES } from '../../domain/file.ts';
 import type { Deps } from '../../application/ports.ts';
 import * as uc from '../../application/usecases.ts';
-import { renderHomePage } from '../../ui/home-page.ts';
+import { exportBackup, restoreBackup } from '../../application/backup.ts';
+import { renderHomePage } from '../../web/home-page.ts';
 
 export interface HandlerOptions {
   identity(req: Request): Identity | null;
@@ -34,10 +35,10 @@ function sameOrigin(req: Request): boolean {
   return !origin || origin === new URL(req.url).origin;
 }
 
-async function readJson(req: Request): Promise<unknown> {
+async function readJson(req: Request, maxChars = 10_000): Promise<unknown> {
   if (!(req.headers.get('content-type') ?? '').startsWith('application/json')) throw new DomainError('invalid_input');
   const text = await req.text();
-  if (text.length > 10_000) throw new DomainError('invalid_input');
+  if (text.length > maxChars) throw new DomainError('invalid_input');
   try { return JSON.parse(text); } catch { throw new DomainError('invalid_input'); }
 }
 
@@ -78,6 +79,16 @@ export async function handle(req: Request, d: Deps, o: HandlerOptions): Promise<
     }
     if (p === '/api/admin/pending' && m === 'GET') {
       return json({ members: (await uc.listPending(d, me)).map(toAdminView) });
+    }
+    if (p === '/api/admin/backup' && m === 'GET') {
+      const snap = await exportBackup(d, me);
+      const name = `life-stage-${snap.exportedAt.slice(0, 10)}.lsbackup.json`;
+      return new Response(JSON.stringify(snap), {
+        headers: { ...SEC_HEADERS, 'content-type': 'application/json; charset=utf-8', 'content-disposition': `attachment; filename="${name}"` },
+      });
+    }
+    if (p === '/api/admin/restore' && m === 'POST') {
+      return json({ restored: await restoreBackup(d, me, await readJson(req, 50_000_000)) });
     }
     const dm = R_DECISION.exec(p);
     if (dm && m === 'POST') {

@@ -30,3 +30,8 @@ const img = await call('a', `/api/images/${up.body.image.id}`);
 check('本人は画像取得', img.status === 200 && img.body.length === PNG.length);
 check('他会員は画像404', (await call('b', `/api/images/${up.body.image.id}`)).status === 404);
 check('画像削除', (await call('a', `/api/images/${up.body.image.id}`, { method: 'DELETE' })).status === 200);
+const up2 = await call('a', '/api/images', { method: 'POST', headers: { 'content-type': 'image/png' }, body: PNG });
+const bk = await call('admin', '/api/admin/backup');
+const mine = bk.body.files?.find((f) => f.id === up2.body.image.id);
+check('バックアップに画像本体を含む', bk.status === 200 && mine && atob(mine.bodyBase64).length === PNG.length);
+check('一般会員はバックアップ不可', (await call('a', '/api/admin/backup')).status === 403);
