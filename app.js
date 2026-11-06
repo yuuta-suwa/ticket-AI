@@ -1,14 +1,15 @@
 "use strict";
-/* LIFE STAGE 2.0 ワーク
- * - ログイン（Supabase Auth・メールリンク）後、サーバーのロールが core/admin の人にだけコアメンバータブを表示
- * - コアのデータはDBのRLSでもコアメンバー以外は読み書き不可（画面を改造しても取得できない）
- * - AI：依頼文をコピーして自端末のAIへ貼り付け（基本）／サーバー接続のシステムAI（設定時のみ）
+/* LIFE STAGE 2.0 ワーク — 共通ソース（build.mjs が VARIANT ごとに配信物を作る。README 参照）
+ * ログイン・会員判定・サーバー保存はない。記録はこの端末・ブラウザ内にのみ保存する。
  */
-const CFG = Object.assign({ supabaseUrl: "", supabaseAnonKey: "", aiEnabled: false }, window.LS_CONFIG || {});
-const ONLINE = !!(CFG.supabaseUrl && CFG.supabaseAnonKey);
-const sb = ONLINE && window.supabase
-  ? window.supabase.createClient(CFG.supabaseUrl, CFG.supabaseAnonKey, { auth: { persistSession: true, detectSessionInUrl: true, flowType: "pkce" } })
-  : null;
+const VARIANT = "integrated";            // ビルド時に固定（URLや端末設定では切り替わらない）
+const BUILD = "ee7b2280eb";
+const STORE_KEY = "life-stage2:" + VARIANT + ":v1";
+const UI_KEY = STORE_KEY + ":ui";
+const SCHEMA = 1;
+const MAX_IMPORT = 5 * 1024 * 1024;
+const NOTICE = "記録はこの端末・ブラウザに保存されます。端末変更やブラウザデータ削除に備え、バックアップしてください。";
+const EXT = {};                           // 統合版だけが中身を登録する拡張点
 
 /* ============ 教材定義（全メンバー 7ステージ） ============ */
 const STAGES = [
@@ -63,223 +64,116 @@ const SCENES = [
  {id:"p4",t:"顧客への説明",tip:"相手の困りごとを先に確認し、相手の言葉で言い換えてから提案する。"},
  {id:"p5",t:"異なる意見の調整",tip:"相手の意見を要約して確認→共通の目的を言葉にする→違いを一つずつ扱う。"},
 ];
-const PHASES = [
- {id:"ph1",d:"DAY 1–30",t:"現状診断・90日目標・個人KPI",items:["現状の数字を記録する","90日目標を1つ決める","目標につながる個人KPIを設定する"]},
- {id:"ph2",d:"DAY 31–60",t:"課題仮説・演習・改善",items:["KPIが伸びない原因の仮説を立てる","ロープレ・現場で試す","結果とメンター修正を記録する"]},
- {id:"ph3",d:"DAY 61–90",t:"再現性・模擬指導",items:["成果が出た条件を言語化する","他者に教えられる手順にまとめる","模擬指導を行い振り返る"]},
-];
 
-/* ============ 状態 ============ */
-const blankAll = () => ({answers:{},step:{},drafts:{},approved:{},practice:{},daily:{},aiNotes:[]});
-const blankCore = () => ({start:"",goal:"",kpis:[],logs:[],reviews:{},checks:{},aiNotes:[]});
-const blankOf = p => p === "core" ? blankCore() : blankAll();
-const UKEY = "ls2.ui", LKEY = "ls2.local";
-let UI = Object.assign({course:"all",tab:"home",view:null,seenIntro:false}, readJSON(UKEY));
-let S = {all:blankAll(), core:blankCore(), profile:{name:""}};
-let USER = null, ROLE = "member", EMAIL = "", VER = {all:0, core:0};
-const DIRTY = new Set();
-const isCore = () => ROLE === "core" || ROLE === "admin";
-const aiServer = () => !!(sb && USER && CFG.aiEnabled);
-
-function readJSON(k){ try{ return JSON.parse(localStorage.getItem(k) || "null") || {}; }catch(e){ return {}; } }
-function writeJSON(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); return true; }catch(e){ return false; } }
-const cacheKey = () => "ls2.cache." + (USER ? USER.id : "");
-
+/* ============ 小道具 ============ */
 const $ = s => document.querySelector(s);
 const ACT = {};
 function act(name, fn){ ACT[name] = fn; }
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const uid = () => Math.random().toString(36).slice(2,9) + Date.now().toString(36);
 const today = () => { const d = new Date(); return new Date(d - d.getTimezoneOffset()*6e4).toISOString().slice(0,10); };
+const isObj = x => !!x && typeof x === "object" && !Array.isArray(x);
+const str = x => typeof x === "string" ? x : (typeof x === "number" ? String(x) : "");
 function getPath(p){ return p.split(".").reduce((o,k) => o == null ? undefined : o[k], S); }
-function setPath(p,v){ const ks = p.split("."); let o = S; ks.slice(0,-1).forEach(k => { if(o[k] == null || typeof o[k] !== "object") o[k] = {}; o = o[k]; }); o[ks.at(-1)] = v; }
-function toast(m){ const t = $("#toast"); t.textContent = m; t.classList.add("show"); clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove("show"), 2600); }
+function setPath(p,v){ const ks = p.split("."); let o = S; ks.slice(0,-1).forEach(k => { if(!isObj(o[k]) && !Array.isArray(o[k])) o[k] = {}; o = o[k]; }); o[ks.at(-1)] = v; }
+function toast(m){ const t = $("#toast"); t.textContent = m; t.classList.add("show"); clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove("show"), 3000); }
+const prog = (n, m) => `<div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="${m}" aria-valuenow="${n}"><i style="width:${m ? Math.round(n/m*100) : 0}%"></i></div>`;
+function countLine(t){ const n = (t || "").replace(/\s/g, "").length; return `${n}字 ・ 話すと約${Math.round(n/5)}秒（目安：1秒あたり5字）`; }
 
-/* ============ 保存 ============ */
-let saveT, saving = false;
+/* ============ データ（端末内保存） ============ */
+const blankAll = () => ({answers:{},step:{},drafts:{},approved:{},practice:{},daily:{},aiNotes:[]});
+function sanitizeAll(a){
+  if(!isObj(a)) return null;
+  const o = blankAll(), ids = new Set(STAGES.map(s => s.id)), sc = new Set(SCENES.map(s => s.id));
+  for(const [id, v] of Object.entries(isObj(a.answers) ? a.answers : {})) if(ids.has(id) && isObj(v)){ o.answers[id] = {}; for(const [i, t] of Object.entries(v)) if(/^\d+$/.test(i)) o.answers[id][i] = str(t); }
+  for(const [id, v] of Object.entries(isObj(a.step) ? a.step : {})) if(ids.has(id) && Number.isInteger(v) && v >= 0 && v <= 10) o.step[id] = v;
+  for(const [id, v] of Object.entries(isObj(a.drafts) ? a.drafts : {})) if(ids.has(id) && typeof v === "string") o.drafts[id] = v;
+  for(const [id, v] of Object.entries(isObj(a.approved) ? a.approved : {})) if(ids.has(id) && v) o.approved[id] = {at: str(v.at) || new Date().toISOString()};
+  for(const [id, v] of Object.entries(isObj(a.practice) ? a.practice : {})) if(sc.has(id) && isObj(v)){ o.practice[id] = {}; for(const k of ["who","core","words","reaction","next"]) if(v[k] != null) o.practice[id][k] = str(v[k]); }
+  for(const [d, v] of Object.entries(isObj(a.daily) ? a.daily : {})) if(/^\d{4}-\d{2}-\d{2}$/.test(d)) o.daily[d] = str(v);
+  if(Array.isArray(a.aiNotes)) o.aiNotes = a.aiNotes.filter(isObj).map(n => ({id: str(n.id) || uid(), at: str(n.at) || new Date().toISOString(), label: str(n.label), text: str(n.text)})).filter(n => n.text);
+  return o;
+}
+const blankState = () => { const s = {profile:{name:""}, all:blankAll()}; if(EXT.blank) EXT.blank(s); return s; };
+let S, UI, STORAGE_OK = true, LOAD_PROBLEM = "";
+
+function readStore(){
+  let raw = null;
+  try{ raw = localStorage.getItem(STORE_KEY); }catch(e){ STORAGE_OK = false; return null; }
+  if(raw == null) return null;
+  try{ return JSON.parse(raw); }
+  catch(e){ // 壊れた記録は消さずに退避して知らせる
+    try{ localStorage.setItem(STORE_KEY + ":broken:" + Date.now(), raw); }catch(_){}
+    LOAD_PROBLEM = "保存されていた記録を読み込めませんでした（元のデータは端末内に退避しました）。";
+    return null;
+  }
+}
+function loadState(){
+  const d = readStore(), s = blankState();
+  if(isObj(d) && d.schemaVersion === SCHEMA){
+    s.profile.name = str(isObj(d.profile) ? d.profile.name : "");
+    s.all = sanitizeAll(d.all) || blankAll();
+    if(EXT.load) EXT.load(s, d);
+  }
+  return s;
+}
+function probeStorage(){ try{ const k = STORE_KEY + ":probe"; localStorage.setItem(k, "1"); localStorage.removeItem(k); return true; }catch(e){ return false; } }
+function readUI(){ try{ return JSON.parse(localStorage.getItem(UI_KEY) || "null") || {}; }catch(e){ return {}; } }
+function saveUI(){ try{ localStorage.setItem(UI_KEY, JSON.stringify(UI)); }catch(e){} }
+
+let saveT, DIRTY = false;
 function setSave(st){ const el = $("#save"); el.className = "save " + (st === "ok" ? "" : st);
-  el.querySelector("span").textContent = {ok:"保存済み",saving:"保存中…",error:"未保存・タップで再試行",conflict:"競合・タップで再試行"}[st]; }
-function saveUI(){ writeJSON(UKEY, UI); }
-function save(prog, now){
-  if(prog) DIRTY.add(prog);
-  setSave("saving"); clearTimeout(saveT);
-  saveT = setTimeout(flush, now ? 0 : (ONLINE ? 1200 : 400));
-}
-async function flush(){
-  if(!ONLINE){ setSave(writeJSON(LKEY, S) ? "ok" : "error"); DIRTY.clear(); return; }
-  writeJSON(cacheKey(), {S, VER, dirty:[...DIRTY]});      // 通信断でも端末内に保持
-  if(saving){ saveT = setTimeout(flush, 800); return; }
-  saving = true;
+  el.querySelector("span").textContent = {ok:"保存済み", saving:"保存中…", error:"保存できません・タップで再試行"}[st]; }
+function save(now){ DIRTY = true; setSave("saving"); clearTimeout(saveT); saveT = setTimeout(flush, now ? 0 : 500); }
+function flush(){
+  const doc = {schemaVersion:SCHEMA, appVariant:VARIANT, savedAt:new Date().toISOString(), profile:S.profile, all:S.all};
+  if(EXT.toDoc) EXT.toDoc(doc);
   try{
-    for(const p of [...DIRTY]){ await pushRemote(p); DIRTY.delete(p); }
-    writeJSON(cacheKey(), {S, VER, dirty:[]});
-    setSave("ok");
-  }catch(e){ console.error(e); setSave("error"); }
-  finally{ saving = false; }
-}
-$("#save").addEventListener("click", () => { if(/error|conflict/.test($("#save").className)) save(null, true); });
-window.addEventListener("online", () => { if(DIRTY.size) save(null, true); });
-window.addEventListener("beforeunload", e => { if(DIRTY.size && ONLINE){ e.preventDefault(); e.returnValue = ""; } });
-
-async function pushRemote(p){
-  if(p === "profile"){
-    const { error } = await sb.from("ls_profiles").update({display_name: S.profile.name}).eq("user_id", USER.id);
-    if(error) throw error; return;
-  }
-  if(p === "core" && !isCore()) return;
-  const { data, error } = await sb.from("ls_work").update({data: S[p], version: VER[p] + 1})
-    .eq("user_id", USER.id).eq("program", p).eq("version", VER[p]).select("version");
-  if(error) throw error;
-  if(data.length){ VER[p] = data[0].version; return; }
-  // 版が合わない＝別端末で更新された。黙って消さずに本人に選ばせる
-  const { data: row, error: e2 } = await sb.from("ls_work").select("data,version").eq("user_id", USER.id).eq("program", p).maybeSingle();
-  if(e2) throw e2;
-  if(!row){ await insertRow(p); return; }
-  if(confirm("別の端末で新しい内容が保存されています。\n\n［OK］別の端末の内容を読み込む（この端末の未保存分は破棄）\n［キャンセル］この端末の内容で上書きする")){
-    S[p] = Object.assign(blankOf(p), row.data); VER[p] = row.version; render();
-  }else{ VER[p] = row.version; await pushRemote(p); }
-}
-async function insertRow(p){
-  const { data, error } = await sb.from("ls_work").insert({user_id: USER.id, program: p, data: S[p], version: 1}).select("version").single();
-  if(error) throw error; VER[p] = data.version;
-}
-
-/* ============ 起動・認証 ============ */
-async function boot(){
-  if(!ONLINE){
-    const d = readJSON(LKEY), old = readJSON("lifestage2.v1");
-    const src = d.all ? d : old.all ? old : {};
-    S.all = Object.assign(blankAll(), src.all || {}); S.profile = Object.assign({name:""}, src.profile || {});
-    ROLE = "member"; return start();
-  }
-  if(!sb){ $("#app").innerHTML = `<div class="card">通信ライブラリを読み込めませんでした。再読み込みしてください。</div>`; return; }
-  const { data: { session } } = await sb.auth.getSession();
-  if(!session){ return renderLogin(); }
-  USER = session.user; EMAIL = USER.email || "";
-  try{ await loadRemote(); }catch(e){ console.error(e); $("#app").innerHTML = `<div class="card"><h2>データを読み込めませんでした</h2><p class="muted">通信状態を確認して再読み込みしてください。</p><button class="btn" data-act="reload">再読み込み</button></div>`; return; }
-  start();
-}
-async function loadRemote(){
-  const { data: prof, error } = await sb.from("ls_profiles").select("role,display_name,email").eq("user_id", USER.id).maybeSingle();
-  if(error) throw error;
-  ROLE = prof?.role || "member"; S.profile.name = prof?.display_name || "";
-  const { data: rows, error: e2 } = await sb.from("ls_work").select("program,data,version").eq("user_id", USER.id);
-  if(e2) throw e2;
-  for(const p of isCore() ? ["all","core"] : ["all"]){
-    const r = rows.find(x => x.program === p);
-    if(r){ S[p] = Object.assign(blankOf(p), r.data); VER[p] = r.version; }
-    else { S[p] = blankOf(p); if(p === "core") S.core.start = today(); await insertRow(p); }
-  }
-  if(!isCore()) S.core = blankCore();
-  // 前回保存できなかった端末内の変更を復元して再送
-  const c = readJSON(cacheKey());
-  if(c.dirty && c.dirty.length){
-    for(const p of c.dirty){ if(p === "core" && !isCore()) continue; if(c.S && c.S[p]){ S[p] = c.S[p]; if(c.VER && c.VER[p]) VER[p] = c.VER[p]; DIRTY.add(p); } }
-    if(DIRTY.size){ toast("前回保存できなかった変更を送信します"); save(null, true); }
+    const json = JSON.stringify(doc);
+    localStorage.setItem(STORE_KEY, json);
+    if(localStorage.getItem(STORE_KEY) !== json) throw new Error("verify");
+    DIRTY = false; STORAGE_OK = true; setSave("ok");
+  }catch(e){
+    STORAGE_OK = false; setSave("error");   // 入力はメモリ上に残る。成功表示はしない
+    toast("この端末に保存できませんでした。設定からバックアップを書き出してください");
   }
 }
-function start(){
-  if(!isCore()) UI.course = "all";
-  $("#nav").hidden = false; $("#courseBar").hidden = !isCore();
-  render(); setSave("ok");
-  if(!UI.seenIntro) showIntro();
-}
-let LOGIN_MODE = "password";
-const inputStyle = 'style="width:100%;background:#0E1728;border:1px solid var(--line);border-radius:12px;padding:12px 14px;min-height:48px;font-size:16px"';
-function renderLogin(sent){
-  $("#nav").hidden = true; $("#courseBar").hidden = true;
-  const pw = LOGIN_MODE === "password";
-  $("#app").innerHTML = `<div class="view auth">
-    <div class="logo">LIFE STAGE</div><p class="eyebrow" style="margin-bottom:24px">Stage 2.0 · Members</p>
-    ${sent ? `<div class="card"><h2>メールを送信しました</h2><p class="muted">${esc(sent)} に届いたリンクを、この端末・このブラウザで開いてください。</p><button class="btn ghost sm" data-act="relogin">戻る</button></div>`
-    : `<div class="card" style="text-align:left"><h2>ログイン</h2>
-      <div class="seg" style="margin:10px 0 4px"><button aria-pressed="${pw}" data-act="loginMode" data-arg="password">パスワード</button><button aria-pressed="${!pw}" data-act="loginMode" data-arg="link">メールリンク</button></div>
-      <p class="small muted" style="margin-top:8px">${pw ? "運営から届いたメールアドレスとパスワードでログインします。" : "メールアドレスにログイン用リンクを送ります（パスワード不要）。"}</p>
-      <label class="f" for="email">メールアドレス</label><input type="email" id="email" autocomplete="email" inputmode="email" placeholder="you@example.com" ${inputStyle}>
-      ${pw ? `<label class="f" for="pass">パスワード</label><input type="password" id="pass" autocomplete="current-password" ${inputStyle}>` : ""}
-      <button class="btn block" style="margin-top:14px" data-act="login">${pw ? "ログイン" : "ログインリンクを送る"}</button>
-      <p class="small" id="loginErr" style="color:var(--err);min-height:1.5em;margin:8px 0 0"></p>
-      ${pw ? `<button class="btn ghost sm" data-act="forgot">パスワードを忘れた・初めて設定する</button>` : ""}</div>`}
-    <p class="small muted">コアメンバー向けワークは、運営がコアメンバーとして登録したアカウントにだけ表示されます。</p></div>`;
-}
-act("loginMode", m => { LOGIN_MODE = m; renderLogin(); });
-const mailErr = error => error.status === 429 || /rate limit/i.test(error.message) ? "メール送信の上限に達しました。しばらく待つか、パスワードでログインしてください" : "送信できませんでした：" + error.message;
-act("login", async () => {
-  const email = ($("#email").value || "").trim(), err = $("#loginErr");
-  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ err.textContent = "メールアドレスの形式を確認してください"; return; }
-  const btn = document.querySelector('[data-act="login"]'), label = btn.textContent; btn.disabled = true; btn.textContent = "処理中…";
-  if(LOGIN_MODE === "password"){
-    const { error } = await sb.auth.signInWithPassword({ email, password: $("#pass").value });
-    if(error){ btn.disabled = false; btn.textContent = label; err.textContent = /invalid/i.test(error.message) ? "メールアドレスまたはパスワードが違います" : "ログインできませんでした：" + error.message; return; }
-    return boot();
-  }
-  const { error } = await sb.auth.signInWithOtp({ email, options: { emailRedirectTo: location.origin + location.pathname, shouldCreateUser: CFG.allowSignup !== false } });
-  if(error){ btn.disabled = false; btn.textContent = label; err.textContent = mailErr(error); return; }
-  renderLogin(email);
-});
-act("forgot", async () => {
-  const email = ($("#email").value || "").trim(), err = $("#loginErr");
-  if(!email){ err.textContent = "先にメールアドレスを入力してください"; return; }
-  const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname });
-  if(error){ err.textContent = mailErr(error); return; }
-  renderLogin(email);
-});
-act("relogin", () => renderLogin());
-act("reload", () => location.reload());
-act("logout", async () => {
-  if(DIRTY.size && !confirm("未保存の変更があります。ログアウトすると破棄されます。よろしいですか？")) return;
-  try{ localStorage.removeItem(cacheKey()); }catch(e){}
-  await sb.auth.signOut(); location.reload();
-});
-let NEED_PW = false;
-if(sb) sb.auth.onAuthStateChange((ev) => { if(ev === "PASSWORD_RECOVERY"){ NEED_PW = true; UI.tab = "me"; if(USER) render(); } if(ev === "SIGNED_IN" && !USER) boot(); if(ev === "SIGNED_OUT" && USER) location.reload(); });
+$("#save").addEventListener("click", () => { if($("#save").classList.contains("error")) save(true); });
+window.addEventListener("beforeunload", e => { if(DIRTY){ flush(); if(DIRTY){ e.preventDefault(); e.returnValue = ""; } } });
 
 /* ============ 計算 ============ */
 const stageDone = id => !!S.all.approved[id];
 const doneCount = () => STAGES.filter(s => stageDone(s.id)).length;
 const nextStage = () => STAGES.find(s => !stageDone(s.id));
-function coreDay(){ if(!S.core.start) return 0; const d = Math.floor((new Date(today()) - new Date(S.core.start)) / 864e5) + 1; return Math.max(1, d); }
-function corePhase(){ const d = coreDay(); return d <= 30 ? 0 : d <= 60 ? 1 : 2; }
-function kpiCalc(k){ const b = +k.base || 0, t = parseFloat(k.target), c = +k.cur || 0;
-  if(!isFinite(t) || t === b) return {rate:null, gap:null};
-  return {rate: Math.max(0, Math.min(999, Math.round(((c - b) / (t - b)) * 100))), gap: +(t - c).toFixed(2)}; }
-function paceText(k){ const c = kpiCalc(k); if(c.gap == null || !S.core.start) return "—"; if(c.gap <= 0) return "達成";
-  return String(+(c.gap / Math.max(1, 90 - coreDay() + 1)).toFixed(2)); }
-function kpiCells(k){ const c = kpiCalc(k);
-  return `<div><b>${c.gap == null ? "—" : esc(c.gap)}</b><span>目標までの差</span></div><div><b>${c.rate == null ? "—" : c.rate + "%"}</b><span>進捗率</span></div><div><b>${paceText(k)}</b><span>残り1日あたり</span></div>`; }
-function countLine(t){ const n = (t || "").replace(/\s/g, "").length; return `${n}字 ・ 話すと約${Math.round(n/5)}秒（目安：1秒あたり5字）`; }
 
 /* ============ ルーティング・描画 ============ */
 document.addEventListener("click", e => { const el = e.target.closest("[data-act]"); if(!el || el.disabled) return; e.preventDefault(); const f = ACT[el.dataset.act]; if(f) f(el.dataset.arg, el); });
-document.addEventListener("keydown", e => { if(e.key === "Enter" && (e.target.id === "email" || e.target.id === "pass")) ACT.login(); });
 function go(tab, view = null){ UI.tab = tab; UI.view = view; saveUI(); render(); window.scrollTo({top:0}); $("#app").focus({preventScroll:true}); }
 document.querySelectorAll("nav.bottom button").forEach(b => b.onclick = () => go(b.dataset.tab));
-document.querySelectorAll(".course button").forEach(b => b.onclick = () => { if(b.dataset.course === "core" && !isCore()) return; UI.course = b.dataset.course; AIS.prompt = null; AIS.result = ""; go(UI.tab); });
 
 function render(){
-  if(UI.course === "core" && !isCore()) UI.course = "all";
-  document.querySelectorAll(".course button").forEach(b => b.setAttribute("aria-selected", b.dataset.course === UI.course));
+  if(!EXT.views) UI.course = "all";
+  if(EXT.beforeRender) EXT.beforeRender();
   document.querySelectorAll("nav.bottom button").forEach(b => { if(b.dataset.tab === UI.tab) b.setAttribute("aria-current","page"); else b.removeAttribute("aria-current"); });
-  const core = UI.course === "core";
-  const h = ({home: core ? homeCore : homeAll, journey: core ? journeyCore : journeyAll, ai: viewAI, book: viewBook, me: viewMe}[UI.tab] || homeAll)();
-  $("#app").innerHTML = `<div class="view">${!ONLINE && UI.tab === "home" ? `<p class="mode">ローカル試用モード：記録はこの端末のみに保存されます（ログイン未設定）。</p>` : ""}${h}</div>`;
+  const views = Object.assign({home:homeAll, journey:journeyAll, ai:viewAI, book:viewBook, me:viewMe}, EXT.views ? EXT.views() : {});
+  const banners = (LOAD_PROBLEM ? `<p class="banner err">${esc(LOAD_PROBLEM)}</p>` : "") +
+    (!STORAGE_OK ? `<p class="banner err">この端末では記録を保存できない状態です（プライベートモード・容量不足など）。入力は画面を閉じるまで残ります。設定からバックアップを書き出してください。</p>` : "");
+  $("#app").innerHTML = `<div class="view">${banners}${(views[UI.tab] || homeAll)()}</div>`;
   bindInputs();
   if(UI.tab === "ai") bindAI();
-  if(UI.tab === "me" && ROLE === "admin") loadAdmin();
 }
 function bindInputs(){
   document.querySelectorAll("[data-bind]").forEach(el => {
-    const p = el.dataset.bind, prog = p.split(".")[0], v = getPath(p);
+    const p = el.dataset.bind, v = getPath(p);
     if(el.type === "checkbox") el.checked = !!v; else el.value = v ?? "";
-    el.addEventListener("input", () => { setPath(p, el.type === "checkbox" ? el.checked : el.value); save(prog); if(el.dataset.live) liveUpdate(el.dataset.live); });
+    el.addEventListener("input", () => { setPath(p, el.type === "checkbox" ? el.checked : el.value); save(); if(el.dataset.live) liveUpdate(el.dataset.live); });
     if(el.dataset.rerender != null) el.addEventListener("change", () => render());
   });
 }
 function liveUpdate(w){
-  if(w.startsWith("kpi:")){ const i = +w.slice(4), el = $("#kpi-" + i); if(el && S.core.kpis[i]) el.innerHTML = kpiCells(S.core.kpis[i]); return; }
+  if(EXT.live && EXT.live(w)) return;
   if(w === "count"){ const ta = $("#draft"), c = $("#cnt"); if(ta && c) c.textContent = countLine(ta.value); }
 }
-const prog = (n, m) => `<div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="${m}" aria-valuenow="${n}"><i style="width:${m ? Math.round(n/m*100) : 0}%"></i></div>`;
 act("tab", t => go(t));
 
 /* ============ 全メンバー ============ */
@@ -293,7 +187,7 @@ function homeAll(){
     <div class="row"><span class="badge gold">次のステージ</span><span class="spacer"></span><span class="small muted">${n} / 7 完了</span></div>
     ${nx ? `<h2 style="margin-top:10px">${esc(nx.en)}</h2><p class="muted">${esc(nx.ja)}</p>
       <button class="btn block" data-act="openStage" data-arg="${nx.id}">${S.all.step[nx.id] ? "続きから再開" : "このステージを始める"}</button>`
-    : `<h2 style="margin-top:10px">7ステージ完了</h2><p class="muted">ブックからMY LIFE STORYを出力できます。対話練習は何度でも。</p>
+    : `<h2 style="margin-top:10px">7ステージ完了</h2><p class="muted">ブックからMY LIFE STORYを印刷／PDF保存できます。対話練習は何度でも。</p>
       <button class="btn block" data-act="tab" data-arg="book">ブックを開く</button>`}
     <div style="margin-top:14px">${prog(n,7)}</div>
   </div>
@@ -304,11 +198,10 @@ function homeAll(){
   </div>
   <div class="card"><h3>対話練習シナリオ</h3><p class="small muted">日常の5つの場面で、伝え方・聴き方を練習します。</p>
     <button class="btn ghost block sm" data-act="openPractice" data-arg="p1">練習を始める</button></div>
-  ${isCore() ? `<div class="card"><h3>コアメンバー向けワーク</h3><p class="small muted">上部の「コアメンバー」タブから90日プログラムを開けます。</p><button class="btn ghost block sm" data-act="toCore">コアメンバーワークへ</button></div>` : ""}`;
+  ${EXT.homeCards ? EXT.homeCards() : ""}`;
 }
 act("openStage", id => go("journey", "stage:" + id));
 act("openPractice", id => go("journey", "practice:" + id));
-act("toCore", () => { if(!isCore()) return; UI.course = "core"; go("home"); });
 
 function journeyAll(){
   const v = UI.view || "";
@@ -341,7 +234,7 @@ function stageView(id){
         <button class="btn sm" data-act="stepNext" data-arg="${id}">${step === N-1 ? "成果物を確認" : "次へ"}</button></div>
       <p class="small muted" style="margin:10px 0 0">空欄でも次に進めます（スキップ）。入力は自動保存されます。</p></div>`;
   }
-  if(S.all.drafts[id] == null){ S.all.drafts[id] = s.compose(s.qs.map((_,i) => ans[i] || "")); save("all"); }
+  if(S.all.drafts[id] == null){ S.all.drafts[id] = s.compose(s.qs.map((_,i) => ans[i] || "")); save(); }
   const done = stageDone(id);
   return head + `<div class="card hero">
     <div class="row"><span class="badge gold">${esc(s.out)}</span><span class="spacer"></span>${done ? '<span class="badge ok">承認済み</span>' : '<span class="badge">下書き</span>'}</div>
@@ -354,14 +247,14 @@ function stageView(id){
       <button class="btn ghost sm" data-act="askAI" data-arg="stage:${id}">AIに相談</button><span class="spacer"></span>
       ${done ? `<button class="btn ghost sm" data-act="unapprove" data-arg="${id}">承認を取り消す</button>` : `<button class="btn sm" data-act="approve" data-arg="${id}">承認してブックへ</button>`}</div></div>
   ${done && STAGES[idx+1] ? `<button class="btn block" data-act="openStage" data-arg="${STAGES[idx+1].id}">次のステージ：${esc(STAGES[idx+1].en)}</button>` : ""}
-  <p class="small muted" style="margin-top:12px">※ 承認した内容が自動で他メンバーに公開・投稿されることはありません。</p>`;
+  <p class="small muted" style="margin-top:12px">※ 記録はこの端末内だけに保存され、誰かに送信・公開されることはありません。</p>`;
 }
-act("stepNext", id => { S.all.step[id] = (S.all.step[id] || 0) + 1; save("all"); render(); window.scrollTo({top:0}); });
-act("stepPrev", id => { const N = STAGES.find(s => s.id === id).qs.length; S.all.step[id] = Math.max(0, Math.min((S.all.step[id] || 0) - 1, N - 1)); save("all"); render(); });
-act("recompose", id => { if(!confirm("回答から下書きを作り直します。編集中の下書きは上書きされます。")) return; delete S.all.drafts[id]; save("all"); render(); });
-act("approve", id => { if(!(S.all.drafts[id] || "").trim()){ toast("下書きが空です"); return; } S.all.approved[id] = {at: new Date().toISOString()}; save("all", true); render();
+act("stepNext", id => { S.all.step[id] = (S.all.step[id] || 0) + 1; save(); render(); window.scrollTo({top:0}); });
+act("stepPrev", id => { const N = STAGES.find(s => s.id === id).qs.length; S.all.step[id] = Math.max(0, Math.min((S.all.step[id] || 0) - 1, N - 1)); save(); render(); });
+act("recompose", id => { if(!confirm("回答から下書きを作り直します。編集中の下書きは上書きされます。")) return; delete S.all.drafts[id]; save(); render(); });
+act("approve", id => { if(!(S.all.drafts[id] || "").trim()){ toast("下書きが空です"); return; } S.all.approved[id] = {at: new Date().toISOString()}; save(true); render();
   toast(doneCount() === 7 ? "7ステージ完了。おめでとうございます！" : "承認しました。ブックに収録されました"); });
-act("unapprove", id => { delete S.all.approved[id]; save("all"); render(); });
+act("unapprove", id => { delete S.all.approved[id]; save(); render(); });
 
 function practiceView(id){
   const p = SCENES.find(x => x.id === id) || SCENES[0], b = `all.practice.${p.id}`;
@@ -379,7 +272,230 @@ function practiceView(id){
   </div>`;
 }
 
-/* ============ コアメンバー（isCore() の時だけ描画される。データはRLSでも保護） ============ */
+/* ============ AI：依頼文をコピーして各自のAIに貼る（外部送信なし） ============ */
+const AIS = {mode:null, arg:"", prompt:null, result:""};
+const AI_MODES = {all: [["stage","ステージの回答・成果物を見てもらう"],["story","90秒ストーリーを磨く"],["practice","対話練習のフィードバック"],["plan","7ステージ全体と90日行動案"]]};
+const RULES = `次の4つの見出しで、日本語で簡潔に回答してください。
+【事実】記録から読み取れること（記録にない数値や出来事は作らない）
+【仮説】改善のための仮説（断定しない・2〜3個）
+【未確認】判断に必要だが記録にない点と、私に確認したい質問
+【次の行動】明日からできる具体的な一歩を1〜3個`;
+function buildPrompt(mode, arg){
+  if(EXT.prompt){ const r = EXT.prompt(mode, arg); if(r) return r; }
+  const a = S.all;
+  const st = id => { const s = STAGES.find(x => x.id === id); const ans = a.answers[id] || {};
+    return `■ ${s.en}（${s.ja}）\n` + s.qs.map((q,i) => `Q. ${q.q}\nA. ${ans[i] || "（未記入）"}`).join("\n") + (a.drafts[id] ? `\n［成果物］\n${a.drafts[id]}` : ""); };
+  if(mode === "story"){ const t = a.drafts.s2 || STAGES[1].compose(STAGES[1].qs.map((_,i) => (a.answers.s2 || {})[i] || ""));
+    return `以下は私の「90秒ストーリー」（自己紹介の物語）の下書きです。話すと約${Math.round(t.replace(/\s/g,"").length/5)}秒です。事実・感情・学び・未来のつながりが伝わるか、聞き手の心に残るかの観点で助言し、最後に90秒（約450字）以内の改善例を1つ示してください。\n${RULES}\n\n---\n${t}`; }
+  if(mode === "practice"){ const s = SCENES.find(x => x.id === arg) || SCENES[0], p = a.practice[s.id] || {};
+    return `「${s.t}」の場面で、伝え方・聴き方を練習しました。相手が受け取りやすい言い方になっているか助言し、言い換え例を1つ示してください。\n${RULES}\n\n---\n相手と場面：${p.who || "（未記入）"}\n一番伝えたいこと：${p.core || "（未記入）"}\n実際に話す言葉：${p.words || "（未記入）"}\n相手の反応：${p.reaction || "（未記入）"}\n次に改善すること：${p.next || "（未記入）"}`; }
+  if(mode === "plan") return `以下は7ステージのワーク記録です。理想・現在地・差・手段・環境・90日行動案のつながりに矛盾や抜けがないか確認し、90日行動案を実行しやすくする助言をください。\n${RULES}\n\n---\n` + STAGES.map(s => st(s.id)).join("\n\n");
+  return `私は自己成長プログラム「LIFE STAGE 2.0」で、人生の価値を相手に伝える練習をしています。以下のワークの回答について、伝わりやすさと深め方を助言してください。\n${RULES}\n\n---\n${st(arg || "s1")}`;
+}
+function viewAI(){
+  const pg = UI.course, modes = AI_MODES[pg] || AI_MODES.all;
+  if(!modes.some(m => m[0] === AIS.mode)){ AIS.mode = modes[0][0]; AIS.prompt = null; }
+  const needArg = AIS.mode === "stage" || AIS.mode === "practice";
+  if(AIS.mode === "stage" && !STAGES.some(s => s.id === AIS.arg)) AIS.arg = "s1";
+  if(AIS.mode === "practice" && !SCENES.some(s => s.id === AIS.arg)) AIS.arg = "p1";
+  if(AIS.prompt == null) AIS.prompt = buildPrompt(AIS.mode, AIS.arg);
+  const notes = S[pg].aiNotes || [];
+  return `<p class="eyebrow">AI Assist · ${esc(EXT.aiLabel ? EXT.aiLabel() : "伝え方コーチ")}</p>
+  <h1>${EXT.aiTitle ? EXT.aiTitle() : "伝わる言葉を、AIと磨く"}</h1>
+  <div class="card"><h3>1. 相談する内容</h3>
+    <select id="aiMode" aria-label="相談する内容">${modes.map(([k,l]) => `<option value="${k}" ${k === AIS.mode ? "selected" : ""}>${l}</option>`).join("")}</select>
+    ${needArg ? `<select id="aiArg" style="margin-top:8px" aria-label="対象">${(AIS.mode === "stage" ? STAGES.map(s => [s.id, s.en + "｜" + s.ja]) : SCENES.map(s => [s.id, s.t])).map(([k,l]) => `<option value="${k}" ${k === AIS.arg ? "selected" : ""}>${esc(l)}</option>`).join("")}</select>` : ""}
+  </div>
+  <div class="card"><h3>2. AIへの依頼文</h3>
+    <p class="small muted">あなたの記録から依頼文を作りました。必要なら編集し、コピーしてお使いのAI（ChatGPT・Claude・Gemini など）に貼り付けてください。このアプリから自動で送信されることはありません。</p>
+    <textarea id="aiPrompt" style="min-height:220px;font-size:14px"></textarea>
+    <div class="hint">送る前に、氏名・会社名・連絡先など個人が特定できる情報は消すか伏せ字にしてください。</div>
+    <div class="row wrapx"><button class="btn ghost sm" data-act="aiReset">記録から作り直す</button><span class="spacer"></span>
+      <button class="btn sm" data-act="aiCopy">依頼文をコピー</button></div>
+  </div>
+  <div class="card"><h3>3. AIの回答を記録</h3>
+    <p class="small muted">AIの回答を貼り付け、採用する部分だけ残して保存しましょう。採用するかはあなたが決めます。</p>
+    <textarea id="aiResult" style="min-height:160px" placeholder="ここにAIの回答を貼り付け"></textarea>
+    <div class="row" style="margin-top:10px"><span class="spacer"></span><button class="btn sm" data-act="aiSaveNote">メモとして保存</button></div>
+  </div>
+  ${notes.length ? `<p class="eyebrow" style="margin-top:20px">Saved Notes</p>` + notes.slice().reverse().map(n => `<div class="log"><div class="row"><b>${esc(n.at.slice(0,10))}</b><span class="badge gold">${esc(n.label)}</span><span class="spacer"></span><button class="btn ghost sm" data-act="aiDelNote" data-arg="${esc(n.id)}">削除</button></div><dl><dd style="grid-column:1/-1">${esc(n.text)}</dd></dl></div>`).join("") : ""}`;
+}
+function bindAI(){
+  const pr = $("#aiPrompt"), rs = $("#aiResult");
+  pr.value = AIS.prompt; rs.value = AIS.result;
+  pr.addEventListener("input", () => AIS.prompt = pr.value);
+  rs.addEventListener("input", () => AIS.result = rs.value);
+  $("#aiMode").addEventListener("change", e => { AIS.mode = e.target.value; AIS.prompt = null; render(); });
+  const ag = $("#aiArg"); if(ag) ag.addEventListener("change", e => { AIS.arg = e.target.value; AIS.prompt = null; render(); });
+}
+act("askAI", arg => { const [m, a] = arg.split(":"); UI.course = "all"; AIS.mode = m; AIS.arg = a; AIS.prompt = null; AIS.result = ""; go("ai"); });
+act("aiReset", () => { AIS.prompt = null; render(); });
+act("aiCopy", async () => {
+  const t = $("#aiPrompt").value;
+  try{ await navigator.clipboard.writeText(t); toast("コピーしました。お使いのAIに貼り付けてください"); }
+  catch(e){ const ta = $("#aiPrompt"); ta.focus(); ta.select(); const ok = document.execCommand && document.execCommand("copy"); toast(ok ? "コピーしました" : "選択状態にしました。長押しでコピーしてください"); }
+});
+act("aiSaveNote", () => {
+  const t = ($("#aiResult").value || "").trim(); if(!t){ toast("回答を貼り付けてください"); return; }
+  const pg = UI.course, label = ((AI_MODES[pg] || AI_MODES.all).find(m => m[0] === AIS.mode) || ["",""])[1];
+  (S[pg].aiNotes = S[pg].aiNotes || []).push({id:uid(), at:new Date().toISOString(), label, text:t});
+  AIS.result = ""; save(true); render(); toast("保存しました");
+});
+act("aiDelNote", id => { if(!confirm("このメモを削除しますか？")) return; const pg = UI.course; S[pg].aiNotes = S[pg].aiNotes.filter(n => n.id !== id); save(); render(); });
+
+/* ============ ブック ============ */
+function viewBook(){
+  if(EXT.book){ const r = EXT.book(); if(r) return r; }
+  const name = S.profile.name || "あなた", ap = STAGES.filter(s => stageDone(s.id));
+  return `<p class="eyebrow">Book · My Life Story</p><h1>${esc(name)}の MY LIFE STORY</h1>
+  <p class="muted small">承認したステージの成果物が、ここに一冊として積み上がります。</p>${prog(ap.length,7)}
+  <div class="row noprint" style="margin-top:12px"><span class="small muted">${ap.length} / 7 章</span><span class="spacer"></span><button class="btn sm" data-act="print" ${ap.length ? "" : "disabled"}>印刷／PDF保存</button></div>
+  ${ap.length ? ap.map(s => `<div class="book-page"><p class="eyebrow">Chapter ${STAGES.indexOf(s)+1} · ${esc(s.en)}</p><h2>${esc(s.out)}</h2><p>${esc(S.all.drafts[s.id])}</p></div>`).join("")
+    : `<div class="card empty">まだ章がありません。<br>ジャーニーでステージを進め、成果物を承認してください。<br><br><button class="btn sm" data-act="tab" data-arg="journey">ジャーニーへ</button></div>`}
+  ${ap.length === 7 ? `<div class="card hero"><p class="eyebrow">Final</p><h2>7つの章がそろいました。</h2><p class="muted">あなたの物語は、伝えた相手の中でも続いていきます。発表や共有は任意です。</p></div>` : ""}`;
+}
+act("print", () => window.print());
+
+/* ============ 設定：バックアップ・復元・削除 ============ */
+function viewMe(){
+  return `<p class="eyebrow">Settings</p><h1>設定</h1>
+  <div class="card"><label class="f" style="margin-top:0" for="nm">表示名（任意・この端末だけ）</label><input type="text" id="nm" data-bind="profile.name" placeholder="例：はなこ"></div>
+  <div class="card"><h3>記録の保存について</h3>
+    <p class="small muted">${NOTICE}</p>
+    <p class="small muted">ログインはありません。別の端末とは自動で同期されません。同じ端末・同じブラウザを使う人とは記録が共有されます。</p>
+    <div class="row wrapx" style="margin-top:8px">
+      <button class="btn sm" data-act="export">バックアップを書き出す</button>
+      <label class="btn ghost sm" style="cursor:pointer">バックアップから復元<input type="file" accept="application/json,.json" id="imp" hidden></label>
+    </div></div>
+  <div class="card"><h3>このアプリの記録を削除</h3>
+    <p class="small muted">この端末に保存された${esc(APP_LABEL)}の記録だけを削除します。元に戻せないため、先にバックアップをおすすめします。</p>
+    <button class="btn ghost sm" style="color:var(--err);border-color:rgba(229,140,140,.4)" data-act="wipe">記録を削除する</button></div>
+  <div class="card"><button class="btn ghost sm" data-act="replayIntro">オープニングを再生</button></div>
+  <p class="small muted">${esc(APP_LABEL)} ・ build ${esc(BUILD)}</p>`;
+}
+const APP_LABEL = VARIANT === "integrated" ? "LIFE STAGE 2.0 統合版" : "LIFE STAGE 2.0 全メンバー版";
+act("export", () => {
+  flush();
+  const data = {profile:S.profile, all:S.all}; if(EXT.toDoc) EXT.toDoc(data);
+  const doc = {app:"LIFE STAGE 2.0", schemaVersion:SCHEMA, appVariant:VARIANT, exportedAt:new Date().toISOString(),
+    workIds:{stages:STAGES.map(s => s.id), scenes:SCENES.map(s => s.id), ...(EXT.workIds ? EXT.workIds() : {})}, data};
+  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([JSON.stringify(doc,null,2)], {type:"application/json"}));
+  a.download = `lifestage2-${VARIANT}-${today()}.json`; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  toast("バックアップを書き出しました");
+});
+function countAll(a){ return {stages: STAGES.filter(s => a.approved[s.id]).length, answered: Object.values(a.answers).reduce((n,o) => n + Object.values(o).filter(t => t.trim()).length, 0), practice: Object.keys(a.practice).length, notes: a.aiNotes.length}; }
+const countText = c => `承認済みステージ ${c.stages}件・回答 ${c.answered}件・対話練習 ${c.practice}件・AIメモ ${c.notes}件`;
+function parseBackup(text){
+  let d; try{ d = JSON.parse(text); }catch(e){ throw new Error("JSON形式ではありません"); }
+  if(!isObj(d)) throw new Error("バックアップの形式ではありません");
+  let src, from;
+  if(d.schemaVersion != null){
+    if(typeof d.schemaVersion !== "number" || d.schemaVersion > SCHEMA) throw new Error("このアプリより新しい版のバックアップのため読み込めません");
+    if(d.schemaVersion < 1 || !isObj(d.data)) throw new Error("バックアップの形式ではありません");
+    src = d.data; from = d.appVariant === "integrated" ? "統合版" : d.appVariant === "members" ? "全メンバー版" : "不明なアプリ";
+  }else if((d.v === 2 || d.v === 1) && isObj(d.all)){ src = d; from = "旧版（ログイン版）"; }
+  else throw new Error("LIFE STAGE 2.0 のバックアップではありません");
+  const all = sanitizeAll(src.all); if(!all) throw new Error("全メンバー向けの記録が見つかりません");
+  const res = {from, all, name: str(isObj(src.profile) ? src.profile.name : ""), extra:null, excluded:false};
+  if(src.core != null){ if(EXT.parse) res.extra = EXT.parse(src.core); else res.excluded = true; }
+  return res;
+}
+function dialog(html){
+  const d = document.createElement("div"); d.className = "dlg"; d.setAttribute("role","dialog"); d.setAttribute("aria-modal","true");
+  d.innerHTML = `<div class="card">${html}</div>`; document.body.appendChild(d); (d.querySelector("button") || d).focus(); return d;
+}
+let PENDING = null;
+document.addEventListener("change", e => {
+  if(e.target.id !== "imp") return; const f = e.target.files[0]; e.target.value = ""; if(!f) return;
+  if(f.size > MAX_IMPORT){ toast("ファイルが大きすぎます（5MBまで）"); return; }
+  f.text().then(t => {
+    const r = parseBackup(t); PENDING = r;
+    const cur = countAll(S.all), inc = countAll(r.all);
+    dialog(`<h2>バックアップから復元</h2>
+      <p class="small muted">読み込むファイル：${esc(r.from)}${r.name ? "（" + esc(r.name) + "）" : ""}</p>
+      <div class="log"><dl><dt>取り込む内容</dt><dd>${countText(inc)}</dd><dt>現在の記録</dt><dd>${countText(cur)}</dd>${EXT.previewRows ? EXT.previewRows(r) : ""}</dl></div>
+      <p class="small">全メンバー向けの現在の記録は、読み込む内容で<b>置き換え</b>られます。${EXT.previewNote ? EXT.previewNote(r) : ""}</p>
+      ${r.excluded ? `<p class="small" style="color:var(--warn)">このファイルに含まれるコア記録は、このアプリでは使わないため取り込みません。</p>` : ""}
+      <div class="row" style="margin-top:12px"><button class="btn ghost sm" data-act="impCancel">キャンセル</button><span class="spacer"></span><button class="btn sm" data-act="impOk">置き換えて復元</button></div>`);
+  }).catch(err => toast("読み込めません：" + err.message));
+});
+act("impCancel", () => { PENDING = null; document.querySelector(".dlg")?.remove(); });
+act("impOk", () => {
+  const r = PENDING; if(!r) return; PENDING = null; document.querySelector(".dlg")?.remove();
+  S.all = r.all; if(r.name) S.profile.name = r.name; if(EXT.apply) EXT.apply(r);
+  AIS.prompt = null; save(true); go("home");
+  toast(r.excluded ? "復元しました（コア記録は除外しました）" : "復元しました");
+});
+act("wipe", () => {
+  if(!confirm(`この端末の${APP_LABEL}の記録をすべて削除します。元に戻せません。よろしいですか？`)) return;
+  try{ localStorage.removeItem(STORE_KEY); localStorage.removeItem(UI_KEY); }catch(e){}
+  S = blankState(); UI = {course:"all", tab:"home", view:null, seenIntro:true}; DIRTY = false; saveUI(); render(); setSave("ok"); toast("削除しました");
+});
+act("replayIntro", () => showIntro());
+
+/* ============ オープニング ============ */
+function showIntro(){
+  const d = document.createElement("div"); d.className = "intro"; d.setAttribute("role","dialog"); d.setAttribute("aria-label","オープニング");
+  d.innerHTML = `<div class="glow"></div><button class="skip">スキップ</button><div class="in">
+    <div class="logo">LIFE STAGE</div><p class="eyebrow" style="margin-bottom:22px">Stage 2.0 · Express &amp; Connect</p>
+    <h1 style="font-size:22px">あなたの人生には、<br>誰かに伝える価値がある。</h1>
+    <p class="muted">伝える。聴く。関係を育てる。<br>30日・7つのステージへ。</p>
+    <button class="btn" style="margin-top:18px;min-width:200px">はじめる</button>
+    <p class="small muted" style="margin-top:18px">${NOTICE}</p></div>`;
+  const close = () => { d.remove(); UI.seenIntro = true; saveUI(); $("#app").focus({preventScroll:true}); };
+  d.querySelector(".skip").onclick = close; d.querySelector(".in .btn").onclick = close;
+  document.body.appendChild(d); d.querySelector(".in .btn").focus();
+}
+
+/* ============ コアメンバー（統合版のみ。全メンバー版の配信物には含まれない） ============ */
+const PHASES = [
+ {id:"ph1",d:"DAY 1–30",t:"現状診断・90日目標・個人KPI",items:["現状の数字を記録する","90日目標を1つ決める","目標につながる個人KPIを設定する"]},
+ {id:"ph2",d:"DAY 31–60",t:"課題仮説・演習・改善",items:["KPIが伸びない原因の仮説を立てる","ロープレ・現場で試す","結果とメンター修正を記録する"]},
+ {id:"ph3",d:"DAY 61–90",t:"再現性・模擬指導",items:["成果が出た条件を言語化する","他者に教えられる手順にまとめる","模擬指導を行い振り返る"]},
+];
+const blankCore = () => ({start:"",goal:"",kpis:[],logs:[],reviews:{},checks:{},aiNotes:[]});
+function sanitizeCore(c){
+  if(!isObj(c)) return null;
+  const o = blankCore(), ph = new Set(PHASES.map(p => p.id));
+  o.start = /^\d{4}-\d{2}-\d{2}$/.test(str(c.start)) ? c.start : ""; o.goal = str(c.goal);
+  if(Array.isArray(c.kpis)) o.kpis = c.kpis.filter(isObj).map(k => ({id: str(k.id) || uid(), name: str(k.name), unit: str(k.unit), base: str(k.base), target: str(k.target), cur: str(k.cur)}));
+  if(Array.isArray(c.logs)) o.logs = c.logs.filter(isObj).map(l => ({id: str(l.id) || uid(), date: str(l.date), kpi: str(l.kpi), hyp: str(l.hyp), act: str(l.act), res: str(l.res), mt: ["同意","一部修正","異議"].includes(l.mt) ? l.mt : "", men: str(l.men), next: str(l.next)}));
+  for(const [id, r] of Object.entries(isObj(c.reviews) ? c.reviews : {})) if(ph.has(id) && isObj(r)){ o.reviews[id] = {}; for(const k of ["good","cond","change","teach"]) if(r[k] != null) o.reviews[id][k] = str(r[k]); }
+  for(const [id, r] of Object.entries(isObj(c.checks) ? c.checks : {})) if(ph.has(id) && isObj(r)){ o.checks[id] = {}; for(const [i, v] of Object.entries(r)) if(/^\d+$/.test(i)) o.checks[id][i] = !!v; }
+  if(Array.isArray(c.aiNotes)) o.aiNotes = c.aiNotes.filter(isObj).map(n => ({id: str(n.id) || uid(), at: str(n.at) || new Date().toISOString(), label: str(n.label), text: str(n.text)})).filter(n => n.text);
+  return o;
+}
+function coreDay(){ if(!S.core.start) return 0; const d = Math.floor((new Date(today()) - new Date(S.core.start)) / 864e5) + 1; return Math.max(1, d); }
+function corePhase(){ const d = coreDay(); return d <= 30 ? 0 : d <= 60 ? 1 : 2; }
+function kpiCalc(k){ const b = +k.base || 0, t = parseFloat(k.target), c = +k.cur || 0;
+  if(!isFinite(t) || t === b) return {rate:null, gap:null};
+  return {rate: Math.max(0, Math.min(999, Math.round(((c - b) / (t - b)) * 100))), gap: +(t - c).toFixed(2)}; }
+function paceText(k){ const c = kpiCalc(k); if(c.gap == null || !S.core.start) return "—"; if(c.gap <= 0) return "達成";
+  return String(+(c.gap / Math.max(1, 90 - coreDay() + 1)).toFixed(2)); }
+function kpiCells(k){ const c = kpiCalc(k);
+  return `<div><b>${c.gap == null ? "—" : esc(c.gap)}</b><span>目標までの差</span></div><div><b>${c.rate == null ? "—" : c.rate + "%"}</b><span>進捗率</span></div><div><b>${paceText(k)}</b><span>残り1日あたり</span></div>`; }
+
+EXT.blank = s => { s.core = blankCore(); s.core.start = today(); };
+EXT.load = (s, d) => { const c = sanitizeCore(d.core); if(c){ s.core = c; if(!s.core.start) s.core.start = today(); } };
+EXT.toDoc = doc => { doc.core = S.core; };
+EXT.workIds = () => ({phases: PHASES.map(p => p.id)});
+EXT.parse = raw => sanitizeCore(raw);
+const coreCount = c => `90日目標 ${c.goal ? "あり" : "なし"}・KPI ${c.kpis.length}件・実践ログ ${c.logs.length}件`;
+EXT.previewRows = r => `<dt>コア（取り込む）</dt><dd>${r.extra ? coreCount(r.extra) : "含まれていません"}</dd><dt>コア（現在）</dt><dd>${coreCount(S.core)}</dd>`;
+EXT.previewNote = r => r.extra ? "コアの記録も読み込む内容で置き換えられます。" : "コアの現在の記録はそのまま残ります。";
+EXT.apply = r => { if(r.extra){ S.core = r.extra; if(!S.core.start) S.core.start = today(); } };
+EXT.views = () => UI.course === "core" ? {home:homeCore, journey:journeyCore} : {};
+EXT.beforeRender = () => {
+  document.querySelectorAll(".course button").forEach(b => b.setAttribute("aria-selected", b.dataset.course === UI.course));
+};
+EXT.homeCards = () => `<div class="card"><h3>コアメンバー向けワーク</h3><p class="small muted">上部の「コアメンバー」タブから90日プログラムを開けます。</p><button class="btn ghost block sm" data-act="toCore">コアメンバーワークへ</button></div>`;
+EXT.live = w => { if(!w.startsWith("kpi:")) return false; const i = +w.slice(4), el = $("#kpi-" + i); if(el && S.core.kpis[i]) el.innerHTML = kpiCells(S.core.kpis[i]); return true; };
+EXT.aiLabel = () => UI.course === "core" ? "成果コーチ" : "伝え方コーチ";
+EXT.aiTitle = () => UI.course === "core" ? "記録から、次の一手を考える" : "伝わる言葉を、AIと磨く";
+AI_MODES.core = [["kpi","KPIの分析と次の一手"],["logs","実践ログの振り返り"],["review","フェーズレビューと再現性"]];
+document.querySelectorAll(".course button").forEach(b => b.onclick = () => { UI.course = b.dataset.course === "core" ? "core" : "all"; AIS.prompt = null; AIS.result = ""; go(UI.tab); });
+act("toCore", () => { UI.course = "core"; go("home"); });
+
 function homeCore(){
   const d = coreDay(), ph = PHASES[corePhase()], k = S.core.kpis[0];
   return `<p class="eyebrow">Core · 90 Days</p>
@@ -412,7 +528,7 @@ function coreGoal(){
   return `<div class="card"><label class="f" style="margin-top:0">90日目標</label>
     <textarea style="min-height:90px" data-bind="core.goal" placeholder="例：90日で新規面談を月20件に増やし、成約率を安定させる"></textarea></div>
   ${S.core.kpis.map((k,i) => `<div class="card">
-    <div class="row"><span class="badge gold">KPI ${i+1}</span><span class="spacer"></span><button class="btn ghost sm" data-act="delKpi" data-arg="${k.id}">削除</button></div>
+    <div class="row"><span class="badge gold">KPI ${i+1}</span><span class="spacer"></span><button class="btn ghost sm" data-act="delKpi" data-arg="${esc(k.id)}">削除</button></div>
     <label class="f">指標名</label><input type="text" data-bind="core.kpis.${i}.name" data-live="kpi:${i}" placeholder="例：新規面談数（月）">
     <div class="grid two"><div><label class="f">単位</label><input type="text" data-bind="core.kpis.${i}.unit" placeholder="件"></div>
     <div><label class="f">開始時の値</label><input type="number" inputmode="decimal" data-bind="core.kpis.${i}.base" data-live="kpi:${i}"></div>
@@ -422,8 +538,8 @@ function coreGoal(){
     <p class="small muted" style="margin:8px 0 0">差・進捗率は入力値からプログラムで計算します（AIは数値を作りません）。</p></div>`).join("")}
   <button class="btn ghost block" data-act="addKpi">＋ KPIを追加</button>`;
 }
-act("addKpi", () => { S.core.kpis.push({id:uid(),name:"",unit:"",base:"",target:"",cur:""}); save("core"); render(); });
-act("delKpi", id => { if(!confirm("このKPIを削除しますか？")) return; S.core.kpis = S.core.kpis.filter(k => k.id !== id); save("core"); render(); });
+act("addKpi", () => { S.core.kpis.push({id:uid(),name:"",unit:"",base:"",target:"",cur:""}); save(); render(); });
+act("delKpi", id => { if(!confirm("このKPIを削除しますか？")) return; S.core.kpis = S.core.kpis.filter(k => k.id !== id); save(); render(); });
 function coreLog(){
   const opts = S.core.kpis.map(k => `<option value="${esc(k.id)}">${esc(k.name || "(名称未設定)")}</option>`).join("");
   return `<div class="card"><h2>新しい実践を記録</h2><p class="small muted">KPI → 原因仮説 → 演習・実践 → 結果 → メンター修正 → 次の行動</p>
@@ -432,21 +548,21 @@ function coreLog(){
     <label class="f">原因の仮説</label><textarea style="min-height:80px" id="lg-hyp"></textarea>
     <label class="f">演習・現場での実践</label><textarea style="min-height:80px" id="lg-act"></textarea>
     <label class="f">結果（事実・数字）</label><textarea style="min-height:80px" id="lg-res"></textarea>
-    <label class="f">メンターの見解</label>
+    <label class="f">メンターの見解（面談メモ）</label>
     <div class="seg" id="lg-mt">${["同意","一部修正","異議"].map(x => `<button type="button" aria-pressed="false" data-act="mt" data-arg="${x}">${x}</button>`).join("")}</div>
     <textarea style="min-height:70px;margin-top:8px" id="lg-men" placeholder="理由・根拠（面談後に記入）"></textarea>
     <label class="f">次の行動</label><input type="text" id="lg-next">
     <button class="btn block" style="margin-top:14px" data-act="addLog">記録する</button></div>
   ${S.core.logs.length ? S.core.logs.slice().reverse().map(l => { const k = S.core.kpis.find(x => x.id === l.kpi); return `<div class="log">
-    <div class="row"><b>${esc(l.date)}</b>${k ? `<span class="badge gold">${esc(k.name)}</span>` : ""}${l.mt ? `<span class="badge">${esc(l.mt)}</span>` : ""}<span class="spacer"></span><button class="btn ghost sm" data-act="delLog" data-arg="${l.id}">削除</button></div>
+    <div class="row"><b>${esc(l.date)}</b>${k ? `<span class="badge gold">${esc(k.name)}</span>` : ""}${l.mt ? `<span class="badge">${esc(l.mt)}</span>` : ""}<span class="spacer"></span><button class="btn ghost sm" data-act="delLog" data-arg="${esc(l.id)}">削除</button></div>
     <dl>${[["仮説",l.hyp],["実践",l.act],["結果",l.res],["メンター",l.men],["次の行動",l.next]].filter(x => x[1]).map(([a,b]) => `<dt>${a}</dt><dd>${esc(b)}</dd>`).join("")}</dl></div>`; }).join("") : '<p class="empty">まだ記録がありません。</p>'}`;
 }
 act("mt", (v, el) => { const on = el.getAttribute("aria-pressed") !== "true"; document.querySelectorAll("#lg-mt button").forEach(b => b.setAttribute("aria-pressed", b === el && on)); });
 act("addLog", () => { const g = id => ($("#" + id).value || "").trim(), mt = document.querySelector('#lg-mt [aria-pressed="true"]');
   const l = {id:uid(), date:g("lg-date") || today(), kpi:g("lg-kpi"), hyp:g("lg-hyp"), act:g("lg-act"), res:g("lg-res"), mt: mt ? mt.dataset.arg : "", men:g("lg-men"), next:g("lg-next")};
   if(!l.hyp && !l.act && !l.res){ toast("仮説・実践・結果のいずれかを入力してください"); return; }
-  S.core.logs.push(l); save("core", true); render(); toast("記録しました"); });
-act("delLog", id => { if(!confirm("この記録を削除しますか？")) return; S.core.logs = S.core.logs.filter(l => l.id !== id); save("core"); render(); });
+  S.core.logs.push(l); save(true); render(); toast("記録しました"); });
+act("delLog", id => { if(!confirm("この記録を削除しますか？")) return; S.core.logs = S.core.logs.filter(l => l.id !== id); save(); render(); });
 function coreReview(){
   return PHASES.map(p => `<div class="card"><span class="badge gold">${esc(p.d)}</span><h2 style="margin-top:8px">${esc(p.t)} のレビュー</h2>
     <label class="f">できたこと・成果</label><textarea style="min-height:80px" data-bind="core.reviews.${p.id}.good"></textarea>
@@ -454,28 +570,9 @@ function coreReview(){
     <label class="f">次のフェーズで変えること</label><textarea style="min-height:80px" data-bind="core.reviews.${p.id}.change"></textarea>
     ${p.id === "ph3" ? `<label class="f">模擬指導の振り返り（教えた相手の反応・改善点）</label><textarea style="min-height:80px" data-bind="core.reviews.ph3.teach"></textarea>` : ""}</div>`).join("");
 }
-
-/* ============ AI：依頼文コピー（基本）＋システムAI（設定時） ============ */
-const AIS = {mode:null, arg:"", prompt:null, result:""};
-const AI_MODES = {
-  all: [["stage","ステージの回答・成果物を見てもらう"],["story","90秒ストーリーを磨く"],["practice","対話練習のフィードバック"],["plan","7ステージ全体と90日行動案"]],
-  core: [["kpi","KPIの分析と次の一手"],["logs","実践ログの振り返り"],["review","フェーズレビューと再現性"]],
-};
-const RULES = `次の4つの見出しで、日本語で簡潔に回答してください。
-【事実】記録から読み取れること（記録にない数値や出来事は作らない）
-【仮説】改善のための仮説（断定しない・2〜3個）
-【未確認】判断に必要だが記録にない点と、私に確認したい質問
-【次の行動】明日からできる具体的な一歩を1〜3個`;
-function buildPrompt(mode, arg){
-  const a = S.all, c = S.core;
-  const st = id => { const s = STAGES.find(x => x.id === id); const ans = a.answers[id] || {};
-    return `■ ${s.en}（${s.ja}）\n` + s.qs.map((q,i) => `Q. ${q.q}\nA. ${ans[i] || "（未記入）"}`).join("\n") + (a.drafts[id] ? `\n［成果物］\n${a.drafts[id]}` : ""); };
-  if(mode === "stage") return `私は自己成長プログラム「LIFE STAGE 2.0」で、人生の価値を相手に伝える練習をしています。以下のワークの回答について、伝わりやすさと深め方を助言してください。\n${RULES}\n\n---\n${st(arg || "s1")}`;
-  if(mode === "story"){ const t = a.drafts.s2 || STAGES[1].compose(STAGES[1].qs.map((_,i) => (a.answers.s2 || {})[i] || ""));
-    return `以下は私の「90秒ストーリー」（自己紹介の物語）の下書きです。話すと約${Math.round(t.replace(/\s/g,"").length/5)}秒です。事実・感情・学び・未来のつながりが伝わるか、聞き手の心に残るかの観点で助言し、最後に90秒（約450字）以内の改善例を1つ示してください。\n${RULES}\n\n---\n${t}`; }
-  if(mode === "practice"){ const s = SCENES.find(x => x.id === arg) || SCENES[0], p = a.practice[s.id] || {};
-    return `「${s.t}」の場面で、伝え方・聴き方を練習しました。相手が受け取りやすい言い方になっているか助言し、言い換え例を1つ示してください。\n${RULES}\n\n---\n相手と場面：${p.who || "（未記入）"}\n一番伝えたいこと：${p.core || "（未記入）"}\n実際に話す言葉：${p.words || "（未記入）"}\n相手の反応：${p.reaction || "（未記入）"}\n次に改善すること：${p.next || "（未記入）"}`; }
-  if(mode === "plan") return `以下は7ステージのワーク記録です。理想・現在地・差・手段・環境・90日行動案のつながりに矛盾や抜けがないか確認し、90日行動案を実行しやすくする助言をください。\n${RULES}\n\n---\n` + STAGES.map(s => st(s.id)).join("\n\n");
+EXT.prompt = (mode) => {
+  if(UI.course !== "core") return null;
+  const c = S.core;
   const kp = c.kpis.map(k => { const x = kpiCalc(k); return `・${k.name || "(名称未設定)"}：開始${k.base || 0}／現在${k.cur || 0}／目標${k.target || "未設定"}${k.unit || ""}${x.rate != null ? `（進捗率${x.rate}%、目標まで差${x.gap}）` : ""}`; }).join("\n") || "（KPI未登録）";
   const head = `私はLIFE STAGE 2.0コアメンバーとして90日プログラム（現在 DAY ${Math.min(coreDay(),90)}/90）に取り組んでいます。\n90日目標：${c.goal || "（未設定）"}\nKPI：\n${kp}`;
   if(mode === "kpi") return `${head}\n\nKPIの進み具合から、成果を出すための原因仮説と、次の1週間で試す行動を助言してください。数値の差や率は上に記載した値のみを使ってください。\n${RULES}`;
@@ -483,155 +580,27 @@ function buildPrompt(mode, arg){
     (c.logs.slice(-10).map(l => `[${l.date}] 仮説:${l.hyp || "-"} / 実践:${l.act || "-"} / 結果:${l.res || "-"} / メンター(${l.mt || "-"}):${l.men || "-"} / 次:${l.next || "-"}`).join("\n") || "（記録なし）");
   return `${head}\n\nフェーズごとのレビューです。成果を再現できる手順と、他の人に教える時のポイントにまとめる助言をください。\n${RULES}\n\n---\n` +
     PHASES.map(p => { const r = c.reviews[p.id] || {}; return `■ ${p.d} ${p.t}\n成果：${r.good || "-"}\n再現条件：${r.cond || "-"}\n次に変えること：${r.change || "-"}${r.teach ? `\n模擬指導：${r.teach}` : ""}`; }).join("\n\n");
-}
-function viewAI(){
-  const pg = UI.course, modes = AI_MODES[pg];
-  if(!modes.some(m => m[0] === AIS.mode)){ AIS.mode = modes[0][0]; AIS.prompt = null; }
-  const needArg = AIS.mode === "stage" || AIS.mode === "practice";
-  if(AIS.mode === "stage" && !STAGES.some(s => s.id === AIS.arg)) AIS.arg = "s1";
-  if(AIS.mode === "practice" && !SCENES.some(s => s.id === AIS.arg)) AIS.arg = "p1";
-  if(AIS.prompt == null) AIS.prompt = buildPrompt(AIS.mode, AIS.arg);
-  const notes = S[pg].aiNotes || [];
-  return `<p class="eyebrow">AI Assist · ${pg === "all" ? "伝え方コーチ" : "成果コーチ"}</p>
-  <h1>${pg === "all" ? "伝わる言葉を、AIと磨く" : "記録から、次の一手を考える"}</h1>
-  <div class="card"><h3>1. 相談する内容</h3>
-    <select id="aiMode" aria-label="相談する内容">${modes.map(([k,l]) => `<option value="${k}" ${k === AIS.mode ? "selected" : ""}>${l}</option>`).join("")}</select>
-    ${needArg ? `<select id="aiArg" style="margin-top:8px" aria-label="対象">${(AIS.mode === "stage" ? STAGES.map(s => [s.id, s.en + "｜" + s.ja]) : SCENES.map(s => [s.id, s.t])).map(([k,l]) => `<option value="${k}" ${k === AIS.arg ? "selected" : ""}>${esc(l)}</option>`).join("")}</select>` : ""}
-  </div>
-  <div class="card"><h3>2. AIへの依頼文</h3>
-    <p class="small muted">あなたの記録から依頼文を作りました。必要なら編集し、コピーしてお使いのAI（ChatGPT・Claude・Gemini など）に貼り付けてください。</p>
-    <textarea id="aiPrompt" style="min-height:220px;font-size:14px"></textarea>
-    <div class="hint">送る前に、氏名・会社名・連絡先など個人が特定できる情報は消すか伏せ字にしてください。</div>
-    <div class="row wrapx"><button class="btn ghost sm" data-act="aiReset">記録から作り直す</button><span class="spacer"></span>
-      <button class="btn sm" data-act="aiCopy">依頼文をコピー</button></div>
-    ${aiServer() ? `<hr class="s"><p class="small muted">または、アプリに接続されたシステムAIで分析できます（1日の回数に上限あり）。</p>
-      <button class="btn ghost block" data-act="aiRun">システムAIで分析する</button>` : ""}
-  </div>
-  <div class="card"><h3>3. AIの回答を記録</h3>
-    <p class="small muted">AIの回答を貼り付け、採用する部分だけ残して保存しましょう。採用するかはあなたが決めます。</p>
-    <textarea id="aiResult" style="min-height:160px" placeholder="ここにAIの回答を貼り付け"></textarea>
-    <div class="row" style="margin-top:10px"><span class="spacer"></span><button class="btn sm" data-act="aiSaveNote">メモとして保存</button></div>
-  </div>
-  ${notes.length ? `<p class="eyebrow" style="margin-top:20px">Saved Notes</p>` + notes.slice().reverse().map(n => `<div class="log"><div class="row"><b>${esc(n.at.slice(0,10))}</b><span class="badge gold">${esc(n.label)}</span><span class="spacer"></span><button class="btn ghost sm" data-act="aiDelNote" data-arg="${n.id}">削除</button></div><dl><dd style="grid-column:1/-1">${esc(n.text)}</dd></dl></div>`).join("") : ""}`;
-}
-function bindAI(){
-  const pr = $("#aiPrompt"), rs = $("#aiResult");
-  pr.value = AIS.prompt; rs.value = AIS.result;
-  pr.addEventListener("input", () => AIS.prompt = pr.value);
-  rs.addEventListener("input", () => AIS.result = rs.value);
-  $("#aiMode").addEventListener("change", e => { AIS.mode = e.target.value; AIS.prompt = null; render(); });
-  const ag = $("#aiArg"); if(ag) ag.addEventListener("change", e => { AIS.arg = e.target.value; AIS.prompt = null; render(); });
-}
-act("askAI", arg => { const [m, a] = arg.split(":"); UI.course = "all"; AIS.mode = m; AIS.arg = a; AIS.prompt = null; AIS.result = ""; go("ai"); });
-act("aiReset", () => { AIS.prompt = null; render(); });
-act("aiCopy", async () => {
-  const t = $("#aiPrompt").value;
-  try{ await navigator.clipboard.writeText(t); toast("コピーしました。お使いのAIに貼り付けてください"); }
-  catch(e){ const ta = $("#aiPrompt"); ta.focus(); ta.select(); const ok = document.execCommand && document.execCommand("copy"); toast(ok ? "コピーしました" : "選択状態にしました。長押しでコピーしてください"); }
-});
-act("aiRun", async (_, el) => {
-  el.disabled = true; el.textContent = "分析中…（10〜30秒）";
-  try{
-    const { data, error } = await sb.functions.invoke("ls-ai", { body: { program: UI.course, prompt: $("#aiPrompt").value } });
-    if(error){ let m = "AI分析に失敗しました"; try{ m = (await error.context.json()).error || m; }catch(e){} throw new Error(m); }
-    AIS.result = data.text || ""; render(); toast("分析しました。内容を確認して保存してください");
-  }catch(e){ el.disabled = false; el.textContent = "システムAIで分析する"; toast(e.message + "。依頼文をコピーして自端末のAIもご利用いただけます"); }
-});
-act("aiSaveNote", () => {
-  const t = ($("#aiResult").value || "").trim(); if(!t){ toast("回答を貼り付けてください"); return; }
-  const pg = UI.course, label = (AI_MODES[pg].find(m => m[0] === AIS.mode) || ["",""])[1];
-  (S[pg].aiNotes = S[pg].aiNotes || []).push({id:uid(), at:new Date().toISOString(), label, text:t});
-  AIS.result = ""; save(pg, true); render(); toast("保存しました");
-});
-act("aiDelNote", id => { if(!confirm("このメモを削除しますか？")) return; const pg = UI.course; S[pg].aiNotes = S[pg].aiNotes.filter(n => n.id !== id); save(pg); render(); });
-
-/* ============ ブック ============ */
-function viewBook(){
+};
+EXT.book = () => {
+  if(UI.course !== "core") return null;
   const name = S.profile.name || "あなた";
-  if(UI.course === "core"){
-    return `<p class="eyebrow">Book · Core Review</p><h1>90日の成長記録</h1>
-    <div class="row noprint"><span class="spacer"></span><button class="btn sm" data-act="print">PDFで保存・印刷</button></div>
-    <div class="book-page"><p class="eyebrow">90 Days Goal</p><h2>${esc(name)}の90日目標</h2><p>${esc(S.core.goal || "未設定")}</p>
-    ${S.core.kpis.map(k => { const c = kpiCalc(k); return `<p><b>${esc(k.name)}</b>：開始 ${esc(k.base || 0)} → 現在 ${esc(k.cur || 0)} / 目標 ${esc(k.target || "—")} ${esc(k.unit || "")}${c.rate != null ? `（進捗 ${c.rate}%）` : ""}</p>`; }).join("")}</div>
-    ${PHASES.map(p => { const r = S.core.reviews[p.id] || {}; if(!r.good && !r.cond && !r.change && !r.teach) return "";
-      return `<div class="book-page"><p class="eyebrow">${esc(p.d)}</p><h2>${esc(p.t)}</h2>${r.good ? `<p><b>成果</b>\n${esc(r.good)}</p>` : ""}${r.cond ? `<p><b>再現条件</b>\n${esc(r.cond)}</p>` : ""}${r.change ? `<p><b>次に変えること</b>\n${esc(r.change)}</p>` : ""}${r.teach ? `<p><b>模擬指導</b>\n${esc(r.teach)}</p>` : ""}</div>`; }).join("")}
-    <p class="small muted noprint">実践ログ ${S.core.logs.length} 件はジャーニー › 実践ログで確認できます。</p>`;
-  }
-  const ap = STAGES.filter(s => stageDone(s.id));
-  return `<p class="eyebrow">Book · My Life Story</p><h1>${esc(name)}の MY LIFE STORY</h1>
-  <p class="muted small">承認したステージの成果物が、ここに一冊として積み上がります。</p>${prog(ap.length,7)}
-  <div class="row noprint" style="margin-top:12px"><span class="small muted">${ap.length} / 7 章</span><span class="spacer"></span><button class="btn sm" data-act="print" ${ap.length ? "" : "disabled"}>PDFで保存・印刷</button></div>
-  ${ap.length ? ap.map(s => `<div class="book-page"><p class="eyebrow">Chapter ${STAGES.indexOf(s)+1} · ${esc(s.en)}</p><h2>${esc(s.out)}</h2><p>${esc(S.all.drafts[s.id])}</p></div>`).join("")
-    : `<div class="card empty">まだ章がありません。<br>ジャーニーでステージを進め、成果物を承認してください。<br><br><button class="btn sm" data-act="tab" data-arg="journey">ジャーニーへ</button></div>`}
-  ${ap.length === 7 ? `<div class="card hero"><p class="eyebrow">Final</p><h2>7つの章がそろいました。</h2><p class="muted">あなたの物語は、伝えた相手の中でも続いていきます。発表や共有は任意です。</p></div>` : ""}`;
-}
-act("print", () => window.print());
+  return `<p class="eyebrow">Book · Core Review</p><h1>90日の成長記録</h1>
+  <div class="row noprint"><span class="spacer"></span><button class="btn sm" data-act="print">印刷／PDF保存</button></div>
+  <div class="book-page"><p class="eyebrow">90 Days Goal</p><h2>${esc(name)}の90日目標</h2><p>${esc(S.core.goal || "未設定")}</p>
+  ${S.core.kpis.map(k => { const c = kpiCalc(k); return `<p><b>${esc(k.name)}</b>：開始 ${esc(k.base || 0)} → 現在 ${esc(k.cur || 0)} / 目標 ${esc(k.target || "—")} ${esc(k.unit || "")}${c.rate != null ? `（進捗 ${c.rate}%）` : ""}</p>`; }).join("")}</div>
+  ${PHASES.map(p => { const r = S.core.reviews[p.id] || {}; if(!r.good && !r.cond && !r.change && !r.teach) return "";
+    return `<div class="book-page"><p class="eyebrow">${esc(p.d)}</p><h2>${esc(p.t)}</h2>${r.good ? `<p><b>成果</b>\n${esc(r.good)}</p>` : ""}${r.cond ? `<p><b>再現条件</b>\n${esc(r.cond)}</p>` : ""}${r.change ? `<p><b>次に変えること</b>\n${esc(r.change)}</p>` : ""}${r.teach ? `<p><b>模擬指導</b>\n${esc(r.teach)}</p>` : ""}</div>`; }).join("")}
+  <p class="small muted noprint">実践ログ ${S.core.logs.length} 件はジャーニー › 実践ログで確認できます。メンターに見せる場合は、この画面を印刷／PDF保存して渡してください。</p>`;
+};
 
-/* ============ マイページ ============ */
-const ROLE_JA = {member:"全メンバー", core:"コアメンバー", admin:"管理者"};
-function viewMe(){
-  return `<p class="eyebrow">My Page</p><h1>マイページ</h1>
-  <div class="card"><label class="f" style="margin-top:0">表示名</label><input type="text" data-bind="profile.name" placeholder="例：山田 花子">
-    ${ONLINE ? `<p class="small muted" style="margin:10px 0 0">${esc(EMAIL)} ・ <span class="badge gold">${ROLE_JA[ROLE] || ROLE}</span></p>` : ""}</div>
-  ${ONLINE ? `<div class="card"><h3>アカウント</h3><p class="small muted">記録はアカウントに保存され、別の端末でも同じメールアドレスでログインすると続きから使えます。</p>
-    <button class="btn ghost sm" data-act="logout">ログアウト</button></div>
-    <div class="card" ${NEED_PW ? 'style="border-color:var(--gold)"' : ""}><h3>パスワード${NEED_PW ? "を設定してください" : "の設定・変更"}</h3>
-    <p class="small muted">設定すると、次回からメールを待たずにパスワードでログインできます（8文字以上）。</p>
-    <input type="password" id="newPass" autocomplete="new-password" placeholder="新しいパスワード">
-    <button class="btn sm" style="margin-top:8px" data-act="setPass">パスワードを保存</button></div>`
-  : `<div class="card"><h3>ローカル試用モード</h3><p class="small muted">ログインが未設定のため、記録はこの端末のブラウザ内にのみ保存されます。コアメンバー向けワークはログイン設定後に利用できます。</p></div>`}
-  ${ROLE === "admin" ? `<div class="card"><h3>管理：メンバーのロール</h3>
-    <p class="small muted">メンバーが一度ログインした後、メールアドレスでロールを変更できます。コアメンバーにするとコアタブが表示されます。</p>
-    <input type="email" id="adEmail" placeholder="member@example.com" style="margin-top:6px">
-    <div class="row" style="margin-top:8px"><select id="adRole"><option value="core">コアメンバー</option><option value="member">全メンバー</option><option value="admin">管理者</option></select>
-    <button class="btn sm" data-act="setRole">変更</button></div>
-    <div id="adminList" class="small" style="margin-top:12px"><p class="muted">読み込み中…</p></div></div>` : ""}
-  <div class="card"><h3>データ</h3>
-    <div class="row wrapx"><button class="btn ghost sm" data-act="export">記録を書き出し（JSON）</button>
-    ${ONLINE ? "" : `<label class="btn ghost sm" style="cursor:pointer">読み込み<input type="file" accept="application/json" id="imp" hidden></label>`}
-    <button class="btn ghost sm" data-act="replayIntro">オープニングを再生</button></div>
-    ${ONLINE ? `<p class="small muted" style="margin:10px 0 0">退会・データ削除は運営窓口へご依頼ください。</p>` : `<hr class="s"><button class="btn ghost sm" style="color:var(--err);border-color:rgba(229,140,140,.4)" data-act="wipe">この端末の全データを削除</button>`}</div>
-  <p class="small muted">LIFE STAGE 2.0 ワーク v1.0</p>`;
-}
-act("setPass", async () => {
-  const v = $("#newPass").value || ""; if(v.length < 8){ toast("8文字以上にしてください"); return; }
-  const { error } = await sb.auth.updateUser({ password: v });
-  if(error){ toast("保存できませんでした：" + error.message); return; }
-  NEED_PW = false; $("#newPass").value = ""; toast("パスワードを保存しました"); render();
-});
-async function loadAdmin(){
-  const box = $("#adminList"); if(!box) return;
-  const { data, error } = await sb.from("ls_profiles").select("email,display_name,role,created_at").order("created_at");
-  if(!$("#adminList")) return;
-  box.innerHTML = error ? `<p style="color:var(--err)">読み込めませんでした</p>` :
-    data.map(p => `<div class="row" style="border-top:1px solid var(--line);padding:8px 0"><span style="flex:1;min-width:0;overflow-wrap:anywhere">${esc(p.display_name || "—")}<br><span class="muted">${esc(p.email)}</span></span><span class="badge ${p.role === "member" ? "" : "gold"}">${ROLE_JA[p.role] || p.role}</span></div>`).join("");
-}
-act("setRole", async () => {
-  const email = ($("#adEmail").value || "").trim(), role = $("#adRole").value; if(!email) return;
-  const { error } = await sb.rpc("ls_set_role", { target_email: email, new_role: role });
-  if(error) toast(/not found/.test(error.message) ? "そのメールのユーザーが見つかりません（先に1度ログインが必要）" : "変更できませんでした");
-  else { toast(`${email} を${ROLE_JA[role]}にしました`); loadAdmin(); }
-});
-act("export", () => { const data = {v:2, exportedAt:new Date().toISOString(), profile:S.profile, all:S.all, core:isCore() ? S.core : undefined};
-  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([JSON.stringify(data,null,2)], {type:"application/json"})); a.download = `lifestage2-${today()}.json`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000); });
-act("wipe", () => { if(!confirm("この端末の全データを削除します。元に戻せません。よろしいですか？")) return; localStorage.removeItem(LKEY); localStorage.removeItem("lifestage2.v1"); S.all = blankAll(); S.profile = {name:""}; save(); go("home"); toast("削除しました"); });
-act("replayIntro", () => showIntro());
-document.addEventListener("change", e => { if(e.target.id !== "imp") return; const f = e.target.files[0]; if(!f) return;
-  f.text().then(t => { const d = JSON.parse(t); if(!d.all) throw 0; if(!confirm("現在のデータを読み込んだ内容で置き換えます。よろしいですか？")) return;
-    S.all = Object.assign(blankAll(), d.all); S.profile = Object.assign({name:""}, d.profile || {}); save("all", true); go("home"); toast("読み込みました"); }).catch(() => toast("読み込めないファイルです")); });
-
-/* ============ オープニング ============ */
-function showIntro(){
-  const d = document.createElement("div"); d.className = "intro"; d.setAttribute("role","dialog"); d.setAttribute("aria-label","オープニング");
-  d.innerHTML = `<div class="glow"></div><button class="skip">スキップ</button><div class="in">
-    <div class="logo">LIFE STAGE</div><p class="eyebrow" style="margin-bottom:22px">Stage 2.0 · Express &amp; Connect</p>
-    <h1 style="font-size:22px">あなたの人生には、<br>誰かに伝える価値がある。</h1>
-    <p class="muted">伝える。聴く。関係を育てる。<br>30日・7つのステージへ。</p>
-    <button class="btn" style="margin-top:18px;min-width:200px">はじめる</button></div>`;
-  const close = () => { d.remove(); UI.seenIntro = true; saveUI(); $("#app").focus(); };
-  d.querySelector(".skip").onclick = close; d.querySelector(".in .btn").onclick = close;
-  document.body.appendChild(d); d.querySelector(".in .btn").focus();
-}
-
-boot();
+/* ============ 起動 ============ */
+// 旧ログイン版のメールリンク等で付いた認証パラメータは処理せず、URLから取り除く
+if(/[?&#](code|token|token_hash|type|error|error_description|access_token|refresh_token)=/.test(location.search + location.hash)) history.replaceState(null, "", location.pathname);
+STORAGE_OK = probeStorage();
+S = loadState();
+UI = Object.assign({course:"all", tab:"home", view:null, seenIntro:false}, readUI());
+if(!["home","journey","ai","book","me"].includes(UI.tab)) UI.tab = "home";
+if(UI.course !== "all" && !EXT.views) UI.course = "all";
+render(); setSave(STORAGE_OK ? "ok" : "error");
+if(!UI.seenIntro) showIntro();
 if("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(() => {});

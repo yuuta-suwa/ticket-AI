@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#101A2E">
-<meta name="description" content="LIFE STAGE 2.0 ワーク（全メンバー向け＋コアメンバー向け）">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'">
-<meta name="referrer" content="no-referrer">
+<meta name="description" content="LIFE STAGE 2.0 ワーク — 全メンバー向け7ステージとコアメンバー向け90日プログラム">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://*.supabase.co wss://*.supabase.co; base-uri 'self'; form-action 'self'; object-src 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
 <title>LIFE STAGE 2.0</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
@@ -106,10 +106,6 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--gold)}
 .book-page h2{font-family:var(--serif);font-size:22px;letter-spacing:.04em}
 .book-page p{white-space:pre-wrap}
 .empty{text-align:center;padding:28px 12px;color:var(--muted)}
-.dlg{position:fixed;inset:0;z-index:60;background:rgba(5,9,18,.72);display:grid;place-items:center;padding:16px}
-.dlg .card{max-width:520px;width:100%;max-height:90vh;overflow:auto}
-.banner{font-size:13px;color:var(--muted);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin:0 0 12px;display:flex;gap:10px;align-items:flex-start}
-.banner.err{color:var(--err);border-color:rgba(229,140,140,.45)}
 .lock{display:grid;place-items:center;text-align:center;padding:24px 8px}
 .lock svg{width:44px;height:44px;stroke:var(--gold);fill:none;stroke-width:1.4;margin-bottom:8px}
 .toast{position:fixed;left:50%;bottom:calc(var(--nav) + 24px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--surface2);border:1px solid var(--line2);padding:10px 16px;border-radius:12px;font-size:14px;z-index:40;opacity:0;pointer-events:none;transition:opacity var(--t);max-width:calc(100% - 32px)}
@@ -148,24 +144,25 @@ hr.s{border:0;border-top:1px solid var(--line);margin:16px 0}
       <div class="brand">LIFE STAGE <b>2.0</b></div>
       <div class="save" id="save" role="status" aria-live="polite"><i></i><span>保存済み</span></div>
     </div>
-    <div class="course" id="courseBar" role="tablist" aria-label="コース切替">
+    <div class="course" id="courseBar" role="tablist" aria-label="コース切替" hidden>
       <button role="tab" data-course="all" aria-selected="true">全メンバー<small>EXPRESS &amp; CONNECT</small></button>
       <button role="tab" data-course="core" aria-selected="false">コアメンバー<small>CORE 90 DAYS</small></button>
     </div>
   </div>
 </header>
 <main class="wrap" id="app" tabindex="-1"><p class="empty">読み込み中…</p></main>
-<nav class="bottom" id="nav" aria-label="メインナビゲーション">
+<nav class="bottom" id="nav" aria-label="メインナビゲーション" hidden>
   <div class="wrap">
     <button data-tab="home"><svg viewBox="0 0 24 24"><path d="M4 11l8-7 8 7v9H4z"/><path d="M10 20v-6h4v6"/></svg>ホーム</button>
     <button data-tab="journey"><svg viewBox="0 0 24 24"><circle cx="6" cy="18" r="2"/><circle cx="18" cy="6" r="2"/><path d="M8 18h5a3 3 0 000-6h-2a3 3 0 010-6h5"/></svg>ジャーニー</button>
     <button data-tab="ai"><svg viewBox="0 0 24 24"><path d="M12 3l1.8 4.6L18 9.4l-4.2 1.8L12 16l-1.8-4.8L6 9.4l4.2-1.8z"/><path d="M18 15l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/></svg>AI</button>
     <button data-tab="book"><svg viewBox="0 0 24 24"><path d="M5 4h10a4 4 0 014 4v12H9a4 4 0 01-4-4z"/><path d="M5 16a4 4 0 014-4h10"/></svg>ブック</button>
-    <button data-tab="me"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0116 0"/></svg>設定</button>
+    <button data-tab="me"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0116 0"/></svg>マイページ</button>
   </div>
 </nav>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
-<noscript><p class="wrap">このアプリを使うには JavaScript を有効にしてください。</p></noscript>
+<script src="config.js"></script>
+<script src="vendor/supabase.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
