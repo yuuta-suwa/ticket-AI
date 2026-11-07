@@ -118,7 +118,7 @@ test('画像の偽装・形式違い・サイズ超過は拒否', async () => {
   const svg = new TextEncoder().encode('<svg onload=alert(1)>');
   assert.equal((await call('/api/images', 'a@x.com', { method: 'POST', headers: { 'content-type': 'image/png' }, body: svg })).status, 400);
   assert.equal((await call('/api/images', 'a@x.com', { method: 'POST', headers: { 'content-type': 'image/svg+xml' }, body: svg })).status, 400);
-  const big = new Uint8Array(1024 * 1024 + 1); big.set(PNG);
+  const big = new Uint8Array(5 * 1024 * 1024 + 1); big.set(PNG);
   assert.equal((await call('/api/images', 'a@x.com', { method: 'POST', headers: { 'content-type': 'image/png' }, body: big })).status, 400);
   assert.equal(bucket.keys().length, 0);
 });

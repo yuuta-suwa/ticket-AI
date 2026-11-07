@@ -62,7 +62,7 @@ button.ghost{background:transparent;color:var(--acc);border:1px solid var(--line
     </section>
     <section class="card">
       <h2>テスト画像（R2保存確認）</h2>
-      <p class="muted">PNG / JPEG / WebP、1MBまで。本人だけが閲覧できます。</p>
+      <p class="muted">PNG / JPEG / WebP、5MBまで。本人だけが閲覧できます。</p>
       <div class="row"><input id="img-file" type="file" accept="image/png,image/jpeg,image/webp"></div>
       <p id="img-err" class="err"></p>
       <div id="thumbs" class="thumbs"></div>
@@ -128,7 +128,7 @@ $('goal-form').addEventListener('submit',async(ev)=>{
 });
 $('img-file').addEventListener('change',async(ev)=>{
   const f=ev.target.files&&ev.target.files[0];$('img-err').textContent='';if(!f)return;
-  if(f.size>1048576){$('img-err').textContent='1MBまでの画像を選んでください。';return}
+  if(f.size>5242880){$('img-err').textContent='5MBまでの画像を選んでください。';return}
   try{await api('/api/images',{method:'POST',headers:{'content-type':f.type},body:f});await loadImages()}
   catch(e){$('img-err').textContent=msg(e)}finally{ev.target.value=''}
 });

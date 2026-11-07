@@ -10,7 +10,7 @@ export interface StoredFile {
   createdAt: string;
 }
 
-export const TEST_IMAGE_MAX_BYTES = 1024 * 1024;
+export const TEST_IMAGE_MAX_BYTES = 5 * 1024 * 1024; // 5MB（スマホ写真を想定）
 export const ALLOWED_IMAGE_TYPES = new Set(['image/png', 'image/jpeg', 'image/webp']);
 
 export function validateImage(contentType: string, size: number): void {

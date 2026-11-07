@@ -38,7 +38,7 @@ test('目標入力の検証', () => {
 
 test('画像の形式・サイズ・署名', () => {
   assert.throws(() => validateImage('image/svg+xml', 10), DomainError);
-  assert.throws(() => validateImage('image/png', 1024 * 1024 + 1), DomainError);
+  assert.throws(() => validateImage('image/png', 5 * 1024 * 1024 + 1), DomainError);
   assert.equal(sniffMatches('image/png', new Uint8Array([0x89, 0x50, 0x4e, 0x47])), true);
   assert.equal(sniffMatches('image/png', new TextEncoder().encode('<svg>')), false);
 });
