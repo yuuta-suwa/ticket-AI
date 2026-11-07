@@ -141,7 +141,7 @@ export class D1BackupStore implements BackupStore {
     const grants = await all<{ id: string; user_id: string; role: 'admin'; granted_at: string; granted_by: string; revoked_at: string | null }>('SELECT * FROM role_grants ORDER BY granted_at, id');
     const goals = await all<GoalRow>('SELECT * FROM life_goals ORDER BY updated_at, id');
     const files = await all<FileRow>('SELECT * FROM file_objects ORDER BY created_at, id');
-    const audits = await all<{ id: string; actor_user_id: string; action: string; target_type: string; target_id: string; before_json: string | null; after_json: string | null; reason: string | null; created_at: string }>('SELECT * FROM audit_logs ORDER BY created_at, id');
+    const audits = await all<{ id: string; actor_user_id: string; action: string; target_type: string; target_id: string; before_json: string | null; after_json: string | null; reason: string | null; created_at: string }>('SELECT * FROM audit_logs ORDER BY created_at, rowid');
     return {
       users: users.map((u) => ({ id: u.id, email: u.normalized_email, displayName: u.display_name, createdAt: u.created_at })),
       eligibility: elig.map((e) => ({ userId: e.user_id, status: e.status, changedAt: e.changed_at, changedBy: e.changed_by })),
