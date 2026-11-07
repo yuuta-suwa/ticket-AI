@@ -1,4 +1,4 @@
-import { action, api, card, chip, fmtDate, h, statusChip, toast } from '../dom.ts';
+import { action, api, card, chip, fmtDate, h, inlineConfirm, inlineForm, statusChip, toast } from '../dom.ts';
 
 const reload = () => window.dispatchEvent(new HashChangeEvent('hashchange'));
 const range = (label: string, init: number, help: string) => {
@@ -27,15 +27,16 @@ function item(m: any, stages: any[]) {
   const box = h('div');
   const msg = h('p');
   const acts = h('div', { class: 'row' });
+  const slot = h('div');
+  const send = async (act: string, note: string) => {
+    const r = await api(`/api/missions/${m.id}/action`, { method: 'POST', body: { action: act, note } });
+    toast(r.xp ? `記録しました +${r.xp} XP` : '記録しました');
+    reload();
+  };
   const doAction = (label: string, act: string, needNote: string | null, cls = 'sub') => {
     const b = h('button', { type: 'button', class: cls }, label);
-    action(b, msg, async () => {
-      let note = '';
-      if (needNote !== null) { note = window.prompt(needNote) ?? ''; if (!note.trim() && act !== 'complete_self') return '入力がないため中止しました'; }
-      const r = await api(`/api/missions/${m.id}/action`, { method: 'POST', body: { action: act, note } });
-      toast(r.xp ? `記録しました +${r.xp} XP` : '記録しました');
-      reload();
-    });
+    if (needNote === null) action(b, msg, () => send(act, ''));
+    else b.addEventListener('click', () => inlineForm(slot, { label: needNote, required: act !== 'complete_self', submitLabel: label, onSubmit: (t) => send(act, t) }));
     acts.append(b);
   };
   if (m.status === 'not_started') doAction('開始する', 'start', null, '');
@@ -60,7 +61,8 @@ function item(m: any, stages: any[]) {
   acts.append(logsBtn);
   if (m.status !== 'submitted') {
     const arch = h('button', { type: 'button', class: 'danger' }, '非表示');
-    action(arch, msg, async () => { if (!window.confirm('このミッションを非表示にしますか？（記録は残ります）')) return; await api(`/api/missions/${m.id}`, { method: 'DELETE' }); reload(); });
+    arch.addEventListener('click', () => inlineConfirm(slot, { text: 'このミッションを非表示にしますか？（記録は残ります）', okLabel: '非表示にする', danger: true,
+      onOk: async () => { await api(`/api/missions/${m.id}`, { method: 'DELETE' }); reload(); } }));
     acts.append(arch);
   }
   const stage = stages.find((s) => s.id === m.stageId);
@@ -70,7 +72,7 @@ function item(m: any, stages: any[]) {
       chip(m.verifyMode === 'reviewer' ? '確認が必要' : '自己確認', 'gray'), m.today ? chip('今日やる', 'gold') : null),
     m.status === 'returned' && m.returnReason ? h('p', { class: 'err' }, `差戻しの理由：${m.returnReason}`) : null,
     m.status === 'submitted' ? h('p', { class: 'muted small' }, '確認者の確認を待っています。') : null,
-    acts, msg, logs));
+    acts, slot, msg, logs));
   return card(box);
 }
 const LOG: Record<string, string> = { start: '開始', log: '実施記録', submit: '確認依頼', complete_self: '完了（自己確認）', restart: 'やり直し', verified: '確認済み', returned: '差戻し' };

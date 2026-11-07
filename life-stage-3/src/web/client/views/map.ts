@@ -1,4 +1,4 @@
-import { action, api, card, chip, h, statusChip, toast } from '../dom.ts';
+import { action, api, card, chip, h, inlineConfirm, inlineForm, statusChip, toast } from '../dom.ts';
 
 const NEXT: Record<string, { to: string; label: string }[]> = {
   locked: [{ to: 'active', label: '挑戦を始める' }], active: [{ to: 'achieved', label: '達成を記録' }, { to: 'hold', label: '保留にする' }, { to: 'locked', label: '未解放に戻す' }],
@@ -26,18 +26,16 @@ export async function mapView() {
     const body = h('div');
     const actions = h('div', { class: 'row' });
     const msg = h('p');
+    const slot = h('div');
+    const change = async (to: string, note: string) => {
+      await api(`/api/stages/${s.id}/status`, { method: 'POST', body: { status: to, note } });
+      if (to === 'achieved') toast('ステージ達成。次の章へ進みましょう');
+      reload();
+    };
     for (const n of NEXT[s.status] ?? []) {
       const b = h('button', { type: 'button', class: n.to === 'achieved' ? 'gold' : 'sub' }, n.label);
-      action(b, msg, async () => {
-        let note = '';
-        if (n.to === 'achieved') {
-          note = window.prompt('達成の証拠・記録を入力してください（例：結果、日付、確認した資料）') ?? '';
-          if (!note.trim()) return '証拠を入力すると達成を記録できます';
-        }
-        await api(`/api/stages/${s.id}/status`, { method: 'POST', body: { status: n.to, note } });
-        if (n.to === 'achieved') toast('ステージ達成。次の章へ進みましょう');
-        reload();
-      });
+      if (n.to === 'achieved') b.addEventListener('click', () => inlineForm(slot, { label: '達成の証拠・記録', placeholder: '例：結果、日付、確認した資料', required: true, submitLabel: '達成を記録する', onSubmit: (t) => change('achieved', t) }));
+      else action(b, msg, () => change(n.to, ''));
       actions.append(b);
     }
     if (s.status !== 'achieved') {
@@ -52,14 +50,15 @@ export async function mapView() {
       actions.append(b);
     }
     const arch = h('button', { type: 'button', class: 'danger' }, '非表示');
-    action(arch, msg, async () => { if (!window.confirm('このステージを非表示にしますか？（記録は残ります）')) return; await api(`/api/stages/${s.id}`, { method: 'DELETE' }); reload(); });
+    arch.addEventListener('click', () => inlineConfirm(slot, { text: 'このステージを非表示にしますか？（記録は残ります）', okLabel: '非表示にする', danger: true,
+      onOk: async () => { await api(`/api/stages/${s.id}`, { method: 'DELETE' }); reload(); } }));
     actions.append(arch);
     body.append(h('div', null,
       h('div', { class: 'between' }, h('h3', null, `${i + 1}. ${s.title}`), statusChip(s.status)),
       s.conditionText ? h('p', { class: 'pre small' }, `達成条件：${s.conditionText}`) : h('p', { class: 'muted small' }, '達成条件が未設定です（達成の記録には必要です）'),
       h('div', { class: 'row', style: 'margin-top:4px' }, s.dueOn ? chip(`期限 ${s.dueOn}`) : null, chip(`ミッション ${s.missionDone}/${s.missionTotal}`, 'gray')),
       s.evidenceNote && s.status === 'achieved' ? h('p', { class: 'pre small' }, `証拠：${s.evidenceNote}`) : null,
-      s.nextChallenge ? h('p', { class: 'pre small muted' }, `次の挑戦：${s.nextChallenge}`) : null, actions, msg));
+      s.nextChallenge ? h('p', { class: 'pre small muted' }, `次の挑戦：${s.nextChallenge}`) : null, actions, slot, msg));
     map.append(h('div', { class: `node ${s.status}` }, card(body)));
   });
   if (stages.length) out.push(map); else out.push(card(h('p', { class: 'muted' }, 'まだステージがありません。最初のステージを作りましょう。')));

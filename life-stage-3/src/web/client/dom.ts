@@ -95,3 +95,34 @@ export const STATUS_LABEL: Record<string, string> = {
 };
 export const statusChip = (s: string) => chip(STATUS_LABEL[s] ?? s,
   ({ verified: 'done', completed: 'done', achieved: 'gold', returned: 'warn', hold: 'warn', submitted: '', in_progress: '', draft: 'gray', empty: 'gray', locked: 'gray', not_started: 'gray' } as Record<string, string>)[s] ?? '');
+
+/**
+ * 画面内の入力欄（window.prompt の代わり）。アプリ内ブラウザ等ではダイアログが使えないため、
+ * 押したボタンの近く（slot）に入力欄・送信・キャンセルを出す
+ */
+export function inlineForm(slot: HTMLElement, o: { label: string; placeholder?: string; required: boolean; submitLabel: string; onSubmit: (text: string) => Promise<string | void> }) {
+  const ta = h('textarea', { maxlength: 2000, placeholder: o.placeholder ?? '', 'aria-label': o.label });
+  const send = h('button', { type: 'button' }, o.submitLabel);
+  const cancel = h('button', { type: 'button', class: 'sub' }, 'キャンセル');
+  const msg = h('p');
+  action(send, msg, async () => {
+    const text = ta.value.trim();
+    if (o.required && !text) throw new ApiError('invalid_input', [`${o.label}を入力してください`]);
+    const r = await o.onSubmit(text);
+    slot.replaceChildren();
+    return r;
+  });
+  cancel.addEventListener('click', () => slot.replaceChildren());
+  slot.replaceChildren(h('div', { class: 'subitem' }, h('label', null, o.label, o.required ? h('span', { class: 'err' }, ' *') : null), ta, h('div', { class: 'row' }, send, cancel), msg));
+  ta.focus();
+}
+
+/** 画面内の確認（window.confirm の代わり） */
+export function inlineConfirm(slot: HTMLElement, o: { text: string; okLabel: string; danger?: boolean; onOk: () => Promise<string | void>; onCancel?: () => void }) {
+  const ok = h('button', { type: 'button', class: o.danger ? 'danger' : '' }, o.okLabel);
+  const cancel = h('button', { type: 'button', class: 'sub' }, 'やめる');
+  const msg = h('p');
+  action(ok, msg, async () => { const r = await o.onOk(); slot.replaceChildren(); return r; });
+  cancel.addEventListener('click', () => { slot.replaceChildren(); o.onCancel?.(); });
+  slot.replaceChildren(h('div', { class: 'subitem' }, h('p', { style: 'margin:0' }, o.text), h('div', { class: 'row' }, ok, cancel), msg));
+}

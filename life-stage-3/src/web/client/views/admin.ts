@@ -1,4 +1,4 @@
-import { action, api, card, chip, fmtDate, h, toast } from '../dom.ts';
+import { action, api, card, chip, fmtDate, h, inlineConfirm, inlineForm, toast } from '../dom.ts';
 
 const reload = () => window.dispatchEvent(new HashChangeEvent('hashchange'));
 const SECTIONS: [string, string][] = [['members', '会員承認'], ['missions', 'ミッション確認'], ['xp', 'XPルール'], ['audit', '監査ログ'], ['backup', 'バックアップ']];
@@ -21,12 +21,14 @@ async function missions() {
   return card(h('h2', null, '確認待ちのミッション'), h('p', { class: 'muted small' }, '確認者に見えるのは、ミッションの題名・内容・証拠と提出者だけです。'),
     list.length ? h('ul', { class: 'list' }, ...list.map((m) => {
       const msg = h('p');
+      const slot = h('div');
       const ok = h('button', { type: 'button' }, '確認済みにする');
       const ng = h('button', { type: 'button', class: 'danger' }, '差し戻す');
       action(ok, msg, async () => { await api(`/api/admin/missions/${m.id}/review`, { method: 'POST', body: { decision: 'verified' } }); reload(); });
-      action(ng, msg, async () => { const reason = window.prompt('差し戻す理由を入力してください') ?? ''; if (!reason.trim()) return '理由がないため中止しました'; await api(`/api/admin/missions/${m.id}/review`, { method: 'POST', body: { decision: 'returned', reason } }); reload(); });
+      ng.addEventListener('click', () => inlineForm(slot, { label: '差し戻す理由', required: true, submitLabel: '差し戻す',
+        onSubmit: async (reason) => { await api(`/api/admin/missions/${m.id}/review`, { method: 'POST', body: { decision: 'returned', reason } }); reload(); } }));
       return h('li', null, h('b', null, m.title), h('div', { class: 'muted small' }, `${m.owner.displayName || m.owner.email}・${fmtDate(m.updatedAt)}`),
-        m.detail ? h('p', { class: 'pre small' }, m.detail) : null, h('p', { class: 'pre small' }, `証拠：${m.evidenceNote}`), h('div', { class: 'row' }, ok, ng), msg);
+        m.detail ? h('p', { class: 'pre small' }, m.detail) : null, h('p', { class: 'pre small' }, `証拠：${m.evidenceNote}`), h('div', { class: 'row' }, ok, ng), slot, msg);
     })) : h('p', { class: 'muted' }, '確認待ちはありません。'));
 }
 
@@ -61,17 +63,20 @@ async function audit() {
 async function backup() {
   const file = h('input', { type: 'file', accept: 'application/json,.json' });
   const msg = h('p');
-  file.addEventListener('change', async () => {
+  const slot = h('div');
+  file.addEventListener('change', () => {
     const f = file.files?.[0]; if (!f) return;
-    if (!window.confirm('このサイトにバックアップを復元します。データが空のサイトでのみ実行できます。よろしいですか？')) { file.value = ''; return; }
-    msg.className = 'muted'; msg.textContent = '復元中…';
-    try { const r = await api('/api/admin/restore', { method: 'POST', raw: await f.text(), type: 'application/json' }); msg.className = 'ok'; msg.textContent = `復元しました（会員${r.restored.users}件）。再読み込みしてください。`; }
-    catch (e: any) { msg.className = 'err'; msg.textContent = e?.code === 'forbidden' ? 'データが入っているサイトには復元できません。' : '復元できませんでした。'; }
-    finally { file.value = ''; }
+    inlineConfirm(slot, { text: `「${f.name}」をこのサイトに復元します。データが空のサイトでのみ実行できます。よろしいですか？`, okLabel: '復元する', danger: true,
+      onCancel: () => { file.value = ''; },
+      onOk: async () => {
+        try { const r = await api('/api/admin/restore', { method: 'POST', raw: await f.text(), type: 'application/json' }); msg.className = 'ok'; msg.textContent = `復元しました（会員${r.restored.users}件）。再読み込みしてください。`; }
+        catch (e: any) { msg.className = 'err'; msg.textContent = e?.code === 'forbidden' ? 'データが入っているサイトには復元できません。' : '復元できませんでした。'; }
+        finally { file.value = ''; }
+      } });
   });
   return card(h('h2', null, 'バックアップ'), h('p', { class: 'muted small' }, '全会員のデータを含みます。暗号化した保管場所に保存し、Gitやチャットには貼らないでください。Deployの前に毎回取得します。'),
     h('div', { class: 'row' }, h('a', { class: 'btn', href: '/api/admin/backup', download: '' }, 'バックアップをダウンロード')),
-    h('label', null, '復元（データが空のサイトでのみ実行できます）'), file, msg);
+    h('label', null, '復元（データが空のサイトでのみ実行できます）'), file, slot, msg);
 }
 
 export async function adminView(section: string) {
