@@ -3,6 +3,7 @@ import type { Env } from './bindings.ts';
 import type { Deps } from '../../application/ports.ts';
 import { D1BackupStore, D1FileRepository, D1GoalRepository, D1MemberRepository } from './d1-repositories.ts';
 import { R2ObjectStore } from './r2-object-store.ts';
+import { d1Core } from './d1-core.ts';
 import { SITES_SIGNIN_PATH, SITES_SIGNOUT_PATH, sitesIdentity } from './identity.ts';
 import { devAuthEnabled, devIdentity, devSignInResponse, devSignOutResponse } from '../dev/dev-identity.ts';
 import { handle } from '../http/handler.ts';
@@ -10,6 +11,7 @@ import { normalizeEmail } from '../../domain/member.ts';
 
 export function buildDeps(env: Env): Deps {
   return {
+    ...d1Core(env.DB),
     members: new D1MemberRepository(env.DB),
     goals: new D1GoalRepository(env.DB),
     files: new D1FileRepository(env.DB),

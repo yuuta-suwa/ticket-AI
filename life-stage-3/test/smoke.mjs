@@ -34,6 +34,21 @@ check('他会員は画像404', (await call('b', `/api/images/${up.body.image.id}
 check('画像削除', (await call('a', `/api/images/${up.body.image.id}`, { method: 'DELETE' })).status === 200);
 const up2 = await call('a', '/api/images', { method: 'POST', headers: { 'content-type': 'image/png' }, body: PNG });
 const bk = await call('admin', '/api/admin/backup');
-const mine = bk.body.files?.find((f) => f.id === up2.body.image.id);
-check('バックアップに画像本体を含む', bk.status === 200 && mine && atob(mine.bodyBase64).length === PNG.length);
+const b64 = bk.body.objects?.[up2.body.image.id];
+check('バックアップに画像本体を含む', bk.status === 200 && typeof b64 === 'string' && atob(b64).length === PNG.length);
 check('一般会員はバックアップ不可', (await call('a', '/api/admin/backup')).status === 403);
+
+// BUILD-B：10ステップ・ミッション・XP（workerd + D1 の実環境）
+const s1 = await call('a', '/api/steps/1', J('PUT', { content: { purpose: '目的', values: '価値観', reason: '理由' }, complete: true }));
+check('ステップ1を完了', s1.status === 200 && s1.body.version === 1);
+const ms = await call('a', '/api/missions', J('POST', { title: 'スモーク' }));
+await call('a', `/api/missions/${ms.body.id}/action`, J('POST', { action: 'start' }));
+const lg = await call('a', `/api/missions/${ms.body.id}/action`, J('POST', { action: 'log', note: '記録' }));
+check('記録でXP10', lg.body.xp === 10);
+const lg2 = await call('a', `/api/missions/${ms.body.id}/action`, J('POST', { action: 'log', note: '再記録' }));
+check('同日の重複はXP0（D1のbatch・一意制約）', lg2.body.xp === 0);
+const hm = await call('a', '/api/home');
+check('HOMEの集計', hm.status === 200 && hm.body.steps.completed === 1 && hm.body.progress.today >= 1);
+check('Bから見えない', (await call('b', `/api/missions/${ms.body.id}/logs`)).status === 404);
+const js = await fetch(BASE + '/app.js');
+check('画面スクリプト配信', js.status === 200 && (await js.text()).length > 1000);

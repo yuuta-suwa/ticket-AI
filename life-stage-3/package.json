@@ -3,11 +3,17 @@
   "version": "0.0.1",
   "private": true,
   "type": "module",
-  "engines": { "node": ">=22.18.0" },
+  "engines": {
+    "node": ">=22.18.0"
+  },
   "scripts": {
+    "gen": "node scripts/gen-client.mjs",
     "build": "node scripts/build-sites.mjs",
+    "pretest": "node scripts/gen-client.mjs",
     "test": "node --no-warnings --test test/*.test.ts",
+    "pretypecheck": "node scripts/gen-client.mjs",
     "typecheck": "tsc --noEmit",
+    "predev": "node scripts/gen-client.mjs",
     "dev": "wrangler dev --local",
     "db:migrate:local": "wrangler d1 migrations apply life-stage-3 --local",
     "smoke": "node --no-warnings test/smoke.mjs"

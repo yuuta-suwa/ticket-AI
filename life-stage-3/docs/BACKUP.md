@@ -4,7 +4,8 @@ Sitesでは、コードを前のバージョンに戻してもD1/R2のデータ�
 
 ## 何を保存するか
 - 管理画面の「バックアップをダウンロード」で、1つのJSONファイル（`life-stage-YYYY-MM-DD.lsbackup.json`）を保存する
-- 中身：D1の全テーブル（users / member_eligibility / role_grants / life_goals / file_objects / audit_logs）、スキーマ版（`0001_gate0`）、R2の画像本体（base64形式）と照合値（SHA-256）
+- 中身：D1の**全テーブル**（`application/ports.ts` の `BACKUP_TABLES`）をそのままの列で保存し、スキーマ版（`0002_core`）、R2の画像本体（base64形式）と照合値（SHA-256）を含める
+- 形式の版：2（2026-11-07〜）。版1（Gate-0）のファイルは新しいアプリでは復元できない。テーブルを追加したら `BACKUP_TABLES` と `SCHEMA_VERSION` を更新する
 - R2の画像の実体が1つでも欠けているか、照合値が合わなければ、バックアップ自体を失敗させる（壊れたまま保存しない）。復元時も照合値を確認する
 
 ## いつ取るか

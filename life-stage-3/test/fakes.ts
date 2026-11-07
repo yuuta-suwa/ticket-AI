@@ -1,12 +1,13 @@
 import { DatabaseSync } from 'node:sqlite';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import type { D1Database, D1PreparedStatement, R2Bucket, Env } from '../src/adapters/sites/bindings.ts';
 
 /** node:sqlite で D1 の最小APIを再現し、実際のマイグレーションSQLを流す */
 export function fakeD1(): D1Database {
   const db = new DatabaseSync(':memory:');
   db.exec('PRAGMA foreign_keys = ON');
-  db.exec(readFileSync(new URL('../migrations/0001_gate0.sql', import.meta.url), 'utf8'));
+  const dir = new URL('../migrations/', import.meta.url);
+  for (const f of readdirSync(dir).filter((x) => x.endsWith('.sql')).sort()) db.exec(readFileSync(new URL(f, dir), 'utf8'));
   const stmt = (sql: string, params: unknown[]): D1PreparedStatement => ({
     bind: (...v: unknown[]) => stmt(sql, v),
     first: async <T>() => (db.prepare(sql).get(...(params as never[])) as T | undefined) ?? null,

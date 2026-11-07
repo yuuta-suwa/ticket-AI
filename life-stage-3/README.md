@@ -35,12 +35,20 @@ npm run build       # Sites向けの成果物を dist/ に作成（公開はし�
 - `ADMIN_EMAILS`：初代管理者の候補メール（カンマ区切り）。**有効な管理者が1人もいない時だけ**、このメールで初回サインインした人が管理者になる。2人目以降は自動では管理者にならない
 - `DEV_AUTH`：本番では絶対に設定しない
 
-## API（Gate-0）
-- `GET /health`（認証不要・会員情報なし）
-- `GET /api/me`、`GET/PUT /api/goal`、`GET/POST /api/images`、`GET/DELETE /api/images/:id`
-- 管理者のみ：`GET /api/admin/pending`、`POST /api/admin/members/:id/status`（pending/active/suspended/cancelled）、`GET /api/admin/backup`、`POST /api/admin/restore`
+## 画面（下部5タブ）
+- HOME：今の自分・今日のミッション（最大3件）・前進（今日/昨日、今週/先週）・レベル・自動提案（ルール）
+- MY GOAL：目的達成10ステップ（途中保存・版管理・完了条件）・LIFE MAP・次のサイクル
+- PROJECTS / COMMUNITY：準備中（契約・法務の確認後に BUILD-C / D で実装）
+- MY PAGE：プロフィール・XP履歴・成長履歴・週次レビュー・MANAGEMENT（管理者のみ）
+- HOME から：DAILY MISSION・週次レビュー・AI LIFE COACH（APIを呼ばない相談文コピー方式）
+
+## 構成の補足
+- 画面：`src/web/client/`（TypeScript・フレームワークなし）を esbuild で1ファイルにまとめ、`/app.js` として配信（`npm run gen`）。インラインスクリプト禁止のCSP
+- `src/web/generated/` は自動生成（Gitに入れない）。`npm test` / `typecheck` / `dev` / `build` の前に自動で作られる
 
 ## D1テーブル
-`users` / `member_eligibility` / `role_grants` / `life_goals` / `file_objects` / `audit_logs`（spec/03 の論理設計に準拠）
+- 0001：`users` / `member_eligibility` / `role_grants` / `life_goals` / `file_objects` / `audit_logs`
+- 0002：`goal_step_versions` / `life_stages` / `life_stage_events` / `missions` / `mission_logs` / `xp_rule_versions` / `xp_ledger` / `weekly_reviews` / `coach_notes`
+- 適用済みのマイグレーションは変更しない。変更は新しい番号のファイルを追加する
 
 詳しい検証記録と未検証の事項は [docs/GATE0.md](docs/GATE0.md)、判断の記録は [DECISIONS.md](DECISIONS.md) を参照。

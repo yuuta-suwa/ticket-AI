@@ -1,6 +1,6 @@
 import type { D1Database } from './bindings.ts';
 import type {
-  AuditEntry, BackupRows, BackupStore, FileRepository, GoalRepository, MemberRepository,
+  AuditEntry, FileRepository, GoalRepository, MemberRepository,
 } from '../../application/ports.ts';
 import type { EligibilityStatus, Member } from '../../domain/member.ts';
 import type { Goal } from '../../domain/goal.ts';
@@ -131,45 +131,31 @@ export class D1FileRepository implements FileRepository {
   }
 }
 
+import { BACKUP_TABLES, type BackupRow, type BackupRows, type BackupStore } from '../../application/ports.ts';
+
+const COL_RE = /^[a-z][a-z0-9_]*$/;
+
 export class D1BackupStore implements BackupStore {
   private db: D1Database;
   constructor(db: D1Database) { this.db = db; }
-  async dumpAll(): Promise<BackupRows> {
-    const all = async <T>(sql: string) => (await this.db.prepare(sql).all<T>()).results;
-    const users = await all<{ id: string; normalized_email: string; display_name: string; created_at: string }>('SELECT * FROM users ORDER BY created_at, id');
-    const elig = await all<{ user_id: string; status: EligibilityStatus; changed_at: string; changed_by: string | null }>('SELECT * FROM member_eligibility ORDER BY user_id');
-    const grants = await all<{ id: string; user_id: string; role: 'admin'; granted_at: string; granted_by: string; revoked_at: string | null }>('SELECT * FROM role_grants ORDER BY granted_at, id');
-    const goals = await all<GoalRow>('SELECT * FROM life_goals ORDER BY updated_at, id');
-    const files = await all<FileRow>('SELECT * FROM file_objects ORDER BY created_at, id');
-    const audits = await all<{ id: string; actor_user_id: string; action: string; target_type: string; target_id: string; before_json: string | null; after_json: string | null; reason: string | null; created_at: string }>('SELECT * FROM audit_logs ORDER BY created_at, rowid');
-    return {
-      users: users.map((u) => ({ id: u.id, email: u.normalized_email, displayName: u.display_name, createdAt: u.created_at })),
-      eligibility: elig.map((e) => ({ userId: e.user_id, status: e.status, changedAt: e.changed_at, changedBy: e.changed_by })),
-      roleGrants: grants.map((g) => ({ id: g.id, userId: g.user_id, role: g.role, grantedAt: g.granted_at, grantedBy: g.granted_by, revokedAt: g.revoked_at })),
-      goals: goals.map((g) => ({ ...toGoal(g), archivedAt: g.archived_at })),
-      files: files.map(toFile),
-      auditLogs: audits.map((a) => ({
-        id: a.id, actorUserId: a.actor_user_id, action: a.action, targetType: a.target_type, targetId: a.target_id,
-        before: a.before_json ? JSON.parse(a.before_json) : null, after: a.after_json ? JSON.parse(a.after_json) : null,
-        reason: a.reason, createdAt: a.created_at,
-      })),
-    };
+  async dumpAll() {
+    const out = {} as BackupRows;
+    // 挿入順（rowid）で並べ、復元後も同じ順序になるようにする
+    for (const t of BACKUP_TABLES) out[t] = (await this.db.prepare(`SELECT * FROM ${t} ORDER BY rowid`).all<BackupRow>()).results;
+    return out;
   }
   async countData() {
     const n = async (t: string) => Number((await this.db.prepare(`SELECT COUNT(*) AS n FROM ${t}`).first<{ n: number }>())?.n ?? 0);
-    return { users: await n('users'), goals: await n('life_goals'), files: await n('file_objects') };
+    return { users: await n('users'), goals: (await n('life_goals')) + (await n('goal_step_versions')), files: await n('file_objects') };
   }
   async restoreAll(rows: BackupRows) {
-    const db = this.db;
-    // 復元操作をした管理者の仮登録も含め全削除→投入を1トランザクションで（途中失敗なら元のまま）
-    const stmts = ['audit_logs', 'role_grants', 'member_eligibility', 'life_goals', 'file_objects', 'users']
-      .map((t) => db.prepare(`DELETE FROM ${t}`));
-    for (const u of rows.users) stmts.push(db.prepare('INSERT INTO users (id,normalized_email,display_name,created_at) VALUES (?,?,?,?)').bind(u.id, u.email, u.displayName, u.createdAt));
-    for (const e of rows.eligibility) stmts.push(db.prepare('INSERT INTO member_eligibility (user_id,status,changed_at,changed_by) VALUES (?,?,?,?)').bind(e.userId, e.status, e.changedAt, e.changedBy));
-    for (const g of rows.roleGrants) stmts.push(db.prepare('INSERT INTO role_grants (id,user_id,role,granted_at,granted_by,revoked_at) VALUES (?,?,?,?,?,?)').bind(g.id, g.userId, g.role, g.grantedAt, g.grantedBy, g.revokedAt));
-    for (const g of rows.goals) stmts.push(db.prepare('INSERT INTO life_goals (id,owner_user_id,title,detail,updated_at,archived_at) VALUES (?,?,?,?,?,?)').bind(g.id, g.ownerId, g.title, g.detail, g.updatedAt, g.archivedAt));
-    for (const f of rows.files) stmts.push(db.prepare('INSERT INTO file_objects (id,owner_user_id,object_key,content_type,size,sha256,created_at) VALUES (?,?,?,?,?,?,?)').bind(f.id, f.ownerId, f.objectKey, f.contentType, f.size, f.sha256, f.createdAt));
-    for (const a of rows.auditLogs) stmts.push(auditStmt(db, a.id, a, a.createdAt));
-    await db.batch(stmts);
+    // 復元を実行した管理者の仮登録も含め、子テーブルから全削除 → 親から投入を1トランザクションで（途中失敗なら元のまま）
+    const stmts = [...BACKUP_TABLES].reverse().map((t) => this.db.prepare(`DELETE FROM ${t}`));
+    for (const t of BACKUP_TABLES) for (const row of rows[t]) {
+      const cols = Object.keys(row);
+      if (!cols.length || !cols.every((c) => COL_RE.test(c))) throw new Error('invalid column');
+      stmts.push(this.db.prepare(`INSERT INTO ${t} (${cols.join(',')}) VALUES (${cols.map(() => '?').join(',')})`).bind(...cols.map((c) => row[c])));
+    }
+    await this.db.batch(stmts);
   }
 }

@@ -32,8 +32,9 @@ test('バックアップ→空のサイトへ復元で、目標・画像・承�
   const exp = await call(src.env, '/api/admin/backup', ADMIN);
   assert.equal(exp.status, 200);
   assert.match(exp.res.headers.get('content-disposition') ?? '', /attachment; filename="life-stage-.*\.lsbackup\.json"/);
-  assert.equal(exp.body.users.length, 3);
-  assert.ok(exp.body.auditLogs.length >= 2); // 初代管理者 + 承認の監査
+  assert.equal(exp.body.tables.users.length, 3);
+  assert.ok(exp.body.tables.audit_logs.length >= 2); // 初代管理者 + 承認の監査
+  assert.equal(exp.body.schemaVersion, '0002_core');
 
   const dst = fakeEnv();
   await call(dst.env, '/api/me', ADMIN); // 新サイトで管理者が初回サインイン
@@ -68,9 +69,9 @@ test('形式違い・改ざんされたバックアップは拒否', async () =>
   const dst = fakeEnv();
   await call(dst.env, '/api/me', ADMIN);
   assert.equal((await call(dst.env, '/api/admin/restore', ADMIN, J('POST', { ...exp, version: 99 }))).status, 400);
-  const badKey = { ...exp, files: exp.files.map((f: any) => ({ ...f, objectKey: 'members/other/x' })) };
+  const badKey = { ...exp, tables: { ...exp.tables, file_objects: exp.tables.file_objects.map((f: any) => ({ ...f, object_key: 'members/other/x' })) } };
   assert.equal((await call(dst.env, '/api/admin/restore', ADMIN, J('POST', badKey))).status, 400);
-  const orphan = { ...exp, goals: [{ ...exp.goals[0], ownerId: 'nobody' }] };
+  const orphan = { ...exp, tables: { ...exp.tables, life_goals: [{ ...exp.tables.life_goals[0], owner_user_id: 'nobody' }] } };
   assert.equal((await call(dst.env, '/api/admin/restore', ADMIN, J('POST', orphan))).status, 400);
   assert.equal(dst.bucket.keys().length, 0);
 });
@@ -78,6 +79,7 @@ test('形式違い・改ざんされたバックアップは拒否', async () =>
 test('R2の実体が欠けていたらバックアップを失敗させる（欠損を見逃さない）', async () => {
   const src = await populated();
   for (const k of src.bucket.keys()) await src.bucket.delete(k);
+  
   const orig = console.error; console.error = () => {};
   const r = await call(src.env, '/api/admin/backup', ADMIN);
   console.error = orig;

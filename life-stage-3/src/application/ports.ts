@@ -1,6 +1,7 @@
 import type { EligibilityStatus, Member, Role } from '../domain/member.ts';
 import type { Goal } from '../domain/goal.ts';
 import type { StoredFile } from '../domain/file.ts';
+import type { CoreDeps } from './core-ports.ts';
 
 export interface AuditEntry {
   actorUserId: string;
@@ -44,14 +45,15 @@ export interface ObjectStore {
   delete(key: string): Promise<void>;
 }
 
-export interface BackupRows {
-  users: { id: string; email: string; displayName: string; createdAt: string }[];
-  eligibility: { userId: string; status: EligibilityStatus; changedAt: string; changedBy: string | null }[];
-  roleGrants: { id: string; userId: string; role: Role; grantedAt: string; grantedBy: string; revokedAt: string | null }[];
-  goals: (Goal & { archivedAt: string | null })[];
-  files: StoredFile[];
-  auditLogs: (AuditEntry & { id: string; createdAt: string })[];
-}
+export type BackupRow = Record<string, string | number | null>;
+/** テーブル名 → 行（列名はD1のまま）。外部キーの親から順に並べる */
+export const BACKUP_TABLES = [
+  'users', 'member_eligibility', 'role_grants', 'life_goals', 'file_objects', 'audit_logs',
+  'goal_step_versions', 'life_stages', 'life_stage_events', 'missions', 'mission_logs',
+  'xp_rule_versions', 'xp_ledger', 'weekly_reviews', 'coach_notes',
+] as const;
+export type BackupTable = (typeof BACKUP_TABLES)[number];
+export type BackupRows = Record<BackupTable, BackupRow[]>;
 
 /**
  * バックアップ専用。全会員のデータを扱うため通常のリポジトリとは分け、
@@ -67,7 +69,7 @@ export interface BackupStore {
 export interface Clock { now(): string }
 export interface IdGen { next(): string }
 
-export interface Deps {
+export interface Deps extends CoreDeps {
   members: MemberRepository;
   goals: GoalRepository;
   files: FileRepository;

@@ -2,18 +2,20 @@
 import { DomainError } from '../domain/errors.ts';
 import { assertAdmin, type Member } from '../domain/member.ts';
 import { objectKeyFor, sha256Hex } from '../domain/file.ts';
-import type { BackupRows, Deps } from './ports.ts';
+import { BACKUP_TABLES, type BackupRows, type Deps } from './ports.ts';
 
 export const BACKUP_FORMAT = 'life-stage-backup';
-export const BACKUP_VERSION = 1;
-export const SCHEMA_VERSION = '0001_gate0';
+export const BACKUP_VERSION = 2;
+export const SCHEMA_VERSION = '0002_core';
 
-export interface BackupSnapshot extends Omit<BackupRows, 'files'> {
+export interface BackupSnapshot {
   format: typeof BACKUP_FORMAT;
   version: number;
   schemaVersion: string;
   exportedAt: string;
-  files: (BackupRows['files'][number] & { bodyBase64: string })[];
+  tables: BackupRows;
+  /** R2の実体（file_objects.id → base64） */
+  objects: Record<string, string>;
 }
 
 // Buffer はWorkersに無いため、標準の btoa/atob で変換する
@@ -22,38 +24,39 @@ function toB64(u: Uint8Array): string {
   for (let i = 0; i < u.length; i += 0x8000) bin += String.fromCharCode(...u.subarray(i, i + 0x8000));
   return btoa(bin);
 }
-function fromB64(s: string): Uint8Array {
+function fromB64(s: unknown): Uint8Array {
   if (typeof s !== 'string' || !/^[A-Za-z0-9+/]*={0,2}$/.test(s)) throw new DomainError('invalid_input', 'bad base64');
   return Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
 }
 
 export async function exportBackup(d: Deps, me: Member): Promise<BackupSnapshot> {
   assertAdmin(me);
-  const rows = await d.backup.dumpAll();
-  const files = [];
-  for (const f of rows.files) {
-    const o = await d.objects.get(f.objectKey);
+  const tables = await d.backup.dumpAll();
+  const objects: Record<string, string> = {};
+  for (const f of tables.file_objects) {
+    const o = await d.objects.get(String(f.object_key));
     if (!o) throw new Error('r2 object missing'); // 欠損を黙って無視しない
     if ((await sha256Hex(o.body)) !== f.sha256) throw new Error('r2 checksum mismatch');
-    files.push({ ...f, bodyBase64: toB64(o.body) });
+    objects[String(f.id)] = toB64(o.body);
   }
-  return { format: BACKUP_FORMAT, version: BACKUP_VERSION, schemaVersion: SCHEMA_VERSION, exportedAt: d.clock.now(), ...rows, files };
+  return { format: BACKUP_FORMAT, version: BACKUP_VERSION, schemaVersion: SCHEMA_VERSION, exportedAt: d.clock.now(), tables, objects };
 }
 
 function validate(raw: unknown): BackupSnapshot {
   const s = raw as Partial<BackupSnapshot> | null;
   if (!s || s.format !== BACKUP_FORMAT || s.version !== BACKUP_VERSION || s.schemaVersion !== SCHEMA_VERSION)
     throw new DomainError('invalid_input', 'unknown backup format');
-  for (const k of ['users', 'eligibility', 'roleGrants', 'goals', 'files', 'auditLogs'] as const)
-    if (!Array.isArray(s[k])) throw new DomainError('invalid_input');
-  const ids = new Set(s.users!.map((u) => u.id));
-  const owned = (id: string) => { if (!ids.has(id)) throw new DomainError('invalid_input', 'owner missing'); };
-  s.eligibility!.forEach((e) => owned(e.userId));
-  s.roleGrants!.forEach((g) => owned(g.userId));
-  s.goals!.forEach((g) => owned(g.ownerId));
-  for (const f of s.files!) {
-    owned(f.ownerId);
-    if (f.objectKey !== objectKeyFor(f.ownerId, f.id)) throw new DomainError('invalid_input', 'bad file entry');
+  if (!s.tables || typeof s.tables !== 'object' || !s.objects || typeof s.objects !== 'object') throw new DomainError('invalid_input');
+  for (const t of BACKUP_TABLES) if (!Array.isArray(s.tables[t])) throw new DomainError('invalid_input', `missing ${t}`);
+  const ids = new Set(s.tables.users.map((u) => String(u.id)));
+  // 本人データはすべてバックアップ内の会員に属していること
+  for (const t of BACKUP_TABLES) for (const row of s.tables[t]) {
+    for (const col of ['owner_user_id', 'user_id'] as const)
+      if (col in row && !ids.has(String(row[col]))) throw new DomainError('invalid_input', `${t}.${col} owner missing`);
+  }
+  for (const f of s.tables.file_objects) {
+    if (f.object_key !== objectKeyFor(String(f.owner_user_id), String(f.id))) throw new DomainError('invalid_input', 'bad file entry');
+    if (typeof s.objects[String(f.id)] !== 'string') throw new DomainError('invalid_input', 'object missing');
   }
   return s as BackupSnapshot;
 }
@@ -67,19 +70,18 @@ export async function restoreBackup(d: Deps, me: Member, raw: unknown) {
   const snap = validate(raw);
   const c = await d.backup.countData();
   if (c.goals > 0 || c.files > 0 || c.users > 1) throw new DomainError('forbidden', 'target is not empty');
-  const bodies = [];
-  for (const f of snap.files) {
-    const body = fromB64(f.bodyBase64);
+  const bodies = new Map<string, Uint8Array>();
+  for (const f of snap.tables.file_objects) {
+    const body = fromB64(snap.objects[String(f.id)]);
     if ((await sha256Hex(body)) !== f.sha256) throw new DomainError('invalid_input', 'checksum mismatch');
-    bodies.push(body);
+    bodies.set(String(f.id), body);
   }
-  for (let i = 0; i < snap.files.length; i++) await d.objects.put(snap.files[i]!.objectKey, bodies[i]!, snap.files[i]!.contentType);
-  const { format: _f, version: _v, schemaVersion: _s, exportedAt: _e, ...rows } = snap;
+  for (const f of snap.tables.file_objects) await d.objects.put(String(f.object_key), bodies.get(String(f.id))!, String(f.content_type));
   try {
-    await d.backup.restoreAll({ ...rows, files: snap.files.map(({ bodyBase64: _b, ...meta }) => meta) });
+    await d.backup.restoreAll(snap.tables);
   } catch (e) {
-    for (const f of snap.files) await d.objects.delete(f.objectKey).catch(() => {});
+    for (const f of snap.tables.file_objects) await d.objects.delete(String(f.object_key)).catch(() => {});
     throw e;
   }
-  return { users: snap.users.length, goals: snap.goals.length, files: snap.files.length };
+  return { users: snap.tables.users.length, goals: snap.tables.goal_step_versions.length + snap.tables.life_goals.length, files: snap.tables.file_objects.length };
 }

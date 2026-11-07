@@ -4,3 +4,4 @@ node_modules/
 *.lsbackup.json
 dist/
 .sites-runtime/
+src/web/generated/

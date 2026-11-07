@@ -35,8 +35,16 @@ test('HOME画面はスマホ用viewportとサインイン導線を持つ', async
   const html = await res.text();
   assert.equal(res.status, 200);
   assert.match(html, /name="viewport"/);
-  assert.match(html, /"signInPath":"\/signin-with-chatgpt"/);
-  assert.match(res.headers.get('content-security-policy') ?? '', /frame-ancestors 'none'/);
+  assert.match(html, /data-signin="\/signin-with-chatgpt"/);
+  assert.match(html, /<script src="\/app.js" defer><\/script>/);
+  assert.doesNotMatch(html, /<script>/); // インラインスクリプトなし
+  const csp = res.headers.get('content-security-policy') ?? '';
+  assert.match(csp, /frame-ancestors 'none'/);
+  assert.match(csp, /script-src 'self';/);
+  const js = await worker.fetch(new Request(BASE + '/app.js'), env);
+  assert.equal(js.status, 200);
+  assert.match(js.headers.get('content-type') ?? '', /javascript/);
+  assert.ok((await js.text()).length > 1000);
 });
 
 test('未サインイン: /api/me は signedIn:false、他APIは401', async () => {
@@ -173,20 +181,20 @@ test('停止(suspended)・退会(cancelled)の会員は会員機能に入れな�
   await call('/api/goal', 'a@x.com', J('PUT', { title: 'A' }));
   assert.equal((await call('/api/me', 'a@x.com')).body.member.status, 'active');
   const all = await call('/api/admin/backup', 'admin@example.com');
-  const aId = all.body.users.find((u: any) => u.email === 'a@x.com').id;
+  const aId = all.body.tables.users.find((u: any) => u.normalized_email === 'a@x.com').id;
   assert.equal((await call(`/api/admin/members/${aId}/status`, 'admin@example.com', J('POST', { status: 'suspended' }))).status, 200);
   assert.equal((await call('/api/goal', 'a@x.com')).status, 403);
   assert.equal((await call(`/api/admin/members/${aId}/status`, 'admin@example.com', J('POST', { status: 'cancelled' }))).status, 200);
   assert.equal((await call('/api/goal', 'a@x.com')).status, 403);
   // 監査記録が残る
-  const audits = (await call('/api/admin/backup', 'admin@example.com')).body.auditLogs.filter((x: any) => x.targetId === aId);
-  assert.deepEqual(audits.map((x: any) => x.after.status), ['active', 'suspended', 'cancelled']);
+  const audits = (await call('/api/admin/backup', 'admin@example.com')).body.tables.audit_logs.filter((x: any) => x.target_id === aId);
+  assert.deepEqual(audits.map((x: any) => JSON.parse(x.after_json).status), ['active', 'suspended', 'cancelled']);
 });
 
 test('B が A の会員IDや推測IDを指定しても、操作も閲覧もできない', async () => {
   const { call } = await setup();
   await call('/api/goal', 'a@x.com', J('PUT', { title: 'Aの秘密' }));
-  const aId = (await call('/api/admin/backup', 'admin@example.com')).body.users.find((u: any) => u.email === 'a@x.com').id;
+  const aId = (await call('/api/admin/backup', 'admin@example.com')).body.tables.users.find((u: any) => u.normalized_email === 'a@x.com').id;
   assert.equal((await call(`/api/admin/members/${aId}/status`, 'b@x.com', J('POST', { status: 'suspended' }))).status, 403);
   for (const path of [`/api/goal/${aId}`, `/api/goals/${aId}`, `/api/images/${aId}`, `/api/users/${aId}`])
     assert.ok([403, 404].includes((await call(path, 'b@x.com')).status), path);
