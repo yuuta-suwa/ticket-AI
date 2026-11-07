@@ -13,7 +13,12 @@
 
 ## 暫定（Sitesの実機確認で変更し得る）
 - 接続名：D1 `DB` / R2 `FILES`（`.openai/hosting.json`。project_id は Sites が付与する）
-- 実行形式：Workers互換の `export default { fetch }`。Sitesの互換性確認で `scripts/build-sites.mjs` 等のビルド設定が追加された（リポジトリへの取り込みは未）
+- 実行形式：Workers互換の `export default { fetch }`。Sitesの互換性確認で追加されたビルド設定を、2026-11-07にリポジトリへ取り込んだ（`scripts/build-sites.mjs`、esbuild）
+- Sitesが受け付ける成果物の形（Sitesのエージェントが生成したもの）：
+  - `dist/server/index.js`（ESM形式の1ファイルにまとめたWorker）
+  - `dist/.openai/hosting.json`（project_id・d1・r2）
+  - `dist/.openai/drizzle/<tag>.sql`（文ごとに `--> statement-breakpoint` で区切る）＋ `meta/_journal.json`
+- **注意**：`build-sites.mjs` は、マイグレーション1本・SQL文10個を前提に固定で書かれている。テーブルを追加するとき（A04）は、`migrations/` 内の全ファイルを順番に梱包する形に書き換える
 - 取り込み方法：デスクトップアプリからフォルダをつなぐ方法は使えなかったため、ZIPをアップロードして取り込んだ
 - 画面：Gate-0ではビルド不要のHTML。React＋TypeScriptへの移行はフェーズA（A01）で、スターターの形式を確認してから行う
 - 初代管理者：ADMIN_EMAILS に載っていて、有効な管理者が0人の時だけ（2人目以降の付与UIはA03）
@@ -50,7 +55,6 @@
 → spec/01 F の **GO**。Sitesを採用し、BUILD-Aへ進む。
 
 残っている課題（Gate-0の合否には影響しない）
-- Sitesが追加したビルド設定（`scripts/build-sites.mjs` ほか4ファイル）を、リポジトリに取り込む
 - 画像上限5MBの変更をSitesに反映する
 - 実機でのバックアップのダウンロードと、空のサイトへの復元（F04 / T-15）
 - 公開範囲を広げるときに、未サインインの偽装ヘッダーをもう一度確認する

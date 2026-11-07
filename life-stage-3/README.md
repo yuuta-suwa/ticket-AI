@@ -28,6 +28,7 @@ npm run typecheck
 cp .dev.vars.example .dev.vars && npm run db:migrate:local
 npm run dev         # wrangler/workerd 上で起動 → http://localhost:8787
 npm run smoke       # 起動中の環境に対してE2Eスモークテストを実行
+npm run build       # Sites向けの成果物を dist/ に作成（公開はしない。Sitesが保存・公開時に使う）
 ```
 
 ## 設定値（Sitesの設定画面で入力する。Gitには入れない）
